@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# uv / venv
+.venv/
+uv.lock.bak
+
+# Lean / Mathlib build artifacts
+*.olean
+/lake-packages/
+/.lake/
+build/
+
+# Trial logs & datasets are large / regenerable: track structure, not contents
+/data/**
+!/data/.gitkeep
+/runs/
+*.jsonl
+
+# Secrets — never commit API keys
+.env
+*.key
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

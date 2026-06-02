@@ -1,0 +1,157 @@
+{
+  "$defs": {
+    "AgentRole": {
+      "description": "Fixed four-role decomposition from the proposal (Methodology \u00a74.1).",
+      "enum": [
+        "planner",
+        "engineer",
+        "critic",
+        "executor",
+        "system"
+      ],
+      "title": "AgentRole",
+      "type": "string"
+    },
+    "AnchorCheck": {
+      "description": "Result of a domain-specific anchor check attached to an event.\n\nDomain-adaptable: Lean reads correctness from the proof state; astro\nrecomputes intermediate quantities from the Stargazer forward model.\nThe schema only cares that a check has a status and is identifiable.",
+      "properties": {
+        "name": {
+          "description": "e.g. 'periodogram_peak', 'subgoal_discharge'",
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/AnchorStatus"
+        },
+        "expected": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected"
+        },
+        "observed": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        }
+      },
+      "required": [
+        "name",
+        "status"
+      ],
+      "title": "AnchorCheck",
+      "type": "object"
+    },
+    "AnchorStatus": {
+      "enum": [
+        "pass",
+        "violation",
+        "n/a"
+      ],
+      "title": "AnchorStatus",
+      "type": "string"
+    },
+    "EventType": {
+      "description": "The event kinds the non-invasive observer records (Methodology \u00a74.2).",
+      "enum": [
+        "message",
+        "tool_call",
+        "code_event",
+        "retry",
+        "execution_result",
+        "confidence_report"
+      ],
+      "title": "EventType",
+      "type": "string"
+    }
+  },
+  "description": "A single node in the directed interaction graph G.",
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "event_id": {
+      "description": "Globally unique within a trial",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "trial_id": {
+      "title": "Trial Id",
+      "type": "string"
+    },
+    "seq": {
+      "description": "Monotonic order within the trial",
+      "title": "Seq",
+      "type": "integer"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "event_type": {
+      "$ref": "#/$defs/EventType"
+    },
+    "agent_role": {
+      "$ref": "#/$defs/AgentRole"
+    },
+    "caused_by": {
+      "description": "Parent event_ids; defines edges of G",
+      "items": {
+        "type": "string"
+      },
+      "title": "Caused By",
+      "type": "array"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "description": "Type-specific content (message text, tool name/args, code, stdout, ...)",
+      "title": "Payload",
+      "type": "object"
+    },
+    "anchor": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AnchorCheck"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "event_id",
+    "trial_id",
+    "seq",
+    "timestamp",
+    "event_type",
+    "agent_role"
+  ],
+  "title": "TraceEvent",
+  "type": "object"
+}
