@@ -19,8 +19,8 @@ dependencies = [
 # Substrate / agent deps are kept in an optional group because they are heavy
 # and only needed when actually running trials, not when developing the core.
 [project.optional-dependencies]
-agents = [
-    "ag2",                  # AutoGen / AG2 substrate [12]
+agents = [                  # AutoGen / AG2 substrate [12]
+    "ag2[openai]>=0.13,<0.14",
 ]
 dashboard = [
     "streamlit>=1.36",      # O1 trajectory dashboard (built last)
