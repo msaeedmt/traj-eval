@@ -7,6 +7,19 @@ except to reuse the canonical role names.
 """
 
 from traj_eval.agents.config import build_llm_config
-from traj_eval.agents.roles import make_engineer, make_planner
+from traj_eval.agents.group_chat import build_team
+from traj_eval.agents.roles import (
+    make_critic,
+    make_engineer,
+    make_executor,
+    make_planner,
+)
 
-__all__ = ["build_llm_config", "make_engineer", "make_planner"]
+__all__ = [
+    "build_llm_config",
+    "build_team",
+    "make_critic",
+    "make_engineer",
+    "make_executor",
+    "make_planner",
+]

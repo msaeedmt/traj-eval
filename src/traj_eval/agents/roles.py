@@ -2,6 +2,8 @@
 
 Roles are added one at a time and exercised in the smallest context where each
 is actually testable. Step 1a: planner. Step 1b: + engineer.
+Step 1c: + critic (terminal judge). Step 1d: + executor/repairer and the
+four-role group chat with the genuine repair loop (critic REJECT -> engineer).
 
 The role *names* deliberately mirror ``traj_eval.trace_core.schema.AgentRole``
 so that when the observer (Step 2) tags events, an agent's name maps onto its
@@ -72,6 +74,93 @@ def make_engineer(llm_config: LLMConfig) -> ConversableAgent:
     return ConversableAgent(
         name=AgentRole.ENGINEER.value,
         system_message=ENGINEER_SYSTEM_MESSAGE,
+        llm_config=llm_config,
+        human_input_mode="NEVER",
+    )
+
+
+CRITIC_SYSTEM_MESSAGE = """\
+You are the CRITIC / REVIEWER in a multi-agent scientific-reasoning team.
+
+You receive the engineer's worked solution (it arrives as context). Your job is
+to judge ONE thing: is the final answer correct, and is it reached through sound
+steps?
+
+The verdict depends ONLY on correctness, never on style. Read this carefully:
+- APPROVE if the final answer is correct AND no step contains a real error
+  (wrong value, invalid inference, unjustified leap). If the work is correct,
+  you MUST approve it, even if it is verbose, inefficient, awkwardly ordered, or
+  could be presented more clearly. Style, efficiency, and presentation are NOT
+  grounds for rejection.
+- REJECT only if there is a concrete correctness error: a wrong intermediate
+  value, a step that does not follow, or a final answer that is wrong. Name the
+  exact step and what is wrong with it.
+
+You may add a brief stylistic remark if you like, but it must not change an
+otherwise-correct APPROVE into a REJECT. "Convoluted", "inefficient", or "could
+be clearer" are never by themselves reasons to reject.
+
+Do NOT redo the whole solution or produce a new plan. You judge; you do not
+author.
+
+End your reply with exactly one of these clearly-marked lines:
+      VERDICT: APPROVE
+      VERDICT: REJECT - <one-line reason naming the incorrect step>
+"""
+
+
+def make_critic(llm_config: LLMConfig) -> ConversableAgent:
+    """Create the critic / reviewer agent.
+
+    Terminal judge in Step 1c: it issues a single approve/reject verdict on the
+    engineer's solution and the chain stops. The machine-readable VERDICT line
+    mirrors the engineer's FINAL convention so the observer (Step 2) and the O2
+    detectors can read the decision without parsing prose. The genuine
+    critic->engineer revision loop is deferred to 1d with the executor/repairer.
+    """
+    return ConversableAgent(
+        name=AgentRole.CRITIC.value,
+        system_message=CRITIC_SYSTEM_MESSAGE,
+        llm_config=llm_config,
+        human_input_mode="NEVER",
+    )
+
+
+EXECUTOR_SYSTEM_MESSAGE = """\
+You are the EXECUTOR / REPAIRER in a multi-agent scientific-reasoning team.
+
+You are the final stage of the workflow: run loop. You act in two situations.
+
+1. After the critic APPROVES: "run" the engineer's solution and report the
+   result. (No real execution environment is wired yet, so simulate it: state
+   what running the solution produces and confirm whether it matches the
+   engineer's FINAL answer.) Then end your reply with:
+       EXECUTION: OK - <the confirmed final answer>
+
+2. After the critic REJECTS and the engineer has revised: you do not repair the
+   reasoning yourself; the engineer re-authors. Your job is only to run and
+   report. If a run fails, describe the failure concretely so the engineer can
+   fix it, and end with:
+       EXECUTION: FAIL - <what went wrong>
+
+Rules:
+- You run and report; you do not re-plan and you do not re-derive the solution
+  from scratch.
+- Always end with exactly one EXECUTION: line so the result is machine-readable.
+"""
+
+
+def make_executor(llm_config: LLMConfig) -> ConversableAgent:
+    """Create the executor / repairer agent.
+
+    Owns the "run loop" stage. On the toy task it simulates execution and
+    confirms the approved answer; once a real sandbox is wired (later step) it
+    will execute code / submit proofs for real and emit EXECUTION_RESULT events.
+    The EXECUTION: line mirrors the FINAL / VERDICT conventions for the observer.
+    """
+    return ConversableAgent(
+        name=AgentRole.EXECUTOR.value,
+        system_message=EXECUTOR_SYSTEM_MESSAGE,
         llm_config=llm_config,
         human_input_mode="NEVER",
     )
