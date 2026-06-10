@@ -11,6 +11,27 @@ This folder is the readable handoff for the Qwen/Saeed STARGAZER run. It is inte
 - `agent/clean_star_finding_summary.json` - compact agent workflow summary.
 - `agent/approved_agent_submission.json` - final reviewer-approved agent submission from the workflow.
 
+## Experiment Details
+
+- External repo used for execution: `C:\Dev\src\github.com\msaeedmt\traj-eval` (read-only).
+- Generated artifacts path: `C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_agent_stargazer`.
+- Evaluation artifacts path: `C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_stargazer_eval`.
+- Observation input to the engineer: `...\\outputs\\notebook_qwen_minimal_stargazer_task1\\runs\\stargazer_real_real_001_minimal\\stargazer_observations.json` (sanitized only).
+- LLM endpoint/model in this run:
+  - Base URL `http://131.220.150.238:8080/v1`.
+  - Model `openai/Qwen3.5-27B-Q5_K_M.gguf`.
+- Control settings:
+  - Loop budget: `100` iterations.
+  - Deadline window: convergence phase starts at `81`, final push phase starts at `96`.
+  - Qwen thinking enabled for all role calls.
+- Workflow topology:
+  - `planner -> engineer -> reviewer(code_review) -> executor -> reviewer(result_review)`.
+  - Same reviewer identity is used for both review modes.
+- Separation discipline:
+  - No pre-agent precomputed planet table.
+  - Engineer output is a full Python script saved per iteration.
+  - Benchmark is run only after `APPROVE_RESULT` using executor-produced submission.
+
 ## Main Result
 
 The agent workflow produced one submitted planet and the reviewer approved the result, but the separate STARGAZER benchmark did not pass.
