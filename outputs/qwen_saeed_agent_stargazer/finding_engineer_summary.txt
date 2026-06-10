@@ -1,9 +1,0 @@
-target_star: real_001
-status: planet_candidate_found
-candidate_count: 1
-period_days: 4.217031
-m_sin_i_mjup: 0.334459
-eccentricity: 0.05
-confidence: 0.283
-caveat: candidate from sanitized observations only; not hidden-truth validated
-FINAL: found_planet_candidates=1

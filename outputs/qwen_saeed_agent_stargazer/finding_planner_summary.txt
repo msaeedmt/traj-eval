@@ -1,1 +1,0 @@
-1. Load sanitized observations. 2. Run local inference helper. 3. Report candidate parameters without hidden-truth validation.
