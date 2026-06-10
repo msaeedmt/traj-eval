@@ -1,0 +1,11 @@
+{
+  "args": [
+    "C:\\Users\\Anwender\\Science-Work-Flow-\\.venv-agents\\Scripts\\python.exe",
+    "scripts/smoke_planner.py"
+  ],
+  "cwd": "C:\\Dev\\src\\github.com\\msaeedmt\\traj-eval",
+  "returncode": 1,
+  "elapsed_seconds": 6.272,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \u001b[35m\"C:\\Dev\\src\\github.com\\msaeedmt\\traj-eval\\scripts\\smoke_planner.py\"\u001b[0m, line \u001b[35m42\u001b[0m, in \u001b[35m<module>\u001b[0m\n    \u001b[31mmain\u001b[0m\u001b[1;31m()\u001b[0m\n    \u001b[31m~~~~\u001b[0m\u001b[1;31m^^\u001b[0m\n  File \u001b[35m\"C:\\Dev\\src\\github.com\\msaeedmt\\traj-eval\\scripts\\smoke_planner.py\"\u001b[0m, line \u001b[35m22\u001b[0m, in \u001b[35mmain\u001b[0m\n    llm_config = build_llm_config()\n  File \u001b[35m\"C:\\Dev\\src\\github.com\\msaeedmt\\traj-eval\\src\\traj_eval\\agents\\config.py\"\u001b[0m, line \u001b[35m54\u001b[0m, in \u001b[35mbuild_llm_config\u001b[0m\n    return LLMConfig(entry)\n\u001b[1;35mTypeError\u001b[0m: \u001b[35mLLMConfig.__init__() takes 1 positional argument but 2 were given\u001b[0m\n"
+}

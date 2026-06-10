@@ -1,0 +1,12 @@
+[
+  {
+    "iteration": 1,
+    "approved": true,
+    "engineer_summary": "target_star: real_001\nstatus: planet_candidate_found\ncandidate_count: 1\nperiod_days: 4.217031\nm_sin_i_mjup: 0.334459\neccentricity: 0.05\nconfidence: 0.283\ncaveat: candidate from sanitized observations only; not hidden-truth validated\nFINAL: found_planet_candidates=1",
+    "critic_summary": "VERDICT: APPROVE",
+    "engineer_finish_reason": "length",
+    "critic_finish_reason": "length",
+    "engineer_reasoning_present": true,
+    "critic_reasoning_present": true
+  }
+]

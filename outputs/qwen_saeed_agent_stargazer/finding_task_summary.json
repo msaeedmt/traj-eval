@@ -1,0 +1,23 @@
+{
+  "task_label": "real_001 sanitized STARGAZER observations",
+  "n_observations": 639,
+  "columns": [
+    "instruments",
+    "rvs_ms",
+    "sigmas_ms",
+    "times_days"
+  ],
+  "time_column": "times_days",
+  "rv_column": "rvs_ms",
+  "sigma_column": "sigmas_ms",
+  "instrument_column": "instruments",
+  "json_shape": "top-level dict with task_id and observations; observations is a dict of parallel arrays",
+  "observation_array_columns": [
+    "times_days",
+    "rvs_ms",
+    "sigmas_ms",
+    "instruments"
+  ],
+  "baseline_days": 7237.393403999973,
+  "instrument_count": 6
+}

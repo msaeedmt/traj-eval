@@ -376,17 +376,17 @@ display(pd.DataFrame(benchmark.get("nearest_truth_rows", [])))
     <tr>
       <th>0</th>
       <td>submission_path</td>
-      <td>C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_agent_stargazer\agent_workflow\iteration_04\agent_submission.json</td>
+      <td>C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_agent_stargazer\agent_workflow\iteration_07\agent_submission.json</td>
     </tr>
     <tr>
       <th>1</th>
       <td>benchmark_source</td>
-      <td>recomputed_from_submission</td>
+      <td>saved_benchmark_json_submission_file_missing</td>
     </tr>
     <tr>
       <th>2</th>
       <td>submission_artifact_available_at_eval_time</td>
-      <td>True</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>3</th>
@@ -401,32 +401,32 @@ display(pd.DataFrame(benchmark.get("nearest_truth_rows", [])))
     <tr>
       <th>5</th>
       <td>score</td>
-      <td>0.6</td>
+      <td>0.4</td>
     </tr>
     <tr>
       <th>6</th>
       <td>reward</td>
-      <td>-1512.832788</td>
+      <td>-335387.464489</td>
     </tr>
     <tr>
       <th>7</th>
       <td>match_score</td>
-      <td>0.022661</td>
+      <td>0.0</td>
     </tr>
     <tr>
       <th>8</th>
       <td>matched_truth_fraction</td>
-      <td>1.0</td>
+      <td>0.0</td>
     </tr>
     <tr>
       <th>9</th>
       <td>rms</td>
-      <td>41.49204</td>
+      <td>354.505911</td>
     </tr>
     <tr>
       <th>10</th>
       <td>delta_bic_per_point</td>
-      <td>-1265.18174</td>
+      <td>-418569.316306</td>
     </tr>
     <tr>
       <th>11</th>
@@ -467,26 +467,24 @@ display(pd.DataFrame(benchmark.get("nearest_truth_rows", [])))
       <th>guess_index</th>
       <th>truth</th>
       <th>submission</th>
-      <th>period_rel_error</th>
-      <th>mass_rel_error</th>
-      <th>eccentricity_abs_error</th>
-      <th>omega_error_rad</th>
-      <th>l_error_rad</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>matched</td>
-      <td>0</td>
-      <td>0</td>
+      <td>unmatched_truth</td>
+      <td>0.0</td>
+      <td>NaN</td>
       <td>{'P_days': 4.230785, 'm_sin_i_mjup': 0.461, 'e': 0.013, 'omega_rad': 1.012291, 'l_rad': 4.644516}</td>
-      <td>{'P_days': 2.868989, 'm_sin_i_mjup': 0.166203, 'e': 0.0, 'omega_rad': 0.0, 'l_rad': 4.74811}</td>
-      <td>0.321878</td>
-      <td>0.639473</td>
-      <td>0.013</td>
-      <td>1.012291</td>
-      <td>0.103594</td>
+      <td>{}</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>unmatched_submission</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>{}</td>
+      <td>{'P_days': 4.232078, 'm_sin_i_mjup': 4.390132, 'e': 0.0, 'omega_rad': 0.0, 'l_rad': 6.283185}</td>
     </tr>
   </tbody>
 </table>
@@ -528,13 +526,13 @@ display(pd.DataFrame(benchmark.get("nearest_truth_rows", [])))
       <th>0</th>
       <td>0</td>
       <td>0</td>
-      <td>{'P_days': 2.868989, 'm_sin_i_mjup': 0.166203, 'e': 0.0, 'omega_rad': 0.0, 'l_rad': 4.74811}</td>
+      <td>{'P_days': 4.232078, 'm_sin_i_mjup': 4.390132, 'e': 0.0, 'omega_rad': 0.0, 'l_rad': 6.283185}</td>
       <td>{'P_days': 4.230785, 'm_sin_i_mjup': 0.461, 'e': 0.013, 'omega_rad': 1.012291, 'l_rad': 4.644516}</td>
-      <td>0.321878</td>
-      <td>0.639473</td>
+      <td>0.000306</td>
+      <td>8.523063</td>
       <td>0.013</td>
       <td>1.012291</td>
-      <td>0.103594</td>
+      <td>1.638669</td>
     </tr>
   </tbody>
 </table>
@@ -673,52 +671,52 @@ display(pd.DataFrame(events)[["event_id", "role", "phase", "iteration", "verdict
     <tr>
       <th>0</th>
       <td>event_count</td>
-      <td>8</td>
+      <td>40</td>
     </tr>
     <tr>
       <th>1</th>
       <td>edge_count</td>
-      <td>8</td>
+      <td>48</td>
     </tr>
     <tr>
       <th>2</th>
       <td>role_counts</td>
-      <td>{'planner': 1, 'engineer': 2, 'reviewer': 4, 'executor': 1}</td>
+      <td>{'planner': 1, 'engineer': 10, 'reviewer': 26, 'executor': 3}</td>
     </tr>
     <tr>
       <th>3</th>
       <td>phase_counts</td>
-      <td>{'planning': 1, 'write_code': 2, 'code_review': 2, 'feedback_to_engineer': 1, 'save_approved_code': 1, 'execute': 1}</td>
+      <td>{'planning': 1, 'write_code': 10, 'code_review': 10, 'feedback_to_engineer': 10, 'save_approved_code': 3, 'execute': 3, 'result_review': 3}</td>
     </tr>
     <tr>
       <th>4</th>
       <td>reason_last_word_counts</td>
-      <td>{'task': 1, 'uses': 1, 'model': 1, 'workflow': 1}</td>
+      <td>{'task': 1, 'environment': 1, 'dataset': 1, 'prevents': 1, 'kepler': 1, 'passed': 1, 'crash': 1, 'application': 1, 'multi': 1, 'workflow': 3, 'models': 1, '...</td>
     </tr>
     <tr>
       <th>5</th>
       <td>revision_count</td>
-      <td>1</td>
+      <td>10</td>
     </tr>
     <tr>
       <th>6</th>
       <td>code_review_count</td>
-      <td>2</td>
+      <td>10</td>
     </tr>
     <tr>
       <th>7</th>
       <td>result_review_count</td>
-      <td>0</td>
+      <td>3</td>
     </tr>
     <tr>
       <th>8</th>
       <td>executor_count</td>
-      <td>1</td>
+      <td>3</td>
     </tr>
     <tr>
       <th>9</th>
       <td>approve_code_count</td>
-      <td>2</td>
+      <td>6</td>
     </tr>
     <tr>
       <th>10</th>
@@ -728,7 +726,7 @@ display(pd.DataFrame(events)[["event_id", "role", "phase", "iteration", "verdict
     <tr>
       <th>11</th>
       <td>max_iteration_seen</td>
-      <td>2</td>
+      <td>10</td>
     </tr>
   </tbody>
 </table>
@@ -785,7 +783,7 @@ display(pd.DataFrame(events)[["event_id", "role", "phase", "iteration", "verdict
       <td>SCRIPT_PROPOSED</td>
       <td></td>
       <td>stop</td>
-      <td>6299 characters</td>
+      <td>9569 characters</td>
     </tr>
     <tr>
       <th>2</th>
@@ -794,9 +792,9 @@ display(pd.DataFrame(events)[["event_id", "role", "phase", "iteration", "verdict
       <td>code_review</td>
       <td>1</td>
       <td>REVISE_CODE</td>
-      <td>uses</td>
+      <td>environment</td>
       <td>stop</td>
-      <td>VERDICT: REVISE_CODE - The `keplerian_rv` function returns velocities in m/s while the input data and `residual_sum_sq` function expect m/s but the input `r...</td>
+      <td>VERDICT: REVISE_CODE - The script writes to `agent_diagnostics.json` which is not part of the required output contract and may violate the "no extra files" ...</td>
     </tr>
     <tr>
       <th>3</th>
@@ -818,7 +816,7 @@ display(pd.DataFrame(events)[["event_id", "role", "phase", "iteration", "verdict
       <td>SCRIPT_PROPOSED</td>
       <td></td>
       <td>stop</td>
-      <td>7022 characters</td>
+      <td>6303 characters</td>
     </tr>
     <tr>
       <th>5</th>
@@ -826,32 +824,384 @@ display(pd.DataFrame(events)[["event_id", "role", "phase", "iteration", "verdict
       <td>reviewer</td>
       <td>code_review</td>
       <td>2</td>
-      <td>APPROVE_CODE</td>
-      <td>model</td>
+      <td>REVISE_CODE</td>
+      <td>dataset</td>
       <td>stop</td>
-      <td>The engineer's script implements a scientifically plausible radial velocity analysis pipeline:\n1.&nbsp;&nbsp;**Data Loading**: Correctly parses the expected JSON str...</td>
+      <td>VERDICT: REVISE_CODE - The script fails to handle multi-instrument data offsets, treating all radial velocities as if they share a common zero-point, which ...</td>
     </tr>
     <tr>
       <th>6</th>
       <td>e006</td>
       <td>reviewer</td>
-      <td>save_approved_code</td>
+      <td>feedback_to_engineer</td>
       <td>2</td>
-      <td>APPROVE_CODE</td>
-      <td>workflow</td>
+      <td>REVISE_CODE</td>
+      <td></td>
       <td>stop</td>
-      <td>C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_agent_stargazer\agent_workflow\iteration_02\engineer_iteration_02.py</td>
+      <td>code feedback returned before next engineer iteration</td>
     </tr>
     <tr>
       <th>7</th>
       <td>e007</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>3</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>7790 characters</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>e008</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>3</td>
+      <td>REVISE_CODE</td>
+      <td>prevents</td>
+      <td>stop</td>
+      <td>VERDICT: REVISE_CODE - The script fails to handle the multi-instrument data correctly by applying a single global `gamma` to all instruments while simultane...</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>e009</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>3</td>
+      <td>REVISE_CODE</td>
+      <td></td>
+      <td>stop</td>
+      <td>code feedback returned before next engineer iteration</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>e010</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>4</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>9008 characters</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>e011</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>4</td>
+      <td>REVISE_CODE</td>
+      <td>kepler</td>
+      <td>length</td>
+      <td>VERDICT: REVISE_CODE - The script fails to handle the `instruments` column correctly in the `residuals` function, causing a shape mismatch between the scala...</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>e012</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>4</td>
+      <td>REVISE_CODE</td>
+      <td></td>
+      <td>length</td>
+      <td>code feedback returned before next engineer iteration</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>e013</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>5</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>9277 characters</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>e014</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>5</td>
+      <td>REVISE_CODE</td>
+      <td>passed</td>
+      <td>length</td>
+      <td>VERDICT: REVISE_CODE - The script fails to handle the `instruments` column correctly in the `keplerian_rv` residual calculation, causing a shape mismatch or...</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>e015</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>5</td>
+      <td>REVISE_CODE</td>
+      <td></td>
+      <td>length</td>
+      <td>code feedback returned before next engineer iteration</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>e016</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>6</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>9364 characters</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>e017</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>6</td>
+      <td>REVISE_CODE</td>
+      <td>crash</td>
+      <td>length</td>
+      <td>VERDICT: REVISE_CODE - The `keplerian_rv` function fails to handle array inputs for the Newton-Raphson solver in Kepler's equation, causing a shape mismatch...</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>e018</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>6</td>
+      <td>REVISE_CODE</td>
+      <td></td>
+      <td>length</td>
+      <td>code feedback returned before next engineer iteration</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>e019</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>7</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>10139 characters</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>e020</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>7</td>
+      <td>REVISE_CODE</td>
+      <td>application</td>
+      <td>length</td>
+      <td>VERDICT: REVISE_CODE - The script fails to handle the `instruments` column correctly in the final residual calculation (Step 3 diagnostics) and the output g...</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>e021</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>7</td>
+      <td>REVISE_CODE</td>
+      <td></td>
+      <td>length</td>
+      <td>code feedback returned before next engineer iteration</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>e022</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>8</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>8552 characters</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>e023</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>8</td>
+      <td>APPROVE_CODE</td>
+      <td>multi</td>
+      <td>stop</td>
+      <td>VERDICT: APPROVE_CODE\n\nThe script implements a scientifically plausible radial-velocity analysis pipeline aligned with the planner's steps:\n1.&nbsp;&nbsp;**Data Lo...</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>e024</td>
+      <td>reviewer</td>
+      <td>save_approved_code</td>
+      <td>8</td>
+      <td>APPROVE_CODE</td>
+      <td>workflow</td>
+      <td>stop</td>
+      <td>C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_agent_stargazer\agent_workflow\iteration_08\engineer_iteration_08.py</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>e025</td>
       <td>executor</td>
       <td>execute</td>
-      <td>2</td>
+      <td>8</td>
       <td>EXECUTED</td>
       <td></td>
       <td>NaN</td>
       <td>exit_code=0</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>e026</td>
+      <td>reviewer</td>
+      <td>result_review</td>
+      <td>8</td>
+      <td>REVISE_RESULT</td>
+      <td>models</td>
+      <td>stop</td>
+      <td>VERDICT: REVISE_RESULT - The submission contains an empty planet table ("planets": []), failing to identify any radial velocity signals despite the planner'...</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>e027</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>8</td>
+      <td>REVISE_RESULT</td>
+      <td></td>
+      <td>stop</td>
+      <td>result feedback returned before next engineer iteration</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>e028</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>9</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>12076 characters</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>e029</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>9</td>
+      <td>APPROVE_CODE</td>
+      <td>period</td>
+      <td>stop</td>
+      <td>The engineer's script implements a scientifically plausible radial velocity analysis pipeline:\n1.&nbsp;&nbsp;**Data Loading**: Correctly parses the JSON input and ha...</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>e030</td>
+      <td>reviewer</td>
+      <td>save_approved_code</td>
+      <td>9</td>
+      <td>APPROVE_CODE</td>
+      <td>workflow</td>
+      <td>stop</td>
+      <td>C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_agent_stargazer\agent_workflow\iteration_09\engineer_iteration_09.py</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>e031</td>
+      <td>executor</td>
+      <td>execute</td>
+      <td>9</td>
+      <td>EXECUTED</td>
+      <td></td>
+      <td>NaN</td>
+      <td>exit_code=0</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>e032</td>
+      <td>reviewer</td>
+      <td>result_review</td>
+      <td>9</td>
+      <td>REVISE_RESULT</td>
+      <td>scientific</td>
+      <td>stop</td>
+      <td>VERDICT: REVISE_RESULT - The submitted planet has an eccentricity of 0.99 and a mass of 0.0003 M_Jup, which is physically implausible for a radial-velocity ...</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>e033</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>9</td>
+      <td>REVISE_RESULT</td>
+      <td></td>
+      <td>stop</td>
+      <td>result feedback returned before next engineer iteration</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>e034</td>
+      <td>engineer</td>
+      <td>write_code</td>
+      <td>10</td>
+      <td>SCRIPT_PROPOSED</td>
+      <td></td>
+      <td>stop</td>
+      <td>12770 characters</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>e035</td>
+      <td>reviewer</td>
+      <td>code_review</td>
+      <td>10</td>
+      <td>APPROVE_CODE</td>
+      <td>period</td>
+      <td>stop</td>
+      <td>The engineer's script implements a scientifically plausible radial velocity analysis pipeline:\n1.&nbsp;&nbsp;**Data Loading**: Correctly parses the JSON input and ha...</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>e036</td>
+      <td>reviewer</td>
+      <td>save_approved_code</td>
+      <td>10</td>
+      <td>APPROVE_CODE</td>
+      <td>workflow</td>
+      <td>stop</td>
+      <td>C:\Users\Anwender\Science-Work-Flow-\outputs\qwen_saeed_agent_stargazer\agent_workflow\iteration_10\engineer_iteration_10.py</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>e037</td>
+      <td>executor</td>
+      <td>execute</td>
+      <td>10</td>
+      <td>EXECUTED</td>
+      <td></td>
+      <td>NaN</td>
+      <td>exit_code=0</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>e038</td>
+      <td>reviewer</td>
+      <td>result_review</td>
+      <td>10</td>
+      <td>REVISE_RESULT</td>
+      <td>completing</td>
+      <td>stop</td>
+      <td>VERDICT: REVISE_RESULT - The submission contains an empty planet table ("planets": []), indicating the numerical search failed to identify or report any pla...</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>e039</td>
+      <td>reviewer</td>
+      <td>feedback_to_engineer</td>
+      <td>10</td>
+      <td>REVISE_RESULT</td>
+      <td></td>
+      <td>stop</td>
+      <td>result feedback returned before next engineer iteration</td>
     </tr>
   </tbody>
 </table>
@@ -973,7 +1323,7 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
       <td>True</td>
       <td>artifact</td>
       <td>executor</td>
-      <td>executor_count=1</td>
+      <td>executor_count=3</td>
     </tr>
     <tr>
       <th>4</th>
@@ -981,7 +1331,7 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
       <td>True</td>
       <td>artifact</td>
       <td>executor/evaluator</td>
-      <td>path_exists=True; benchmark_source=recomputed_from_submission</td>
+      <td>path_exists=False; benchmark_source=saved_benchmark_json_submission_file_missing</td>
     </tr>
     <tr>
       <th>5</th>
@@ -989,7 +1339,7 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
       <td>True</td>
       <td>artifact</td>
       <td>evaluator</td>
-      <td>benchmark_source=recomputed_from_submission</td>
+      <td>benchmark_source=saved_benchmark_json_submission_file_missing</td>
     </tr>
     <tr>
       <th>6</th>
@@ -1018,10 +1368,10 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
     <tr>
       <th>9</th>
       <td>hungarian_match_positive</td>
-      <td>True</td>
+      <td>False</td>
       <td>science</td>
       <td>engineer/reviewer</td>
-      <td>matched_truth_fraction=1.0</td>
+      <td>matched_truth_fraction=0.0</td>
     </tr>
     <tr>
       <th>10</th>
@@ -1029,7 +1379,7 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
       <td>False</td>
       <td>science</td>
       <td>engineer/reviewer</td>
-      <td>match_score=0.022661</td>
+      <td>match_score=0.0</td>
     </tr>
     <tr>
       <th>11</th>
@@ -1037,15 +1387,15 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
       <td>False</td>
       <td>science</td>
       <td>engineer</td>
-      <td>delta_bic_per_point=-1265.18174</td>
+      <td>delta_bic_per_point=-418569.316306</td>
     </tr>
     <tr>
       <th>12</th>
       <td>nearest_period_recovered</td>
-      <td>False</td>
+      <td>True</td>
       <td>science</td>
       <td>engineer</td>
-      <td>nearest_period_rel_error=0.321878</td>
+      <td>nearest_period_rel_error=0.000306</td>
     </tr>
     <tr>
       <th>13</th>
@@ -1053,7 +1403,7 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
       <td>False</td>
       <td>science</td>
       <td>engineer</td>
-      <td>nearest_mass_rel_error=0.639473</td>
+      <td>nearest_mass_rel_error=8.523063</td>
     </tr>
     <tr>
       <th>14</th>
@@ -1061,7 +1411,7 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
       <td>False</td>
       <td>science</td>
       <td>engineer</td>
-      <td>omega_error=1.012291; l_error=0.103594</td>
+      <td>omega_error=1.012291; l_error=1.638669</td>
     </tr>
     <tr>
       <th>15</th>
@@ -1077,7 +1427,7 @@ display(Markdown(f"First violated anchor: **{first_failed['anchor']}** at layer 
 
 
 
-First violated anchor: **match_score_at_least_0_8** at layer **science**, attributed to **engineer/reviewer**.
+First violated anchor: **hungarian_match_positive** at layer **science**, attributed to **engineer/reviewer**.
 
 
 ## 5. Failure Taxonomy Detectors
@@ -1159,19 +1509,19 @@ display(Markdown(detector_report["interpretation"]))
   <tbody>
     <tr>
       <th>0</th>
-      <td>alias_convergence_or_missed_period</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>critic_masking</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>1</th>
       <td>mass_amplitude_mismatch</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>model_fit_degradation</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>perseveration_or_retry_loop</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1273,28 +1623,28 @@ display(objective_df)
       <th>0</th>
       <td>O1 localisation infrastructure</td>
       <td>partial_support</td>
-      <td>trace events=8, edges=8, first_failed_anchor=match_score_at_least_0_8, originating_agent=engineer/reviewer</td>
+      <td>trace events=40, edges=48, first_failed_anchor=hungarian_match_positive, originating_agent=engineer/reviewer</td>
       <td>Single run; no manual-label precision/recall; event graph is reconstructed from notebook logs, not a framework-level non-invasive observer.</td>
     </tr>
     <tr>
       <th>1</th>
       <td>O2 failure taxonomy and detectors</td>
       <td>partial_support</td>
-      <td>alias_convergence_or_missed_period, critic_masking, mass_amplitude_mismatch, model_fit_degradation, phase_parameter_mismatch, scientific_anchor_failure, sil...</td>
+      <td>critic_masking, mass_amplitude_mismatch, model_fit_degradation, perseveration_or_retry_loop, phase_parameter_mismatch, scientific_anchor_failure, silent_acc...</td>
       <td>Detector labels are rule-based for one STARGAZER run; no validation set, no precision/recall/F1.</td>
     </tr>
     <tr>
       <th>2</th>
       <td>O3 early prediction across verification regimes</td>
       <td>not_tested</td>
-      <td>revision_count=1 and code/result review failures occurred before final approval</td>
+      <td>revision_count=10 and code/result review failures occurred before final approval</td>
       <td>No paired stress levels, no Lean comparison, no bootstrap statistics.</td>
     </tr>
     <tr>
       <th>3</th>
       <td>STARGAZER scientific correctness</td>
       <td>scientific_fail</td>
-      <td>passed=False, match_score=0.022661, rms=41.49204, failed_components=['mass_amplitude', 'model_fit', 'period_recovery', 'phase_or_eccentricity']</td>
+      <td>passed=False, match_score=0.0, rms=354.505911, failed_components=['mass_amplitude', 'model_fit', 'period_recovery', 'phase_or_eccentricity']</td>
       <td>Period was near the truth in nearest-period comparison, but Hungarian match, mass/phase/model-fit anchors failed.</td>
     </tr>
     <tr>
@@ -1362,21 +1712,21 @@ display(minimum_df)
       <th>0</th>
       <td>O1 trace schema/dashboard/taxonomy</td>
       <td>partial</td>
-      <td>trajectory_graph.json with 8 events and 8 edges</td>
+      <td>trajectory_graph.json with 40 events and 48 edges</td>
       <td>Notebook reconstruction, not production dashboard</td>
     </tr>
     <tr>
       <th>1</th>
       <td>O1 first failed anchor localisation</td>
       <td>partial</td>
-      <td>match_score_at_least_0_8 attributed to engineer/reviewer</td>
+      <td>hungarian_match_positive attributed to engineer/reviewer</td>
       <td>Automatic anchor rule, not manual-labelled precision/recall</td>
     </tr>
     <tr>
       <th>2</th>
       <td>O2 STARGAZER partially verifiable anchors</td>
       <td>available</td>
-      <td>score=0.6; failed=['mass_amplitude', 'model_fit', 'period_recovery', 'phase_or_eccentricity']</td>
+      <td>score=0.4; failed=['mass_amplitude', 'model_fit', 'period_recovery', 'phase_or_eccentricity']</td>
       <td>Only one real task</td>
     </tr>
     <tr>
@@ -1390,7 +1740,7 @@ display(minimum_df)
       <th>4</th>
       <td>O2 detector validation against manual labels</td>
       <td>not_tested</td>
-      <td>alias_convergence_or_missed_period, critic_masking, mass_amplitude_mismatch, model_fit_degradation, phase_parameter_mismatch, scientific_anchor_failure, sil...</td>
+      <td>critic_masking, mass_amplitude_mismatch, model_fit_degradation, perseveration_or_retry_loop, phase_parameter_mismatch, scientific_anchor_failure, silent_acc...</td>
       <td>No labelled corpus</td>
     </tr>
     <tr>
@@ -1404,7 +1754,7 @@ display(minimum_df)
       <th>6</th>
       <td>O3 early-warning difficulty degradation</td>
       <td>not_tested</td>
-      <td>revision_count=1</td>
+      <td>revision_count=10</td>
       <td>No difficulty series</td>
     </tr>
     <tr>
@@ -1542,17 +1892,17 @@ display(Markdown(f"Saved visualization to `{visual_path}`."))
   <text x="40" y="60" font-size="13" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#5b6778" text-anchor="start">Orbit sketch is normalized; bars show raw submitted fields.</text>
   <rect x="35" y="82" width="465" height="330" fill="#f8fafc" stroke="#d5dbe3"/>
   <polyline points="342.01,126.95 338.85,125.03 335.63,123.19 332.37,121.43 329.06,119.76 325.71,118.17 322.32,116.67 318.89,115.26 315.43,113.94 311.93,112.71 308.41,111.57 304.85,110.52 301.27,109.56 297.66,108.70 294.03,107.92 290.39,107.25 286.72,106.66 283.04,106.18 279.35,105.78 275.66,105.49 271.95,105.28 268.24,105.18 264.52,105.17 260.81,105.26 257.10,105.44 253.40,105.72 249.70,106.09 246.01,106.57 242.34,107.13 238.68,107.79 235.04,108.55 231.41,109.40 227.81,110.35 224.24,111.38 220.69,112.51 217.18,113.74 213.69,115.05 210.24,116.46 206.82,117.95 203.45,119.53 200.11,121.20 196.82,122.96 193.58,124.80 190.38,126.73 187.23,128.74 184.14,130.84 181.10,133.01 178.12,135.26 175.19,137.59 172.33,140.00 169.53,142.48 166.79,145.03 164.13,147.66 161.53,150.35 159.00,153.11 156.54,155.94 154.15,158.84 151.85,161.79 149.61,164.81 147.46,167.88 145.39,171.01 143.40,174.20 141.50,177.43 139.67,180.72 137.94,184.05 136.29,187.43 134.73,190.86 133.26,194.32 131.88,197.82 130.60,201.36 129.40,204.93 128.31,208.54 127.30,212.17 126.39,215.83 125.58,219.51 124.86,223.21 124.24,226.94 123.72,230.68 123.30,234.43 122.98,238.19 122.75,241.96 122.63,245.74 122.60,249.52 122.68,253.30 122.85,257.08 123.12,260.85 123.50,264.62 123.97,268.38 124.54,272.12 125.21,275.85 125.98,279.56 126.85,283.25 127.81,286.91 128.87,290.55 130.03,294.16 131.28,297.74 132.63,301.29 134.07,304.80 135.60,308.27 137.23,311.70 138.95,315.09 140.75,318.43 142.64,321.72 144.62,324.96 146.69,328.15 148.84,331.28 151.07,334.36 153.38,337.37 155.78,340.33 158.25,343.22 160.79,346.04 163.41,348.80 166.10,351.48 168.87,354.09 171.70,356.63 174.60,359.09 177.56,361.48 180.58,363.79 183.67,366.01 186.81,368.15 190.01,370.21 193.26,372.18 196.56,374.07 199.92,375.87 203.31,377.57 206.76,379.19 210.24,380.72 213.76,382.15 217.32,383.49 220.92,384.73 224.54,385.88 228.19,386.93 231.87,387.88 235.58,388.74 239.30,389.49 243.04,390.15 246.80,390.71 250.57,391.17 254.36,391.53 258.14,391.78 261.94,391.94 265.73,392.00 269.53,391.96 273.32,391.81 277.11,391.57 280.89,391.23 284.65,390.78 288.41,390.24 292.14,389.60 295.86,388.86 299.56,388.02 303.23,387.08 306.87,386.05 310.49,384.93 314.07,383.70 317.62,382.39 321.13,380.98 324.60,379.48 328.03,377.89 331.42,376.21 334.76,374.44 338.05,372.59 341.29,370.65 344.48,368.62 347.61,366.51 350.69,364.33 353.70,362.06 356.66,359.71 359.55,357.29 362.37,354.80 365.13,352.23 367.82,349.59 370.43,346.88 372.98,344.11 375.44,341.27 377.84,338.37 380.15,335.40 382.39,332.38 384.54,329.31 386.62,326.17 388.61,322.99 390.51,319.76 392.33,316.47 394.07,313.15 395.71,309.78 397.27,306.37 398.73,302.92 400.10,299.43 401.39,295.91 402.58,292.36 403.67,288.78 404.67,285.18 405.58,281.55 406.39,277.90 407.11,274.23 407.73,270.55 408.26,266.85 408.68,263.14 409.01,259.42 409.25,255.70 409.39,251.97 409.43,248.24 409.37,244.51 409.21,240.79 408.96,237.07 408.62,233.36 408.17,229.67 407.64,225.98 407.00,222.31 406.27,218.66 405.45,215.04 404.53,211.43 403.52,207.85 402.42,204.30 401.23,200.78 399.95,197.29 398.57,193.84 397.11,190.43 395.56,187.05 393.93,183.72 392.20,180.43 390.40,177.18 388.51,173.99 386.54,170.85 384.49,167.75 382.36,164.72 380.15,161.74 377.87,158.81 375.51,155.95 373.08,153.15 370.57,150.42 368.00,147.75 365.36,145.14 362.66,142.61 359.89,140.15 357.05,137.76 354.16,135.44 351.21,133.20 348.20,131.04 345.13,128.96 342.01,126.95" fill="none" stroke="#1f77b4" stroke-width="3"/>
-  <polyline points="377.70,247.00 377.66,244.10 377.55,241.21 377.36,238.31 377.10,235.43 376.76,232.55 376.34,229.68 375.85,226.83 375.28,223.98 374.64,221.16 373.93,218.35 373.14,215.56 372.28,212.79 371.35,210.05 370.35,207.33 369.28,204.64 368.13,201.97 366.92,199.34 365.64,196.74 364.29,194.18 362.87,191.65 361.39,189.16 359.84,186.71 358.23,184.30 356.56,181.93 354.83,179.61 353.03,177.33 351.18,175.10 349.27,172.93 347.30,170.80 345.28,168.72 343.20,166.70 341.07,164.73 338.90,162.82 336.67,160.97 334.39,159.17 332.07,157.44 329.70,155.77 327.29,154.16 324.84,152.61 322.35,151.13 319.82,149.71 317.26,148.36 314.66,147.08 312.03,145.87 309.36,144.72 306.67,143.65 303.95,142.65 301.21,141.72 298.44,140.86 295.65,140.07 292.84,139.36 290.02,138.72 287.17,138.15 284.32,137.66 281.45,137.24 278.57,136.90 275.69,136.64 272.79,136.45 269.90,136.34 267.00,136.30 264.10,136.34 261.21,136.45 258.31,136.64 255.43,136.90 252.55,137.24 249.68,137.66 246.83,138.15 243.98,138.72 241.16,139.36 238.35,140.07 235.56,140.86 232.79,141.72 230.05,142.65 227.33,143.65 224.64,144.72 221.97,145.87 219.34,147.08 216.74,148.36 214.18,149.71 211.65,151.13 209.16,152.61 206.71,154.16 204.30,155.77 201.93,157.44 199.61,159.17 197.33,160.97 195.10,162.82 192.93,164.73 190.80,166.70 188.72,168.72 186.70,170.80 184.73,172.93 182.82,175.10 180.97,177.33 179.17,179.61 177.44,181.93 175.77,184.30 174.16,186.71 172.61,189.16 171.13,191.65 169.71,194.18 168.36,196.74 167.08,199.34 165.87,201.97 164.72,204.64 163.65,207.33 162.65,210.05 161.72,212.79 160.86,215.56 160.07,218.35 159.36,221.16 158.72,223.98 158.15,226.83 157.66,229.68 157.24,232.55 156.90,235.43 156.64,238.31 156.45,241.21 156.34,244.10 156.30,247.00 156.34,249.90 156.45,252.79 156.64,255.69 156.90,258.57 157.24,261.45 157.66,264.32 158.15,267.17 158.72,270.02 159.36,272.84 160.07,275.65 160.86,278.44 161.72,281.21 162.65,283.95 163.65,286.67 164.72,289.36 165.87,292.03 167.08,294.66 168.36,297.26 169.71,299.82 171.13,302.35 172.61,304.84 174.16,307.29 175.77,309.70 177.44,312.07 179.17,314.39 180.97,316.67 182.82,318.90 184.73,321.07 186.70,323.20 188.72,325.28 190.80,327.30 192.93,329.27 195.10,331.18 197.33,333.03 199.61,334.83 201.93,336.56 204.30,338.23 206.71,339.84 209.16,341.39 211.65,342.87 214.18,344.29 216.74,345.64 219.34,346.92 221.97,348.13 224.64,349.28 227.33,350.35 230.05,351.35 232.79,352.28 235.56,353.14 238.35,353.93 241.16,354.64 243.98,355.28 246.83,355.85 249.68,356.34 252.55,356.76 255.43,357.10 258.31,357.36 261.21,357.55 264.10,357.66 267.00,357.70 269.90,357.66 272.79,357.55 275.69,357.36 278.57,357.10 281.45,356.76 284.32,356.34 287.17,355.85 290.02,355.28 292.84,354.64 295.65,353.93 298.44,353.14 301.21,352.28 303.95,351.35 306.67,350.35 309.36,349.28 312.03,348.13 314.66,346.92 317.26,345.64 319.82,344.29 322.35,342.87 324.84,341.39 327.29,339.84 329.70,338.23 332.07,336.56 334.39,334.83 336.67,333.03 338.90,331.18 341.07,329.27 343.20,327.30 345.28,325.28 347.30,323.20 349.27,321.07 351.18,318.90 353.03,316.67 354.83,314.39 356.56,312.07 358.23,309.70 359.84,307.29 361.39,304.84 362.87,302.35 364.29,299.82 365.64,297.26 366.92,294.66 368.13,292.03 369.28,289.36 370.35,286.67 371.35,283.95 372.28,281.21 373.14,278.44 373.93,275.65 374.64,272.84 375.28,270.02 375.85,267.17 376.34,264.32 376.76,261.45 377.10,258.57 377.36,255.69 377.55,252.79 377.66,249.90 377.70,247.00" fill="none" stroke="#d62728" stroke-width="3" stroke-dasharray="8 6"/>
+  <polyline points="410.45,247.00 410.40,243.24 410.26,239.49 410.01,235.74 409.67,232.01 409.22,228.28 408.69,224.56 408.05,220.86 407.32,217.17 406.49,213.51 405.56,209.87 404.54,206.26 403.43,202.67 402.22,199.11 400.92,195.59 399.53,192.10 398.05,188.65 396.48,185.24 394.82,181.87 393.07,178.55 391.23,175.27 389.31,172.05 387.31,168.87 385.22,165.75 383.05,162.68 380.81,159.67 378.48,156.72 376.08,153.84 373.61,151.01 371.06,148.25 368.44,145.56 365.75,142.94 362.99,140.39 360.16,137.92 357.28,135.52 354.33,133.19 351.32,130.95 348.25,128.78 345.13,126.69 341.95,124.69 338.73,122.77 335.45,120.93 332.13,119.18 328.76,117.52 325.35,115.95 321.90,114.47 318.41,113.08 314.89,111.78 311.33,110.57 307.74,109.46 304.13,108.44 300.49,107.51 296.83,106.68 293.14,105.95 289.44,105.31 285.72,104.78 281.99,104.33 278.26,103.99 274.51,103.74 270.76,103.60 267.00,103.55 263.24,103.60 259.49,103.74 255.74,103.99 252.01,104.33 248.28,104.78 244.56,105.31 240.86,105.95 237.17,106.68 233.51,107.51 229.87,108.44 226.26,109.46 222.67,110.57 219.11,111.78 215.59,113.08 212.10,114.47 208.65,115.95 205.24,117.52 201.87,119.18 198.55,120.93 195.27,122.77 192.05,124.69 188.87,126.69 185.75,128.78 182.68,130.95 179.67,133.19 176.72,135.52 173.84,137.92 171.01,140.39 168.25,142.94 165.56,145.56 162.94,148.25 160.39,151.01 157.92,153.84 155.52,156.72 153.19,159.67 150.95,162.68 148.78,165.75 146.69,168.87 144.69,172.05 142.77,175.27 140.93,178.55 139.18,181.87 137.52,185.24 135.95,188.65 134.47,192.10 133.08,195.59 131.78,199.11 130.57,202.67 129.46,206.26 128.44,209.87 127.51,213.51 126.68,217.17 125.95,220.86 125.31,224.56 124.78,228.28 124.33,232.01 123.99,235.74 123.74,239.49 123.60,243.24 123.55,247.00 123.60,250.76 123.74,254.51 123.99,258.26 124.33,261.99 124.78,265.72 125.31,269.44 125.95,273.14 126.68,276.83 127.51,280.49 128.44,284.13 129.46,287.74 130.57,291.33 131.78,294.89 133.08,298.41 134.47,301.90 135.95,305.35 137.52,308.76 139.18,312.13 140.93,315.45 142.77,318.73 144.69,321.95 146.69,325.13 148.78,328.25 150.95,331.32 153.19,334.33 155.52,337.28 157.92,340.16 160.39,342.99 162.94,345.75 165.56,348.44 168.25,351.06 171.01,353.61 173.84,356.08 176.72,358.48 179.67,360.81 182.68,363.05 185.75,365.22 188.87,367.31 192.05,369.31 195.27,371.23 198.55,373.07 201.87,374.82 205.24,376.48 208.65,378.05 212.10,379.53 215.59,380.92 219.11,382.22 222.67,383.43 226.26,384.54 229.87,385.56 233.51,386.49 237.17,387.32 240.86,388.05 244.56,388.69 248.28,389.22 252.01,389.67 255.74,390.01 259.49,390.26 263.24,390.40 267.00,390.45 270.76,390.40 274.51,390.26 278.26,390.01 281.99,389.67 285.72,389.22 289.44,388.69 293.14,388.05 296.83,387.32 300.49,386.49 304.13,385.56 307.74,384.54 311.33,383.43 314.89,382.22 318.41,380.92 321.90,379.53 325.35,378.05 328.76,376.48 332.13,374.82 335.45,373.07 338.73,371.23 341.95,369.31 345.13,367.31 348.25,365.22 351.32,363.05 354.33,360.81 357.28,358.48 360.16,356.08 362.99,353.61 365.75,351.06 368.44,348.44 371.06,345.75 373.61,342.99 376.08,340.16 378.48,337.28 380.81,334.33 383.05,331.32 385.22,328.25 387.31,325.13 389.31,321.95 391.23,318.73 393.07,315.45 394.82,312.13 396.48,308.76 398.05,305.35 399.53,301.90 400.92,298.41 402.22,294.89 403.43,291.33 404.54,287.74 405.56,284.13 406.49,280.49 407.32,276.83 408.05,273.14 408.69,269.44 409.22,265.72 409.67,261.99 410.01,258.26 410.26,254.51 410.40,250.76 410.45,247.00" fill="none" stroke="#d62728" stroke-width="3" stroke-dasharray="8 6"/>
   <circle cx="267" cy="247" r="9" fill="#f2b01e" stroke="#111827"/>
   <circle cx="255.41" cy="391.61" r="7" fill="#1f77b4" stroke="#ffffff" stroke-width="2"/>
-  <circle cx="270.95" cy="357.63" r="7" fill="#d62728" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="410.45" cy="247.00" r="7" fill="#d62728" stroke="#ffffff" stroke-width="2"/>
   <text x="55" y="108" font-size="15" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#243040" text-anchor="start">orbit geometry</text>
   <line x1="365" y1="105" x2="395" y2="105" stroke="#1f77b4" stroke-width="3"/><text x="402" y="110" font-size="12" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="start">truth</text>
   <line x1="365" y1="125" x2="395" y2="125" stroke="#d62728" stroke-width="3" stroke-dasharray="8 6"/><text x="402" y="130" font-size="12" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="start">agent</text>
   <rect x="535" y="82" width="465" height="330" fill="#f8fafc" stroke="#d5dbe3"/>
   <text x="555" y="108" font-size="15" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#243040" text-anchor="start">parameter comparison</text>
   <line x1="555" y1="360" x2="955" y2="360" stroke="#aab4c0"/>
-  <rect x="560" y="137.24" width="18" height="222.76" fill="#1f77b4"/><rect x="581" y="208.94" width="18" height="151.06" fill="#d62728"/><text x="572" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">P_days</text><rect x="618" y="335.73" width="18" height="24.27" fill="#1f77b4"/><rect x="639" y="351.25" width="18" height="8.75" fill="#d62728"/><text x="630" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">m_sin_i_mjup</text><rect x="676" y="359.32" width="18" height="0.68" fill="#1f77b4"/><rect x="697" y="360.00" width="18" height="0.00" fill="#d62728"/><text x="688" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">e</text><rect x="734" y="306.70" width="18" height="53.30" fill="#1f77b4"/><rect x="755" y="360.00" width="18" height="0.00" fill="#d62728"/><text x="746" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">omega_rad</text><rect x="792" y="115.45" width="18" height="244.55" fill="#1f77b4"/><rect x="813" y="110.00" width="18" height="250.00" fill="#d62728"/><text x="804" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">l_rad</text>
+  <rect x="560" y="191.66" width="18" height="168.34" fill="#1f77b4"/><rect x="581" y="191.61" width="18" height="168.39" fill="#d62728"/><text x="572" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">P_days</text><rect x="618" y="341.66" width="18" height="18.34" fill="#1f77b4"/><rect x="639" y="185.32" width="18" height="174.68" fill="#d62728"/><text x="630" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">m_sin_i_mjup</text><rect x="676" y="359.48" width="18" height="0.52" fill="#1f77b4"/><rect x="697" y="360.00" width="18" height="0.00" fill="#d62728"/><text x="688" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">e</text><rect x="734" y="319.72" width="18" height="40.28" fill="#1f77b4"/><rect x="755" y="360.00" width="18" height="0.00" fill="#d62728"/><text x="746" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">omega_rad</text><rect x="792" y="175.20" width="18" height="184.80" fill="#1f77b4"/><rect x="813" y="110.00" width="18" height="250.00" fill="#d62728"/><text x="804" y="385" font-size="11" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="middle">l_rad</text>
   <rect x="830" y="110" width="14" height="14" fill="#1f77b4"/><text x="850" y="122" font-size="12" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="start">truth</text>
   <rect x="830" y="132" width="14" height="14" fill="#d62728"/><text x="850" y="144" font-size="12" font-family="Segoe UI, Arial, sans-serif" font-weight="400" fill="#243040" text-anchor="start">agent</text>
 </svg>
@@ -1590,23 +1940,23 @@ display(Markdown(f"Saved visualization to `{visual_path}`."))
       <th>0</th>
       <td>P_days</td>
       <td>4.230785</td>
-      <td>2.868989</td>
-      <td>0.321878</td>
+      <td>4.232078e+00</td>
+      <td>0.000306</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>1</th>
       <td>m_sin_i_mjup</td>
       <td>0.461000</td>
-      <td>0.166203</td>
-      <td>0.639473</td>
+      <td>4.390132e+00</td>
+      <td>8.523063</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>2</th>
       <td>e</td>
       <td>0.013000</td>
-      <td>0.000000</td>
+      <td>2.699629e-15</td>
       <td>1.000000</td>
       <td>NaN</td>
     </tr>
@@ -1614,7 +1964,7 @@ display(Markdown(f"Saved visualization to `{visual_path}`."))
       <th>3</th>
       <td>omega_rad</td>
       <td>1.012291</td>
-      <td>0.000000</td>
+      <td>0.000000e+00</td>
       <td>NaN</td>
       <td>1.012291</td>
     </tr>
@@ -1622,9 +1972,9 @@ display(Markdown(f"Saved visualization to `{visual_path}`."))
       <th>4</th>
       <td>l_rad</td>
       <td>4.644516</td>
-      <td>4.748110</td>
+      <td>6.283185e+00</td>
       <td>NaN</td>
-      <td>0.103594</td>
+      <td>1.638669</td>
     </tr>
   </tbody>
 </table>
@@ -1693,7 +2043,7 @@ print(json.dumps(final_report, indent=2))
 ```
 
 
-**Decision:** scientific_fail. First violated anchor: **match_score_at_least_0_8**. Detectors: **alias_convergence_or_missed_period, critic_masking, mass_amplitude_mismatch, model_fit_degradation, phase_parameter_mismatch, scientific_anchor_failure, silent_acceptance, truncated_reasoning_or_output**. Nearest-period comparison shows period_rel_error=0.321878, but mass_rel_error=0.639473 and phase/model anchors fail.
+**Decision:** scientific_fail. First violated anchor: **hungarian_match_positive**. Detectors: **critic_masking, mass_amplitude_mismatch, model_fit_degradation, perseveration_or_retry_loop, phase_parameter_mismatch, scientific_anchor_failure, silent_acceptance, truncated_reasoning_or_output**. Nearest-period comparison shows period_rel_error=0.000306, but mass_rel_error=8.523063 and phase/model anchors fail.
 
 
     {
@@ -1704,35 +2054,35 @@ print(json.dumps(final_report, indent=2))
         "O1": {
           "objective": "O1 localisation infrastructure",
           "status": "partial_support",
-          "evidence": "trace events=8, edges=8, first_failed_anchor=match_score_at_least_0_8, originating_agent=engineer/reviewer",
+          "evidence": "trace events=40, edges=48, first_failed_anchor=hungarian_match_positive, originating_agent=engineer/reviewer",
           "limitation": "Single run; no manual-label precision/recall; event graph is reconstructed from notebook logs, not a framework-level non-invasive observer."
         },
         "O2": {
           "objective": "O2 failure taxonomy and detectors",
           "status": "partial_support",
-          "evidence": "alias_convergence_or_missed_period, critic_masking, mass_amplitude_mismatch, model_fit_degradation, phase_parameter_mismatch, scientific_anchor_failure, silent_acceptance, truncated_reasoning_or_output",
+          "evidence": "critic_masking, mass_amplitude_mismatch, model_fit_degradation, perseveration_or_retry_loop, phase_parameter_mismatch, scientific_anchor_failure, silent_acceptance, truncated_reasoning_or_output",
           "limitation": "Detector labels are rule-based for one STARGAZER run; no validation set, no precision/recall/F1."
         },
         "O3": {
           "objective": "O3 early prediction across verification regimes",
           "status": "not_tested",
-          "evidence": "revision_count=1 and code/result review failures occurred before final approval",
+          "evidence": "revision_count=10 and code/result review failures occurred before final approval",
           "limitation": "No paired stress levels, no Lean comparison, no bootstrap statistics."
         }
       },
       "scientific_status": "scientific_fail",
       "first_violated_anchor": {
-        "anchor": "match_score_at_least_0_8",
+        "anchor": "hungarian_match_positive",
         "passed": false,
         "layer": "science",
         "originating_agent": "engineer/reviewer",
-        "evidence": "match_score=0.022661"
+        "evidence": "matched_truth_fraction=0.0"
       },
       "detectors_fired": [
-        "alias_convergence_or_missed_period",
         "critic_masking",
         "mass_amplitude_mismatch",
         "model_fit_degradation",
+        "perseveration_or_retry_loop",
         "phase_parameter_mismatch",
         "scientific_anchor_failure",
         "silent_acceptance",
@@ -1740,10 +2090,10 @@ print(json.dumps(final_report, indent=2))
       ],
       "benchmark_summary": {
         "passed": false,
-        "score": 0.6,
-        "match_score": 0.022661,
-        "rms": 41.49204,
-        "reward": -1512.832788,
+        "score": 0.4,
+        "match_score": 0.0,
+        "rms": 354.505911,
+        "reward": -335387.464489,
         "failed_components": [
           "mass_amplitude",
           "model_fit",
@@ -1751,7 +2101,7 @@ print(json.dumps(final_report, indent=2))
           "phase_or_eccentricity"
         ]
       },
-      "interpretation": "The run is useful O1/O2 evidence for trajectory-level failure localisation because the reviewer-approved final result fails hidden STARGAZER physical/model anchors. Nearest-period comparison shows period_rel_error=0.321878, but mass_rel_error=0.639473 and phase/model anchors fail. The result should not be reported as a scientific success or architecture-level claim.",
+      "interpretation": "The run is useful O1/O2 evidence for trajectory-level failure localisation because the reviewer-approved final result fails hidden STARGAZER physical/model anchors. Nearest-period comparison shows period_rel_error=0.000306, but mass_rel_error=8.523063 and phase/model anchors fail. The result should not be reported as a scientific success or architecture-level claim.",
       "artifacts": {
         "evaluation_dir": "C:\\Users\\Anwender\\Science-Work-Flow-\\outputs\\qwen_saeed_stargazer_eval",
         "trajectory_graph": "C:\\Users\\Anwender\\Science-Work-Flow-\\outputs\\qwen_saeed_stargazer_eval\\trajectory_graph.json",

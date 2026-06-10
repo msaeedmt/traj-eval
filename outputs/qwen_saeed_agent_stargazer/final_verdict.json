@@ -1,0 +1,12 @@
+{
+  "notebook_complete": true,
+  "saeed_repo": "C:\\Dev\\src\\github.com\\msaeedmt\\traj-eval",
+  "saeed_repo_untouched": true,
+  "qwen_provider_ok": true,
+  "smoke_planner_returncode": 1,
+  "role_planner_output_present": true,
+  "role_engineer_final_present": true,
+  "role_critic_verdict_present": true,
+  "stargazer_science_status": "partial_match",
+  "output_dir": "C:\\Users\\Anwender\\Science-Work-Flow-\\outputs\\qwen_saeed_agent_stargazer"
+}

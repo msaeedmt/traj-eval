@@ -1,0 +1,9 @@
+evidence_row,status,evidence,limitation
+O1 trace schema/dashboard/taxonomy,partial,trajectory_graph.json with 8 events and 8 edges,"Notebook reconstruction, not production dashboard"
+O1 first failed anchor localisation,partial,match_score_at_least_0_8 attributed to engineer/reviewer,"Automatic anchor rule, not manual-labelled precision/recall"
+O2 STARGAZER partially verifiable anchors,available,"score=0.6; failed=['mass_amplitude', 'model_fit', 'period_recovery', 'phase_or_eccentricity']",Only one real task
+O2 Lean fully step-verifiable anchors,not_tested,No Lean run in this notebook,Transfer claim unavailable
+O2 detector validation against manual labels,not_tested,"alias_convergence_or_missed_period, critic_masking, mass_amplitude_mismatch, model_fit_degradation, phase_parameter_mismatch, scientific_anchor_failure, silent_acceptance, truncated_reasoning_or_output",No labelled corpus
+O3 paired/bootstrap comparison,not_tested,No paired baseline/stress suite,No p-values/effect sizes
+O3 early-warning difficulty degradation,not_tested,revision_count=1,No difficulty series
+Langfuse/open-source observability export,not_available,Local JSON/CSV artifacts only,No external observability export

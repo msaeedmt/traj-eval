@@ -1,0 +1,32 @@
+[
+  {
+    "Layer":"Provider",
+    "Status":"pass",
+    "Evidence":"Direct Qwen probe returned clean OK."
+  },
+  {
+    "Layer":"Saeed shipped smoke_planner.py",
+    "Status":"compatibility_issue",
+    "Evidence":"Return code 1; see smoke_planner_result.json."
+  },
+  {
+    "Layer":"Saeed planner role with Qwen",
+    "Status":"pass",
+    "Evidence":"Planner produced a STARGAZER evaluation plan."
+  },
+  {
+    "Layer":"Saeed engineer role with Qwen",
+    "Status":"pass",
+    "Evidence":"Engineer was asked to end with FINAL: partial_match."
+  },
+  {
+    "Layer":"Saeed critic role with Qwen",
+    "Status":"pass",
+    "Evidence":"Critic was asked to approve\/reject the engineer decision."
+  },
+  {
+    "Layer":"STARGAZER science",
+    "Status":"partial_match",
+    "Evidence":"match_score=0.066347; first violated anchor=stargazer_scientific_anchor"
+  }
+]

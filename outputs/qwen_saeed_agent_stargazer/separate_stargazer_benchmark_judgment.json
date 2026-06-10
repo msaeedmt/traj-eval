@@ -1,0 +1,123 @@
+{
+  "type": "stargazer_benchmark",
+  "path": "C:\\Users\\Anwender\\Science-Work-Flow-\\outputs\\qwen_saeed_agent_stargazer\\agent_workflow\\iteration_02\\agent_submission.json",
+  "evaluable": true,
+  "passed": false,
+  "score": 0.6,
+  "criteria": {
+    "file_exists": true,
+    "planet_count_matches": true,
+    "matched_truth_fraction_positive": true,
+    "match_score_at_least_0_8": false,
+    "delta_bic_positive": false
+  },
+  "reward": -768.922752,
+  "match_score": 0.007473,
+  "rms": 40.805571,
+  "delta_bic_per_point": -335.361019,
+  "submitted_planets": [
+    {
+      "P_days": 17.895234577715296,
+      "m_sin_i_mjup": 0.29109640397587855,
+      "e": 0.13488195554950663,
+      "omega_rad": 0.0010235155249368204,
+      "l_rad": 3.136309327224751
+    }
+  ],
+  "truth_planets": [
+    {
+      "P_days": 4.230785,
+      "m_sin_i_mjup": 0.461,
+      "e": 0.013,
+      "inc_rad": 1.5707963267948966,
+      "Omega_rad": 0.0,
+      "omega_rad": 1.0122909661567112,
+      "l_rad": 4.644516025661992,
+      "m_true_mjup": null
+    }
+  ],
+  "submitted_planet_count": 1,
+  "truth_planet_count": 1,
+  "difficulty_metadata": {
+    "bucket": "easy",
+    "proxy_score": 7,
+    "factors": {
+      "truth_planet_count": 1,
+      "observation_count": 639,
+      "baseline_days": 7237.393404,
+      "median_sigma_ms": 2.52,
+      "instrument_count": 6,
+      "stargazer_truth_difficulty": 1
+    },
+    "rule": "2*truth_planet_count + observation_scarcity + short_baseline + median_sigma + stargazer_truth_difficulty"
+  },
+  "matched_truth_fraction": 1.0,
+  "component_breakdown": {
+    "failed_components": [
+      "model_fit",
+      "period_recovery",
+      "phase_or_eccentricity"
+    ],
+    "planet_count": {
+      "submitted": 1,
+      "truth": 1,
+      "ok": true,
+      "unmatched_guess": [],
+      "unmatched_truth": []
+    },
+    "period_recovery_fraction": 0.0,
+    "mass_recovery_fraction": 1.0,
+    "phase_recovery_fraction": 0.0,
+    "matched_pair_diagnostics": [
+      {
+        "truth_index": 0,
+        "guess_index": 0,
+        "period_rel_error": 3.229767,
+        "mass_rel_error": 0.368554,
+        "omega_error_rad": 1.011267,
+        "l_error_rad": 1.508207,
+        "eccentricity_abs_error": 0.121882,
+        "period_ok": false,
+        "mass_ok": true,
+        "phase_or_eccentricity_ok": false
+      }
+    ]
+  },
+  "prediction_truth_rows": [
+    {
+      "row_type": "matched",
+      "truth_index": 0,
+      "guess_index": 0,
+      "truth": {
+        "P_days": 4.230785,
+        "m_sin_i_mjup": 0.461,
+        "e": 0.013,
+        "omega_rad": 1.012291,
+        "l_rad": 4.644516
+      },
+      "submission": {
+        "P_days": 17.895235,
+        "m_sin_i_mjup": 0.291096,
+        "e": 0.134882,
+        "omega_rad": 0.001024,
+        "l_rad": 3.136309
+      },
+      "period_rel_error": 3.229767,
+      "mass_rel_error": 0.368554,
+      "eccentricity_abs_error": 0.121882,
+      "omega_error_rad": 1.011267,
+      "l_error_rad": 1.508207
+    }
+  ],
+  "matching_summary": {
+    "matched_pairs": [
+      [
+        0,
+        0,
+        4.896510298385263
+      ]
+    ],
+    "unmatched_guess": [],
+    "unmatched_truth": []
+  }
+}

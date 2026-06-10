@@ -1,0 +1,14 @@
+{
+  "target_star": "real_001",
+  "finding_task": true,
+  "submitted_planet_count": 1,
+  "final_submission_path": "C:\\Users\\Anwender\\Science-Work-Flow-\\outputs\\qwen_saeed_agent_stargazer\\agent_workflow\\iteration_02\\agent_submission.json",
+  "qwen_provider_ok": true,
+  "qwen_thinking_enabled": true,
+  "saeed_planner_output": true,
+  "saeed_engineer_output": true,
+  "reviewer_code_reviews": 2,
+  "reviewer_result_reviews": 1,
+  "loop_stop_reason": "APPROVE_RESULT",
+  "hidden_truth_used_for_agent_workflow": false
+}

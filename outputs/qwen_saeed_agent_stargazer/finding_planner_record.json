@@ -1,0 +1,18 @@
+{
+  "role": "planner",
+  "finish_reason": "length",
+  "text": "",
+  "content_present": false,
+  "reasoning_present": true,
+  "reasoning_excerpt": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   **Role:** PLANNER from the Saeed traj-eval multi-agent team.\n    *   **Task:** Plan a real STARGAZER radial-velocity finding task.\n    *   **Input Data:**\n        *   observations: 639\n        *   baseline_days: 193.14499999999998\n        *   instruments: None\n    *   **Available Tool:** `infer_stargazer_submission(stargazer_observations.json)`\n    *   **Goal:** Find candidate planet signals around the observed star and report the planet pa",
+  "tokens": {
+    "completion_tokens": 512,
+    "prompt_tokens": 158,
+    "total_tokens": 670,
+    "completion_tokens_details": null,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 0
+    }
+  }
+}

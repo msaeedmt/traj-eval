@@ -1,0 +1,41 @@
+Thinking Process:
+
+1.  **Analyze the Request:**
+    *   **Role:** PLANNER in a multi-agent scientific-reasoning team.
+    *   **Task:** Create a plan for a "real STARGAZER radial-velocity finding task".
+    *   **Input Data:** Sanitized observation summary (639 observations, 6 instruments, columns: times_days, rvs_ms, sigmas_ms, instruments).
+    *   **Workflow Contract:** Input file `stargazer_observations.json`, output file `agent_submission.json`. Engineer must write Python code, perform numerical search, no external precomputed modules, no reading truth files.
+    *   **Constraints:** Output a numbered list of concrete steps (max 5 steps). Do not solve, compute, or write final code. Do not provide planet parameters. Be explicit about verification.
+    *   **Goal:** Plan for an engineer to write a standalone Python script that finds plausible planet signals.
+
+2.  **Determine the Steps:**
+    *   Step 1: Data Loading & Preprocessing. The engineer needs to read the JSON, handle multiple instruments (offsets?), and prepare time/velocity arrays.
+    *   Step 2: Signal Search Algorithm. The engineer needs to implement a periodogram or similar search (e.g., Lomb-Scargle) to find periodic signals in the RV data.
+    *   Step 3: Parameter Estimation. Once a period is found, fit a Keplerian model to estimate semi-amplitude, period, etc.
+    *   Step 4: Output Formatting. Structure the results into the required `agent_submission.json` format.
+    *   Step 5: Verification/Validation. Ensure the script runs without errors and produces valid JSON output (code review/result review context).
+
+3.  **Refine Steps for Constraints:**
+    *   Must be max 5 steps.
+    *   Must not solve the problem (no specific periods or amplitudes).
+    *   Must be explicit about verification.
+    *   Must align with the workflow contract (engineer writes code, executor runs it).
+
+    *Draft 1:*
+    1. Load `stargazer_observations.json` and parse the parallel arrays for time, RV, sigma, and instrument.
+    2. Implement a periodogram search (e.g., Lomb-Scargle) across the time series to identify significant periodic peaks.
+    3. Fit a Keplerian orbital model to the top candidate period to derive planet parameters (period, semi-amplitude, epoch).
+    4. Format the derived parameters into the required JSON structure and write to `agent_submission.json`.
+    5. Verify the script executes successfully and the output file contains valid JSON with expected keys.
+
+    *Critique 1:*
+    *   Step 5 is a bit generic. The prompt asks to be explicit about which step verifies the result. In the context of the *plan* for the engineer, the verification is usually part of the code review or a self-check within the script. However, the workflow contract mentions "reviewer_modes". The plan is for the *engineer* to write the script. The verification step in the plan should ensure the *process* is sound.
+    *   Actually, looking at the "Rules": "Be explicit about which step verifies the result." This usually means one of the steps in the plan should be about checking the output or the logic.
+    *   Let's adjust Step 5 to be about validation of the search logic or output integrity.
+
+    *Draft 2:*
+    1. Read `stargazer_observations.json` and consolidate radial velocity measurements, accounting for instrument-specific offsets if necessary.
+    2. Perform a numerical period search (e.g., Lomb-Scargle periodogram) on the time-series data to identify candidate orbital periods.
+    3. Refine the top candidate signal by fitting a Keplerian model to estimate semi-amplitude, period, and time of periastron.
+    4. Serialize the best-fit parameters into the `agent_submission.json` file according to the output schema.
+    5. Validate the generated submission file for JSON syntax and ensure all required parameter keys are present before

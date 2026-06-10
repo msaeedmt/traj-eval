@@ -1,0 +1,17 @@
+{
+  "branch": "Han",
+  "status_short": "",
+  "scripts": [
+    "scripts\\export_schema.py",
+    "scripts\\smoke_handoff.py",
+    "scripts\\smoke_planner.py",
+    "scripts\\smoke_review.py",
+    "scripts\\smoke_team.py"
+  ],
+  "astro_anchor_files": [
+    "src\\traj_eval\\anchors\\astro\\__init__.py"
+  ],
+  "dataset_files": [
+    "src\\traj_eval\\datasets\\__init__.py"
+  ]
+}
