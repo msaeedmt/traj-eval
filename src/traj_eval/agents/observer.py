@@ -19,6 +19,7 @@ from typing import Any
 
 from autogen import Agent, ConversableAgent
 
+from traj_eval.agents.markers import parse_decision
 from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import (
     AgentRole,
@@ -79,6 +80,36 @@ class TraceObserver:
         self._seq += 1
         return s
 
+    def record_task(self, text: str) -> str:
+        """Emit the opening task message as a SYSTEM event, before the chat runs.
+
+        Call this once, before ``initiate_chat``, so it takes seq=0 and the
+        planner's first message (seq=1) can point at it instead of being an
+        artificial root. The event reports itself to the ledger as the SYSTEM
+        role's latest, so the existing ``user -> planner`` transition (routed
+        with cause_role=SYSTEM in build_team) attributes the planner to it with
+        no selector change. Returns the task event_id.
+        """
+        event_id = str(uuid.uuid4())
+        event = TraceEvent(
+            event_id=event_id,
+            trial_id=self._trial_id,
+            seq=self._next_seq(),
+            timestamp=datetime.now(UTC),
+            event_type=EventType.MESSAGE,
+            agent_role=AgentRole.SYSTEM,
+            caused_by=[],  # the task is the genuine root of the trajectory
+            payload={
+                "sender": "user",
+                "recipient": "chat_manager",
+                "text": text,
+            },
+        )
+        self._writer.append(event)
+        if self._ledger is not None:
+            self._ledger.record_emit(AgentRole.SYSTEM, event_id)
+        return event_id
+
     def _record_message(
         self,
         sender: ConversableAgent,
@@ -93,6 +124,17 @@ class TraceObserver:
         # pure 2a behaviour). take_pending consumes the decision exactly once.
         caused_by = self._ledger.take_pending(role) if self._ledger else []
 
+        text = _message_text(message)
+        # Minimal marker parsing: stamp the decision (approve/reject, ok/fail)
+        # or has_final flag as structured payload fields (Step 2c). Richer
+        # extraction is deferred to the anchor-validation design.
+        payload: dict[str, Any] = {
+            "sender": sender.name,
+            "recipient": getattr(recipient, "name", str(recipient)),
+            "text": text,
+        }
+        payload.update(parse_decision(role, text))
+
         event_id = str(uuid.uuid4())
         event = TraceEvent(
             event_id=event_id,
@@ -102,11 +144,7 @@ class TraceObserver:
             event_type=EventType.MESSAGE,
             agent_role=role,
             caused_by=caused_by,
-            payload={
-                "sender": sender.name,
-                "recipient": getattr(recipient, "name", str(recipient)),
-                "text": _message_text(message),
-            },
+            payload=payload,
         )
         self._writer.append(event)
 

@@ -64,6 +64,10 @@ def _run(task: str, tag: str) -> Path:
     role_agents = [a for a in groupchat.agents if a.name != "user"]
     observer.attach(role_agents)
 
+    # Capture the opening task as the SYSTEM root event (seq=0) so the planner
+    # points at it instead of being an artificial root.
+    observer.record_task(task)
+
     user.initiate_chat(manager, message=task)
     writer.close()
     return log_path

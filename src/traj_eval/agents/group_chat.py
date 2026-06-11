@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from autogen import GroupChat, GroupChatManager, LLMConfig, UserProxyAgent
 
+from traj_eval.agents.markers import VERDICT_APPROVE, VERDICT_REJECT
 from traj_eval.agents.roles import (
     make_critic,
     make_engineer,
@@ -30,10 +31,6 @@ from traj_eval.agents.roles import (
 )
 from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import AgentRole
-
-# Markers the role prompts agree to emit; read here to drive the loop.
-_VERDICT_APPROVE = "VERDICT: APPROVE"
-_VERDICT_REJECT = "VERDICT: REJECT"
 
 
 def _role_for_agent(agent) -> AgentRole:
@@ -118,9 +115,9 @@ def build_team(
             return _route_to(critic, AgentRole.ENGINEER)
         if name == AgentRole.CRITIC.value:
             content = _last_content(groupchat).upper()
-            if _VERDICT_APPROVE in content:
+            if VERDICT_APPROVE in content:
                 return _route_to(executor, AgentRole.CRITIC)
-            if _VERDICT_REJECT in content:
+            if VERDICT_REJECT in content:
                 if repair_count["n"] < max_repairs:
                     repair_count["n"] += 1
                     # repair: the revision is caused by the critic's rejection.
