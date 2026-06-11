@@ -2,7 +2,7 @@
 
 All development happens inside **WSL2 (Ubuntu)** with the project living in the
 Linux filesystem (`~/projects/traj-eval`), edited via Windows VS Code over the
-WSL remote. Do **not** work from `/mnt/c/...` — it is slow and breaks file
+WSL remote. Do **not** work from `/mnt/c/...` - it is slow and breaks file
 watching.
 
 ## 1. System tools
@@ -27,7 +27,7 @@ uv sync --all-extras    # + agents + dashboard (heavy)
 uv run pytest           # verify the core works
 ```
 
-## 4. Lean 4 + Mathlib (slow — start early, runs in background)
+## 4. Lean 4 + Mathlib (slow - start early, runs in background)
 
 ```bash
 curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
@@ -39,19 +39,18 @@ elan default stable
 
 ## 5. External repos (smoke-test each unmodified before integrating)
 
-* AG2 / AutoGen [12] — run the 2-agent hello-world.
-* CMBAgent [2] — run shipped smoke test.
-* minimal Leanagent [13] — solve one FATE problem.
-* Stargazer [5] — run forward model, reproduce **one** published single-agent
+* AG2 / AutoGen [12] - run the 2-agent hello-world.
+* CMBAgent [2] - run shipped smoke test.
+* minimal Leanagent [13] - solve one FATE problem.
+* Stargazer [5] - run forward model, reproduce **one** published single-agent
   result (this is our primary baseline).
 
 ## 6. Datasets
 
-Place under `data/` (git-ignored). Run the loaders' count assertions:
+Place the cleaned Lean benchmark project under `dataset/` (git-ignored except `.gitkeep`). Run the dataset verifier:
 
 ```bash
-uv run python -m traj_eval.datasets.verify
+uv run python -m traj_eval.dataset.verify
 ```
 
-Expected counts: Stargazer 100 synthetic + 20 real (36 easy / 48 medium /
-36 hard); [6] 14 CAMB one-shot + 5 deep research; FATE 350; LeanCat 100.
+Expected counts: FATE-H 100, FATE-M 150, FATE-X 100, LeanCat 100 statement files, and 100 LeanCat JSONL records. The verifier also checks `leanprover/lean4:v4.30.0` and runs `lake build` inside `dataset/`.

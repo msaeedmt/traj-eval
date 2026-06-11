@@ -18,12 +18,12 @@ uv.lock.bak
 build/
 
 # Trial logs & datasets are large / regenerable: track structure, not contents
-/data/**
-!/data/.gitkeep
+/dataset/**
+!/dataset/.gitkeep
 /runs/
 *.jsonl
 
-# Secrets — never commit API keys
+# Secrets - never commit API keys
 .env
 *.key
 
