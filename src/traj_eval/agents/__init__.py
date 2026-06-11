@@ -15,8 +15,10 @@ from traj_eval.agents.roles import (
     make_executor,
     make_planner,
 )
+from traj_eval.agents.routing import RoutingLedger
 
 __all__ = [
+    "RoutingLedger",
     "TraceObserver",
     "build_llm_config",
     "build_team",

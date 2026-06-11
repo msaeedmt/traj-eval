@@ -19,6 +19,7 @@ from typing import Any
 
 from autogen import Agent, ConversableAgent
 
+from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import (
     AgentRole,
     EventType,
@@ -58,10 +59,20 @@ class TraceObserver:
         writer.close()
     """
 
-    def __init__(self, writer: TrialLogWriter, *, trial_id: str):
+    def __init__(
+        self,
+        writer: TrialLogWriter,
+        *,
+        trial_id: str,
+        ledger: RoutingLedger | None = None,
+    ):
         self._writer = writer
         self._trial_id = trial_id
         self._seq = 0
+        # Optional bridge to the speaker-selection function. When present, the
+        # observer reads routing-derived parents for each event and reports each
+        # emit back so later edges can point at it (Step 2b).
+        self._ledger = ledger
 
     def _next_seq(self) -> int:
         s = self._seq
@@ -76,14 +87,21 @@ class TraceObserver:
         silent: bool,
     ) -> dict[str, Any] | str:
         """The hook. Emits a TraceEvent, then returns the message UNCHANGED."""
+        role = _role_for(sender.name)
+
+        # Routing-derived parents, if a ledger is wired. Empty otherwise (the
+        # pure 2a behaviour). take_pending consumes the decision exactly once.
+        caused_by = self._ledger.take_pending(role) if self._ledger else []
+
+        event_id = str(uuid.uuid4())
         event = TraceEvent(
-            event_id=str(uuid.uuid4()),
+            event_id=event_id,
             trial_id=self._trial_id,
             seq=self._next_seq(),
             timestamp=datetime.now(UTC),
             event_type=EventType.MESSAGE,
-            agent_role=_role_for(sender.name),
-            caused_by=[],  # edges added in Step 2b
+            agent_role=role,
+            caused_by=caused_by,
             payload={
                 "sender": sender.name,
                 "recipient": getattr(recipient, "name", str(recipient)),
@@ -91,6 +109,11 @@ class TraceObserver:
             },
         )
         self._writer.append(event)
+
+        # Let later routing decisions point at this event.
+        if self._ledger is not None:
+            self._ledger.record_emit(role, event_id)
+
         return message  # non-invasive: return exactly what we received
 
     def attach(self, agents: list[ConversableAgent]) -> None:
