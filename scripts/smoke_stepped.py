@@ -62,6 +62,7 @@ def main() -> None:
 
     planner_events = [e for e in events if e.agent_role.value == "planner"]
     engineer_events = [e for e in events if e.agent_role.value == "engineer"]
+    critic_events = [e for e in events if e.agent_role.value == "critic"]
 
     n_steps = None
     if planner_events:
@@ -73,7 +74,9 @@ def main() -> None:
     print("\n==================== checks ====================")
     print(f"  plan steps (N)         : {n_steps}")
     print(f"  engineer events        : {len(engineer_events)}")
-    print(f"  one event per step     : {n_steps is not None and len(engineer_events) == n_steps}")
+    print(f"  critic events          : {len(critic_events)}")
+    print(f"  >= N engineer events   : {n_steps is not None and len(engineer_events) >= n_steps}")
+    print(f"  engineer/critic paired : {len(engineer_events) == len(critic_events)}")
     g = build_graph(events)
     print(f"  graph is DAG           : {nx.is_directed_acyclic_graph(g)}")
     order = [f"{e.agent_role.value}#{e.seq}" for e in causal_order(events)]
