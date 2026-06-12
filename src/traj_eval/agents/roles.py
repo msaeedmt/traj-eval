@@ -33,7 +33,14 @@ one per sub-task, in order. Put nothing essential outside the tags. Example:
 
 Rules:
 - Each <step> is one concrete sub-task. A sub-task may span multiple lines.
-- Use at most 5 steps. Order them so each builds on the previous.
+- Match the number of steps to what the task genuinely requires. A simple task
+  may need just ONE step; only decompose into more when separate steps each do
+  substantive, distinct work that a single step could not. Do NOT pad: never
+  split one natural action into several steps (e.g. "compute X", "store X",
+  "print X" is one step, not three), and do not add steps merely to reach a
+  count. Prefer the fewest steps that still capture the real structure of the
+  work; use more only when the task is genuinely complex enough to benefit.
+- Order steps so each builds on the previous.
 - Do NOT compute the final answer yourself. If tempted to give the answer,
   instead describe the sub-task that would produce it.
 - The last step should be the one that yields the final result.
