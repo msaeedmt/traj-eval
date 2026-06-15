@@ -24,6 +24,7 @@ import networkx as nx
 
 from traj_eval.agents import (
     RoutingLedger,
+    StepContext,
     TraceObserver,
     build_llm_config,
     build_stepped_team,
@@ -40,11 +41,16 @@ LOG_PATH = Path("runs/smoke_stepped.jsonl")
 def main() -> None:
     llm_config = build_llm_config()
     ledger = RoutingLedger()
-    manager, user, groupchat = build_stepped_team(llm_config, ledger=ledger)
+    step_context = StepContext()
+    manager, user, groupchat = build_stepped_team(
+        llm_config, ledger=ledger, step_context=step_context
+    )
 
     meta = make_trial_meta(trial_id="smoke_stepped", task_id="fib12", backbone="gpt-4o-mini")
     writer = TrialLogWriter(LOG_PATH, meta)
-    observer = TraceObserver(writer, trial_id="smoke_stepped", ledger=ledger)
+    observer = TraceObserver(
+        writer, trial_id="smoke_stepped", ledger=ledger, step_context=step_context
+    )
     observer.attach([a for a in groupchat.agents if a.name != "user"])
     observer.record_task(TOY_TASK)
 
@@ -58,7 +64,9 @@ def main() -> None:
     for e in events:
         parents = [idmap.get(p, p[:8]) for p in e.caused_by]
         text = e.payload.get("text", "").replace("\n", " ")[:50]
-        print(f"  {e.agent_role.value:9s}#{e.seq}  caused_by={parents}  | {text!r}")
+        step = e.payload.get("step_idx")
+        stamp = f"[s{step}.a{e.payload.get('attempt')}]" if step is not None else ""
+        print(f"  {e.agent_role.value:9s}#{e.seq} {stamp:8s} caused_by={parents}  | {text!r}")
 
     planner_events = [e for e in events if e.agent_role.value == "planner"]
     engineer_events = [e for e in events if e.agent_role.value == "engineer"]
@@ -71,12 +79,23 @@ def main() -> None:
         except Exception as exc:  # noqa: BLE001
             print(f"  (could not re-parse plan: {exc})")
 
+    # Step 2a: every engineer/critic event must carry the plan step it belongs
+    # to, so the accumulation layer reads step membership instead of re-deriving
+    # it from the verdict sequence.
+    stepped = engineer_events + critic_events
+    all_stamped = all("step_idx" in e.payload and "attempt" in e.payload for e in stepped)
+    step_indices = sorted(
+        {e.payload["step_idx"] for e in engineer_events if "step_idx" in e.payload}
+    )
+
     print("\n==================== checks ====================")
     print(f"  plan steps (N)         : {n_steps}")
     print(f"  engineer events        : {len(engineer_events)}")
     print(f"  critic events          : {len(critic_events)}")
     print(f"  >= N engineer events   : {n_steps is not None and len(engineer_events) >= n_steps}")
     print(f"  engineer/critic paired : {len(engineer_events) == len(critic_events)}")
+    print(f"  all eng/critic stamped : {all_stamped}")
+    print(f"  distinct step indices  : {step_indices}")
     g = build_graph(events)
     print(f"  graph is DAG           : {nx.is_directed_acyclic_graph(g)}")
     order = [f"{e.agent_role.value}#{e.seq}" for e in causal_order(events)]

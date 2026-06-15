@@ -30,6 +30,7 @@ from __future__ import annotations
 from autogen import GroupChat, GroupChatManager, LLMConfig, UserProxyAgent
 
 from traj_eval.agents.markers import VERDICT_REJECT
+from traj_eval.agents.observer import StepContext
 from traj_eval.agents.plan import Plan, parse_plan
 from traj_eval.agents.roles import (
     CRITIC_SYSTEM_MESSAGE,
@@ -103,6 +104,7 @@ def build_stepped_team(
     max_repairs: int = 2,
     max_round: int = 60,
     ledger: RoutingLedger | None = None,
+    step_context: StepContext | None = None,
 ) -> tuple[GroupChatManager, UserProxyAgent, GroupChat]:
     """Build a per-step team: planner, then engineer->critic per plan sub-task.
 
@@ -113,6 +115,13 @@ def build_stepped_team(
     engineer on the same step up to ``max_repairs`` (counted per step). If the
     repair budget is spent without approval, the controller advances anyway
     (a per-step perseveration outcome) rather than stalling.
+
+    If a ``step_context`` is passed, the controller mirrors its private
+    ``(current_step, repairs)`` onto it whenever they change, so an observer
+    sharing that same context can stamp each engineer/critic event with the
+    plan step it belongs to (Step 2a). The internal ``_StepState`` stays the
+    sole driver of control flow; the context is a read-only mirror for the
+    trace, never consulted by the selector.
     """
     planner = make_planner(llm_config)
     engineer = make_engineer(llm_config)
@@ -127,6 +136,17 @@ def build_stepped_team(
 
     agents = [user, planner, engineer, critic]
     state = _StepState()
+
+    def _sync() -> None:
+        """Mirror the controller's step pointer onto the shared trace context.
+
+        Called after every mutation of ``current_step``/``repairs`` so the
+        observer reads the same step the selector is acting on. No-op when no
+        context is wired (pure control-flow behaviour, unchanged).
+        """
+        if step_context is not None:
+            step_context.step_idx = state.current_step
+            step_context.attempt = state.repairs
 
     def _focus_engineer() -> None:
         if state.plan is None or state.current_step >= len(state.plan):
@@ -171,6 +191,7 @@ def build_stepped_team(
             state.plan = parse_plan(_last_content(groupchat))
             state.current_step = 0
             state.repairs = 0
+            _sync()
             return _route_to(engineer, AgentRole.PLANNER)
 
         if name == AgentRole.ENGINEER.value:
@@ -184,11 +205,13 @@ def build_stepped_team(
             if rejected and state.repairs < max_repairs:
                 # Step-local repair: re-run the engineer on the SAME step.
                 state.repairs += 1
+                _sync()
                 return _route_to(engineer, AgentRole.CRITIC)
 
             # Approved, or repair budget spent, or malformed verdict: advance.
             state.current_step += 1
             state.repairs = 0  # reset per-step budget
+            _sync()
             if state.plan is not None and state.current_step < len(state.plan):
                 # Next step's engineer is caused by this critic's verdict (the
                 # event that triggered the advance). Single-parent (2b rule).

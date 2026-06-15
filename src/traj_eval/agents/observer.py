@@ -9,6 +9,18 @@ change what the team does (the non-invasiveness property O1 depends on).
 Step 2a scope: MESSAGE events only. No causal edges yet (`caused_by` is left
 empty; the routing-derived edge rule is Step 2b) and no anchors (filled
 post-hoc by domain logic, never here).
+
+Step-index stamping (Phase 3): the per-step controller knows which plan step
+an engineer/critic turn belongs to, but that knowledge lives only in the
+selector closure -- it never reaches the logged event. Rather than have the
+anchor layer re-derive step boundaries by replaying critic verdicts (which
+would duplicate the controller's advance state machine in a second place and
+silently mis-attribute steps whenever the two drift), the controller stamps the
+truth at the source via a shared ``StepContext``. The observer reads it when
+emitting an engineer/critic event, so the trace is self-describing: an event
+carries its own ``step_idx``/``attempt`` the way it already carries
+``has_final``. This mirrors how the RoutingLedger bridges selector and observer
+for causal edges -- same one-writer/one-reader shape, different field.
 """
 
 from __future__ import annotations
@@ -50,6 +62,28 @@ def _message_text(message: dict[str, Any] | str) -> str:
     return message or ""
 
 
+class StepContext:
+    """Shared step pointer the controller writes and the observer reads.
+
+    One instance per stepped trial. The controller updates ``step_idx`` and
+    ``attempt`` as it advances the plan / consumes the repair budget; the
+    observer reads them when stamping an engineer or critic event. Kept as a
+    mutable object (not a value passed through the hook) for the same reason as
+    the RoutingLedger: AG2 owns the hook signature, so selector and observer
+    must share state through a side channel, not arguments.
+
+    ``step_idx`` is 0-based and stays at its last value once the plan is
+    exhausted; ``attempt`` is 0 for the first engineer try on a step and
+    increments per step-local repair, resetting when the step advances. A turn
+    that is not part of a plan step (planner, the opening task) leaves both at
+    their defaults and is simply not stamped by the observer.
+    """
+
+    def __init__(self) -> None:
+        self.step_idx: int = 0
+        self.attempt: int = 0
+
+
 class TraceObserver:
     """Attaches to agents and records their outgoing messages as TraceEvents.
 
@@ -66,6 +100,7 @@ class TraceObserver:
         *,
         trial_id: str,
         ledger: RoutingLedger | None = None,
+        step_context: StepContext | None = None,
     ):
         self._writer = writer
         self._trial_id = trial_id
@@ -74,6 +109,9 @@ class TraceObserver:
         # observer reads routing-derived parents for each event and reports each
         # emit back so later edges can point at it (Step 2b).
         self._ledger = ledger
+        # Optional bridge to the per-step controller. When present, engineer and
+        # critic events are stamped with the plan step they belong to (Step 2a).
+        self._step_context = step_context
 
     def _next_seq(self) -> int:
         s = self._seq
@@ -134,6 +172,16 @@ class TraceObserver:
             "text": text,
         }
         payload.update(parse_decision(role, text))
+
+        # Stamp the plan step this turn belongs to, if a stepped controller is
+        # driving (Step 2a). Only the per-step roles carry a step: the planner
+        # authors the plan rather than executing a step, and SYSTEM is not an
+        # agent turn. Reading the shared context here -- at emit time -- is what
+        # makes the step pointer reflect *this* turn (the controller has already
+        # set attempt to the current repair count before the engineer speaks).
+        if self._step_context is not None and role in (AgentRole.ENGINEER, AgentRole.CRITIC):
+            payload["step_idx"] = self._step_context.step_idx
+            payload["attempt"] = self._step_context.attempt
 
         event_id = str(uuid.uuid4())
         event = TraceEvent(
