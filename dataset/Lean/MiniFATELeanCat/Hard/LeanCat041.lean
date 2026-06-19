@@ -17,6 +17,7 @@ meets and joins, there exists a free object over a set X if and only if X
 has at most two elements.
 -/
 
+import Mathlib.CategoryTheory.ConcreteCategory.Forget
 import Mathlib.Order.Category.CompleteLat
 import Mathlib.SetTheory.Cardinal.Basic
 
@@ -26,7 +27,14 @@ universe u v w
 
 namespace MiniFATELeanCat.Hard.LeanCat041
 
-axiom FreeObject {C : Type u} [Category.{v} C] (x : Type w) : Type (max u v w)
+structure FreeObject {C : Type u} [Category.{v} C]
+    {FC : C → C → Type*} {CC : C → Type w}
+    [∀ X Y, FunLike (FC X Y) (CC X) (CC Y)] [ConcreteCategory.{w} C FC]
+    (x : Type w) where
+  (obj : C)
+  (emb : x ⟶ (forget C).obj obj)
+  (uniq : ∀ (Y : C) (f : x ⟶ (forget C).obj Y), ∃! (g : obj ⟶ Y), emb ≫ (forget C).map g = f)
+
 
 theorem leancat_s0041_complete_lattice_category (X : Type u) :
     Nonempty (FreeObject (C := CompleteLat) X) ↔ Cardinal.mk X ≤ 2 := by
