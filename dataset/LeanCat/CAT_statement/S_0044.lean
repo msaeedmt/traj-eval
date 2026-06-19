@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: Filtered colimits commute with finite limits in $\mathcal{S}\mathrm{et}$.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

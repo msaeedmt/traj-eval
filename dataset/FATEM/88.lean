@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a finite group written multiplicatively. Prove that if $|G|$ is odd, then every
 $x \in G$ has a unique square root; that is, there exists exactly one $g \in G$ with $g^{2}=x$.
 -/

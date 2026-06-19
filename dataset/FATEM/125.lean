@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ act on a set $S$. For any $a, b \in S$, if there exists $g \in G$ such that $g a = b$,
 then $G_{a} = g^{-1} G_{b} g$. In other words, the stabilizers of elements in the same orbit are
 conjugate to each other.

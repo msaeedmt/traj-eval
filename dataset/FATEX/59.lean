@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem59
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( k \) be a field, \( X \) and \( Y \) indeterminates, and suppose that \( \alpha \) is a
 positive irrational number. Show the map \( v: k[X, Y] \rightarrow \mathbb{R} \cup \{\infty\} \)
 defined by

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $F$ be a field contained in the ring of $n \times n$ matrices over $\mathbb{Q}$.
 Prove that $[F:\mathbb{Q}] \leq n$.
 -/

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $S$ be a set having an operation $*$ which assigns an element $a * b$ of $S$ for any
 $a, b \in S$. Let us assume that the following two rules hold:
 

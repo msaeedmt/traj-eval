@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem61
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( R \to S \) be a ring map. Let \( I \subset R \) be an ideal. Assume
 \begin{enumerate}
     \item \( I^{2} = 0 \),

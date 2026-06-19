@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( R \) be a commutative ring. If all submodules of finitely generated free modules over
 \( R \) are free over \( R \), then \( R \) is a PID.
 -/

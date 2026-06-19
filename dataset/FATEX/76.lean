@@ -5,6 +5,8 @@ namespace Problem76
 open List
 
 /--
+Difficulty: Expert (FATE-X)
+
 A ring $R$ is said to be \textit{catenary} if for any pair of prime ideals $\mathfrak{p} \subset
   \mathfrak{q}$, there exists an integer bounding the lengths of all finite chains of prime ideals
   $\mathfrak{p} = \mathfrak{p}_0 \subset \mathfrak{p}_1 \subset \dots \subset \mathfrak{p}_e =

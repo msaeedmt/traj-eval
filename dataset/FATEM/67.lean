@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose that $G$ and $H$ are groups with operations $\circ$ and $*$ and suppose
 $g, k \in G$ are inverses; that is, $g \circ k=e_{G}$. If $\varphi: G \rightarrow H$ is a group
 isomorphism, prove that $\varphi(g)$ and $\varphi(k)$ are inverses in $H$.

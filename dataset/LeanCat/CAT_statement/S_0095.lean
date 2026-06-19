@@ -1,3 +1,9 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: If $\mathcal{D}$ admits coequalizers, a functor $G : \mathcal{D} \to \mathcal{C}$ is monadic if $G$ has a left adjoint, conservative and preserves coequalizers.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

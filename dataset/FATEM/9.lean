@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Set $f:G\to H$ is a homomorphism between two groups.
 If $f(a)$ is not of finite order, then $a$ is also not of finite order.
 -/

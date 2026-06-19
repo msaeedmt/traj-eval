@@ -3,6 +3,8 @@ import Mathlib
 open Subgroup
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $G$ be a group and let $K\subseteq H$ be subgroups of $G$ with $K \lhd H$.
 	If $H \lhd G$ and $C_H(K)=1$, prove that $H$ centralizes $C_G(K)$.
 -/

@@ -3,6 +3,8 @@ import Mathlib
 open BigOperators
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that $1^{3}+2^{3}+\cdots+n^{3}=\frac{1}{4} n^{4}+\frac{1}{2} n^{3}+\frac{1}{4} n^{2}$.
 -/
 theorem Finset.sum_cubic (n : ℕ) :

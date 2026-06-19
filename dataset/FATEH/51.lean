@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $K/F$ be a simple algebraic extension. Let $K = F(\theta)$. Let $L$ be an intermediate field
 of $K/F$. Show that the minimal polynomial of $\theta$ over $L$: $g(x) = x^r+\alpha_1x^{r-1} +
 \cdots +\alpha_r$, satisfies that $F(\alpha_1, \dots, \alpha_r) = L$.

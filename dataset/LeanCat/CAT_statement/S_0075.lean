@@ -1,3 +1,18 @@
+/-
+Difficulty: High
+Informal statement:
+Definition: A category is called sifted if the category of cocones over any finite discrete family of objects in it is connected.
+
+
+Notation: $\mathrm{Rec}(\mathcal{C})$ := free cocompletion of $\mathcal{C}$ under reflexive coequalizers.
+
+
+Theorem: For a sifted category with pullbacks $\mathcal C$, $\mathrm{Rec}(\mathcal C)$ is filtered.
+
+
+Reference: Proposition 3.2, Chen Ruiyuan 2021, On sifted colimits in the presence of pullbacks, arXiv:2109.12708
+-/
+
 import Mathlib
 
 namespace CAT_statement_S_0075

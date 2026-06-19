@@ -2,6 +2,8 @@ import Mathlib
 
 open Polynomial
 /--
+Difficulty: Hard (FATE-H)
+
 Let $R=\mathbb{Z}+x\mathbb{Q}[x]\subset \mathbb{Q}[x]$be the set of polynomials in x with rational
 coefficients whose constant term is an integer. Prove that $R$ is not a U.F.D.
 -/

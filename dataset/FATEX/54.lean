@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem54
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( A \) be a $\mathbb{Q}$-algebra.
 Suppose that \( x \in A \) and \( D \in \operatorname{Der}(A) \) are such that \( Dx = 1 \) and
 \( \bigcap_{n=1}^{\infty} x^n A = (0) \).

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Set $f:G\to H$ is a homomorphism between two groups.
 If the range of $f$ has $n$ elements, then $x^{n} \in \operatorname{Ker} f$ for every $x \in G$.
 -/

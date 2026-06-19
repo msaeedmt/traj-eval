@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a ring with 1 . An element $a \in R$ is said to have a left inverse if $b a=1$ for
 some $b \in R$. Show that if the left inverse $b$ of $a$ is unique, then $a b=1$
 (so $b$ is also a right inverse of $a$).

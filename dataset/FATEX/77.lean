@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem77
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $A$ be a Noetherian ring, $P \subset Q$ prime ideals such that
 $\operatorname{ht} P = h$, $\operatorname{ht} Q/P = d$, where $d > 1$.
 Prove that there exist infinitely many intermediate primes $P'$, $P \subset P' \subset Q$

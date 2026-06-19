@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem30
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( A \) be a subring of a ring \( B \), such that the set \( B \setminus A \) is closed under
 multiplication. Show that \( A \) is integrally closed in \( B \).
 -/

@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem22
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $F$ be a field with $\mathbb{Q} \subseteq F \subseteq \mathbb{C}$, where $F/\mathbb{Q}$
 is a finite \emph{abelian} Galois extension. Prove that $F$ contains only finitely many algebraic
 integers (i.e. elements in $F$ whose minimal polynomial over $\mathbb{Q}$ have coefficients in

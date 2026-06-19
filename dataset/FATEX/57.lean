@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem57
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( A \) be a domain and \( K \) its field of fractions.
 \( x \in K \) is called almost integral if there exists an element \( r\in A, r \ne 0 \)
 such that \( rx^n \in A \) for all \( n \ge 0 \).

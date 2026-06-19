@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G = G_{1} \times G_{2}$, and let $H \triangleleft G$ be a normal subgroup such that
 $H \cap G_{i} = \{1\}$ for $i = 1, 2$. Prove that $H \leq Z(G)$.
 -/

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $A$ be a ring such that for each maximal ideal $\mathfrak{m}$ of $A$, the local ring
 $A_{\mathfrak{m}}$ is Noetherian; and for each $x \neq 0$ in $A$, the set of maximal ideals of $A$
 which contain $x$ is finite. Show that $A$ is Noetherian.

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that if $G$ is a group and has exactly one subgroup $H$ of order $n$,
 then $H$ is a normal subgroup of $G$.
 -/

@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: There is no equivalence of categories between $\mathcal{S}\mathrm{et}$ and $\mathcal{S}\mathrm{et}^{op}$.
+-/
+
 import Mathlib
 
 open CategoryTheory

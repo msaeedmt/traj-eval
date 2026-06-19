@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a group with a finite number of elements. Show that for any $a \in G$,
 there exists an $n \in \mathbb{Z}^{+}$such that $a^{n}=e$.
 -/

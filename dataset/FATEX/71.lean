@@ -8,6 +8,8 @@ variable (A B : Type) [CommRing A] [CommRing B] [Algebra A B]
 variable (G : Type) [Monoid G] [MulSemiringAction G B] [SMulCommClass G A B]
 
 /--
+Difficulty: Expert (FATE-X)
+
 The set of fixed points under a group action, as a subring.
 -/
 def FixedPoints.subring : Subring B where

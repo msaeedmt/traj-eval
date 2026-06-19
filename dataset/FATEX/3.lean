@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem3
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $H$ be a subgroup of finite index of a group $G$. Show that there exists a subset $S$ of $G$,
 such that $S$ is both a set of representatives of the left and the right cosets of $H$ in $G$.
 -/

@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem12
 
 /--
+Difficulty: Expert (FATE-X)
+
 Prove that the ring $\mathbb{Z}[\frac{1+\sqrt{-19}}{2}]$ is a principal ideal domain.
 -/
 theorem isPrincipalIdealRing_of_quadratic_integer_19 :

@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: Let $\mathcal{C}$ be a category, if every idempotent in $\mathcal{C}$ can be factored into an epimorhisms followed by a monomorphism, then all idempotents split in $\mathcal{C}$.
+-/
+
 import Mathlib
 
 open CategoryTheory Idempotents

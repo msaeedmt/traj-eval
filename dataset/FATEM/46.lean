@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose $a(x)$ and $b(x)$ have degree $ < n$. If $a(c)=b(c)$ for $n$ values of $c$,
 prove that $a(x)=b(x)$.
 -/

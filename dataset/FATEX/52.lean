@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem52
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $R$ be a ring, \( \mathfrak{m} \) is an ideal in the Jacobson radical of \( R \),
 and \( G_{1}, G_{2} \in R[x] \) are polynomials such that $G_1$ is monic.
 If $G_i \mod \mathfrak{m}$ gnerate the unit ideal of $R/\mathfrak{m}[x]$,

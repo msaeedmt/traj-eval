@@ -3,6 +3,8 @@ import Mathlib
 open MulOpposite Pointwise
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $M$ is a subgroup of $G$ such that $x^{-1} M x \subset M$ for all $x \in G$,
 prove that actually $x^{-1} M x=M$.
 -/

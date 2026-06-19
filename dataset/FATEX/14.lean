@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem14
 
 /--
+Difficulty: Expert (FATE-X)
+
 Show that if $R$ is a unique factorization domain such that the quotient field of $R$ is isomorphic
 to $\mathbb{R}$, then R is isomorphic to $\mathbb{R}$.
 -/

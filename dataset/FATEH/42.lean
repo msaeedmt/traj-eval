@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField AdjoinRoot Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( K \) be a field with \( \operatorname{char}(K) \neq 2 \). Consider Galois extensions
 \( L/K \) with \( \operatorname{Gal}(L/K) \cong (\mathbb{Z}/2\mathbb{Z})^2 \). Let \( c \in L^\times
 \) be a nonsquare, and let \( E = K(\sqrt{c}) \). Prove that \( E \) is Galois over \( K \) if and

@@ -1,3 +1,12 @@
+/-
+Difficulty: Medium
+Informal statement:
+Definition: A functor $F : \mathcal C \to \mathcal D$ is said to $\textbf{lift limits}$ if for every diagram $D: \mathcal I\to \mathcal C$ and every limit $L$ of $F\circ D$, there exists a limit $L'\in\mathcal D$ such that $F(L')\cong L$.
+
+
+Theorem: A functor that lifts equalizers is faithful if and only if it reflects epimorphisms.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

@@ -6,6 +6,8 @@ local instance (p : Nat.Primes) : NeZero p.1 := ⟨p.2.ne_zero⟩
 local instance (p : Nat.Primes) : IsDomain (ZMod p) := @ZMod.instIsDomain p ⟨p.2⟩
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $f(X)\in\mathbb{Z}[X]$ be an irreducible polynomial, $n_p$ is the number of solutions of
 $f(X)$ in $\mathbb{F}_p$, show that $$\lim\limits_{s\rightarrow 1^{+}}\frac{\sum
 \limits_{p\textbf{ prime}}\frac{n_p}{p^s}}{\sum\limits_{p\textbf{ prime}}\frac{1}{p^s}}=1$$.

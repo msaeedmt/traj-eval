@@ -2,6 +2,8 @@ import Mathlib
 
 open IntermediateField
 /--
+Difficulty: Hard (FATE-H)
+
 Show that there is at most one extension \( F(\alpha) \) of a field \( F \) such that \( \alpha^4
 \in F \), \( \alpha^2 \notin F \), and \( F(\alpha) = F(\alpha^2) \).
 -/

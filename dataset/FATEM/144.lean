@@ -3,6 +3,8 @@ import Mathlib
 open Classical
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a finite group, and let $H$ and $K$ be subgroups of $G$. Prove the following:
 Suppose $H$ and $K$ are not equal, and both have order the same prime number $p$.
 Then $H \cap K=\{e\}$.

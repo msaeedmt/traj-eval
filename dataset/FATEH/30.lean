@@ -4,6 +4,8 @@ open Polynomial
 open scoped IntermediateField
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $E$ be the splitting field of
 \[
 f(x) = \frac{x^7 - 1}{x - 1} = x^6 + x^5 + x^4 + x^3 + x^2 + x + 1

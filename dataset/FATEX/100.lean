@@ -5,6 +5,8 @@ namespace Problem100
 open Module
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $R$ be a Noetherian ring, $P$ be a countably generated projective $R$-module
 such that $P_{\mathfrak{m}}$ has infinite rank for all maximal ideals $\mathfrak{m}$ of $R$.
 Then $P$ is free.

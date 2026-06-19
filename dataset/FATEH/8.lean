@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Show that if a Sylow $2$-subgroup of $G$ is nontrivial and cyclic, then $G$ has a subgroup $H$
 with $[G:H] =2$.
 -/

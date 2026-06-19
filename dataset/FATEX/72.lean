@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem72
 
 /--
+Difficulty: Expert (FATE-X)
+
 The krull dimension of module, defined as `krullDim` of its support.
 -/
 noncomputable def Module.supportDim (R : Type) [CommRing R] (M : Type) [AddCommGroup M]

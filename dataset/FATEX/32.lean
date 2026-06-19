@@ -5,6 +5,8 @@ namespace Problem32
 open IsLocalRing
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( A \) be a Noetherian local ring such that its completion \( \widehat{A} \) is a unique
 factorization domain. Then \( A \) is a unique factorization domain.
 -/

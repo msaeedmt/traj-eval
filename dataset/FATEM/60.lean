@@ -5,6 +5,8 @@ open scoped Pointwise
 open MulOpposite
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $H$ be a subgroup of a group $G$ such that $g^{-1} h g \in H$ for all $g \in G$ and all
 $h \in H$. Show that every left coset $g H$ is the same as the right coset $\mathrm{Hg}$.
 -/

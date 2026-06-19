@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem42
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \(k\) be any field. Suppose that \(A = k[[x,y]]/(f)\) and \(B = k[[u,v]]/(g)\),
 where \(f = xy\) and \(g = uv + \delta\) with \(\delta \in (u,v)^{3}\). Show that \(A\) and \(B\)
 are isomorphic.

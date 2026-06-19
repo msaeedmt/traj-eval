@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose $(c, d) \in G \times H$, where $c$ has order $m$ and $d$ has order $n$.
 Prove: If $m$ and $n$ are not relatively prime (hence have a common factor $q>1$ ),
 then the order of $(c, d)$ is less than $m n$.

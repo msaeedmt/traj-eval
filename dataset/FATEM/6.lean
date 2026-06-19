@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that a if $G$ and $H$ are finite groups and their orders are coprime,
 then any homomorphism $f: G \rightarrow H$ is trivial, i.e. $f(G) = \{ 1_H \}$.
 -/

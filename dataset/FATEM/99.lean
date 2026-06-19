@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $G$ is a group and $N \triangleleft G$ is such that $G / N$ is abelian,
 prove that $a b a^{-1} b^{-1} \in N$ for all $a, b \in G$
 -/

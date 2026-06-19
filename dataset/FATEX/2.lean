@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem2
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $G$ be a finite group and $L$ a maximal subgroup of $G$. Suppose $L$ is non-Abelian and simple.
 Then there exist at most two minimal normal subgroups in $G$.
 -/

@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose $R$ is a commutative ring. Prove that if $f(x)\in R[x]$ is a zero divisor,
 then exist $a\in R^*$ such that $af(x)=0$.
 -/

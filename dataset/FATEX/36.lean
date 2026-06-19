@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem36
 
 /--
+Difficulty: Expert (FATE-X)
+
 If \( R \) is Noetherian and \( M \) and \( N \) are finitely generated \( R \)-modules, show that
 \[
 \operatorname{Ass} \operatorname{Hom}_R(M, N) = \operatorname{Supp} M \cap \operatorname{Ass} N,

@@ -1,3 +1,10 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: Let $\mathcal{C}$ be a complete, wellpowered, cowellpowered and have a separator $s$.
+    Then $\mathcal{C}$ is cocomplete if and only if for each set $I$, there exists an $I$-th copower of $S$ in $\mathcal{C}$.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

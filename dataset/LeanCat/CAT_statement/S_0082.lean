@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: $\mathbb{k}$ is the unique (up to isomorphism) simple object in $\mathrm{Vect}_{\mathbb{k}}$.
+-/
+
 import Mathlib
 
 open Module

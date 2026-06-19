@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Suppose \( G \) is a group and \( H \) is a maximal subgroup of \( G \). Show that either \( Z(G)
 \leq H \) or \( [G,G] \leq H \). (A maximal subgroup contains either the center or the commutator
  subgroup.)

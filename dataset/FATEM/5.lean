@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that a homomorphism $\phi: G \rightarrow G^{\prime}$ is an isomorphism
 (There exists a two-sided inverse map $\phi^{-1}:G'\to G$)
 if and only if it is injective and surjective.

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose that $G$ is a group and $g, h \in G$. Prove that $g x=h$ has a unique solution;
 likewise, prove that $x g=h$ has a unique solution.
 -/

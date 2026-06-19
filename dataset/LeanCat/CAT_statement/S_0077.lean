@@ -1,3 +1,21 @@
+/-
+Difficulty: High
+Informal statement:
+Notation:
+
+$\mathrm{Sind}(\mathcal{C})$ := free cocompletion of $\mathcal{C}$ under small sifted colimits;
+
+$\mathrm{Ind}(\mathcal{C})$ := free cocompletion of $\mathcal{C}$ under small filtered colimits;
+
+$\mathrm{Rec}(\mathcal{C})$ := free cocompletion of $\mathcal{C}$ under reflexive coequalizers.
+
+Theorem:
+Let $\mathcal C$ be a category with pullbacks.
+Then $\mathrm{Sind}(\mathcal{C})=\mathrm{Ind}(\mathrm{Rec}(\mathcal{C}))$
+
+Reference: Theorem 5.1, Chen Ruiyuan 2021, On sifted colimits in the presence of pullbacks, arXiv:2109.12708
+-/
+
 import Mathlib
 
 namespace CAT_statement_S_0077

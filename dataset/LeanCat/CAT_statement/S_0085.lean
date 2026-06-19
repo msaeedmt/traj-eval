@@ -1,3 +1,12 @@
+/-
+Difficulty: Medium
+Informal statement:
+Definition: A functor is called $\textbf{left exact}$ if it preserves all finite limits.
+
+
+Theorem: Let $\mathcal{A}$ and $\mathcal{B}$ be abelian categories and $F:\mathcal{A}\to\mathcal{B}$ be a functor. Then $F$ is left exact if and only if $F$ is additive and $F$ maps each exact sequence $0\to x\to y\to z$ to an exact sequence $0\to F(x)\to F(y)\to F(z)$.
+-/
+
 import Mathlib
 
 open CategoryTheory Functor Limits ShortComplex

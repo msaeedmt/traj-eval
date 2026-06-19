@@ -2,6 +2,8 @@ import Mathlib
 
 open Polynomial
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( E \) be a field of characteristic zero. Consider a prime \( q \) and an element \( b
 \in E^\times \) that isn’t a \( q \)-th power. Let \( E' = E(a) \) with \( a^q = b \). Show that
 \( X^q - b \) is reducible over \( E \) if and only if \( [E' : E] < q \)

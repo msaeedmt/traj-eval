@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem56
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( R \to S \) be a faithfully flat ring map. Let \( M \) be an \( R \)-module.
 If the \( S \)-module \( S \otimes_{R} M \) is projective, then \( M \) is projective.
 -/

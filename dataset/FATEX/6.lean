@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem6
 
 /--
+Difficulty: Expert (FATE-X)
+
 Prove that if $\#G = 396$ then $G$ is not simple.
 -/
 theorem not_isSimpleGroup_of_card_eq_396 (G : Type) [Group G]

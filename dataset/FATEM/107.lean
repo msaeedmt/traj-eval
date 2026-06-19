@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that for any permutation $\sigma, \sigma \tau \sigma^{-1}$ is a transposition
 if $\tau$ is a transposition.
 -/

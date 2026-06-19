@@ -1,3 +1,10 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: For any monad $(T,\mu,\eta)$ on a category $\mathcal{C}$ and let $\mathcal{C}^T$ be its Elienberg-Moore category.
+    Let $U:\mathcal{C}^T\to\mathcal{C}$ be the forgetful functor, then it admits a left adjoint.
+-/
+
 import Mathlib
 
 open CategoryTheory

@@ -3,6 +3,8 @@ import Mathlib
 open Pointwise
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $H$ is a subgroup of $G$ and two cosets of $H$ share an element, then these two cosets are equal.
 -/
 theorem cosets_eq_of_inter_ne_empty {G : Type*} [Group G] (H : Subgroup G) (a b : G) :

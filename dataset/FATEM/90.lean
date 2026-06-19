@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $G$ is a group and $G / Z(G)$ is cyclic, where $Z(G)$ denotes the center of $G$,
 prove that $G$ is abelian; that is, $G=Z(G)$.
 -/

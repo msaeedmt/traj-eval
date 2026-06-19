@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem49
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( A \) be a commutative ring. Prove that every principal ideal of \( A \) is idempotent
 if and only if every finitely generated ideal is a direct summand of \( A \).
 -/

@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Show that if $F$ has characteristic $p$, then all degree $p$ Galois extension of $F$ is to
 adjoin a zero of $x^p-x-a$ for some $a \in F$.
 -/

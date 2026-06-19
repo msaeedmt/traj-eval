@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem93
 
 /--
+Difficulty: Expert (FATE-X)
+
 There exists a field $k$ and a (not necessarily commutative) ring $A$
 such that $A$ is integral and finitely generated over $k$ but $\dim_k A$ is not finite.
 -/

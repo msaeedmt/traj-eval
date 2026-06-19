@@ -5,6 +5,8 @@ namespace Problem58
 open TensorProduct
 
 /--
+Difficulty: Expert (FATE-X)
+
 Suppose that $(R, \mathfrak{P})$ is a local Noetherian ring,
 and let $(S, \mathfrak{Q})$ be a local Noetherian $R$-algebra such that
 $\mathfrak{P}S \subseteq \mathfrak{Q}$.

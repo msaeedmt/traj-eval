@@ -1,3 +1,10 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: Let $F,G,H$ be functors such that $F\dashv G\dashv H$.
+    Then $F$ is fully faithful if and only if $H$ is fully faithful.
+-/
+
 import Mathlib
 
 open CategoryTheory Functor

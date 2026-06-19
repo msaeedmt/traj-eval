@@ -33,6 +33,8 @@ end
 attribute [local instance] MvPolynomial.gradedAlgebra
 
 /--
+Difficulty: Expert (FATE-X)
+
 If $I$ is an homogeneous ideal of $k[x_0, \dots, x_n]$, \( R = k[x_0, \dots, x_n]/I \),
 then \( R \) is Cohen-Macaulay if and only if \( R_P \) is Cohen-Macaulay, where
 \( P = (x_0, \dots, x_n) \).

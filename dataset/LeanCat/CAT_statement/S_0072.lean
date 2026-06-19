@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: A full subcategory of the category $\mathcal{T}\mathrm{op}^{CH}$ of compact Hausdorff spaces is reflective if and only if it is cocomplete and contains at least one non-empty space.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits Topology

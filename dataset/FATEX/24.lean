@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem24
 
 /--
+Difficulty: Expert (FATE-X)
+
 The field $K = \mathbb{Q}(\sqrt{p_1}, \dots, \sqrt{p_r})$
 for a finite list of integers $p_1, \dots, p_r$.
 -/

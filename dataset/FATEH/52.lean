@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $q$ denote a power of a prime $p$. Show that the extension $\mathbb{F}_q(t^{1/n})$ over
 $\mathbb{F}_q(t)$ is Galois if and only if $q \equiv 1 \bmod n$.
 -/

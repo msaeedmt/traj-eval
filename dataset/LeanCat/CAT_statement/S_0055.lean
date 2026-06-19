@@ -1,3 +1,9 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: The forgetful functor $U$ : $\mathcal{G}\mathrm{rp}$, $\mathcal{A}\mathrm{b}$, $\mathcal{R}\mathrm{ing}\to \mathcal{S}\mathrm{et}$ creates limits, but they do not preserve coproducts.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: Let $\mathcal{C}$ be a category and let $f,g$ be morphisms in $\mathcal{C}$ such that $f\circ g$ is monic. Then $g$ is monic.
+-/
+
 import Mathlib
 
 open CategoryTheory

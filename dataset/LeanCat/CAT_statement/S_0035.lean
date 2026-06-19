@@ -1,3 +1,12 @@
+/-
+Difficulty: High
+Informal statement:
+Definition: A full concrete embedding is called a realization.
+
+
+Theorem: There is a construct $(\mathcal{C},U)$ such that every construct has a realization to $(\mathcal{C},U)$.
+-/
+
 import Mathlib
 
 open CategoryTheory

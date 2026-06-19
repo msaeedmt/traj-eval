@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem28
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $K/\mathbb{Q}$ be a finite extension.
 Let $g$ be a nontrivial element of the absolute Galois group $G(K)$ of $K$.
 Show that $g$ admits an infinite number of conjugates.

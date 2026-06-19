@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: There are categories $\mathcal{C}$, $\mathcal{D}$ and $\mathcal{E}$ such that $\mathcal{C}$ is a subcategory of $\mathcal{D}$, $\mathcal{D}$ is a subcategory of $\mathcal{E}$ and $\mathcal{C}$ is reflective in $\mathcal{E}$, but $\mathcal{C}$ is not reflective in $\mathcal{D}$. Here we do not require a reflective subcategory to be full.
+-/
+
 import Mathlib
 
 open CategoryTheory Functor

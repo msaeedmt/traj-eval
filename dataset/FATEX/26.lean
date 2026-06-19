@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem26
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $K/\mathbb{Q}$ be a finite extension.
 Let $H$ be a closed subgroup of the absolute Galois group $G(K)$ of $K$.
 If $H$ is finite, then the cardinality of $H$ is either one or two.

@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: An abelian group is torsion free if and only if it is a directed colimit in $\mathcal{A}\mathrm{b}$ of free abelian groups.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

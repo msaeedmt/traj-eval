@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem47
 
 /--
+Difficulty: Expert (FATE-X)
+
 The ring \(A = k[x,y]/(y^{2} - f(x))\),
 where \(k\) is a field and \(f(x) = (x - t_{1})\ldots(x - t_{n})\).
 -/

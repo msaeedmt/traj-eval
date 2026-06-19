@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $f:G\to H$ and $g:H\to K$ are surjective homomorphisms of groups, then the composition
 $g\circ f:G\to K$ is also a surjective homomorphism.
 -/

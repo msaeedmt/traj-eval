@@ -1,3 +1,9 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: The monad associated with the forgetful functor $\mathcal{T}\mathrm{op}\to \mathcal{S}\mathrm{et}$ is idempotent.
+-/
+
 import Mathlib
 
 open CategoryTheory

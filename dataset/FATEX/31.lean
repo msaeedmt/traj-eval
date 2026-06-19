@@ -5,6 +5,8 @@ namespace Problem31
 open MvPolynomial
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( R = \mathbb{C}[x_1, \dots, x_n]/(x_1^2 + x_2^2 + \dots + x_n^2) \).
 -/
 abbrev R (n : ℕ) : Type :=

@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Prove that for $n$ odd, $n>1$, $\Phi_{2n}(x) = \Phi_n(-x)$, where $\Phi_n$ is the $n$th
 cyclotomic polynomial over $\mathbb{Q}$.
 -/

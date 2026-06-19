@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 For a commutative ring \(R\) and \(n \in \mathbb{N}\) such that \(2\) is invertible in \(R\).
 If \(A \in SO(2n + 1,  R)\), then \(det(I - A) = 0\).
 -/

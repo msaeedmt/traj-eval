@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a commutative ring. $a,b\in R$ are nilpotent. Prove that $a+b$ is also nilpotent.
 -/
 theorem isNilpotent_add_of_isNilpotent {R : Type*} [CommRing  R] (a b : R)

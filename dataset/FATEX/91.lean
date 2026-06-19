@@ -5,6 +5,8 @@ namespace Problem91
 open CategoryTheory MvPolynomial
 
 /--
+Difficulty: Expert (FATE-X)
+
 The Picard group of a commutative ring R consists of the invertible R-modules,
   up to isomorphism.
 -/

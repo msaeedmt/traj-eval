@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem84
 
 /--
+Difficulty: Expert (FATE-X)
+
 For a projective module \(M\) over a commutative ring \(R\),
 there exists a free \(R\)-module \(N\), such that \(M \oplus N\) is free.
 -/

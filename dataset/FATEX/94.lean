@@ -6,6 +6,8 @@ variable {k A : Type} [Field k] [CharZero k] [CommRing A] [IsDomain A] [Algebra 
   [Algebra.FiniteType k A] (f : A →ₐ[k] A) (ϕ : A →ₐ[k] k) (I : Ideal A)
 
 /--
+Difficulty: Expert (FATE-X)
+
 The set $\{ n \in \mathbb{N} \mid \left. \varphi \circ f^n \right|_I = 0 \right\rbrace \}$.
 -/
 def zeroSet : Set ℕ := {n | ∀ x : I, (ϕ.comp (f ^ n)) (x : A) = 0}

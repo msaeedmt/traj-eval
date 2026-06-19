@@ -3,6 +3,8 @@ import Mathlib
 open Classical
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $H$ and $K$ are subgroups of a group $G$ and if $|H|$ and $|K|$ are relatively prime,
 prove that $H \cap K=\{1\}$.
 -/

@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem51
 
 /--
+Difficulty: Expert (FATE-X)
+
 A Noetherian topological ring in which the topology is defined by an ideal contained in the
 Jacobson radical is called a \textit{Zariski ring}.
 Let \( A \) be a Noetherian ring, \( \mathfrak{a} \) an ideal of \( A \), and \( \widehat{A} \)

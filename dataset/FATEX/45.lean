@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem45
 
 /--
+Difficulty: Expert (FATE-X)
+
 A linear map `f` between graded modules is a graded homomorphism if it respects the
 grading structure.
 -/

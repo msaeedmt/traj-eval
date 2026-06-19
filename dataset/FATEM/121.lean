@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose $G$ is a group and $\alpha$ is an automorphism of G.
 Prove that if for any $g \in G, g^{-1} \alpha(g) \in Z(G)$, then for any $a $ in $G^{\prime}$,
 we have $\alpha(a)=a$.

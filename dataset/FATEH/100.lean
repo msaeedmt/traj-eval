@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 There exists a commutative ring with finite prime spectrum but is not Noetherian.
 -/
 theorem exists_finite_primeSpectrum_not_isNoetherianRing :

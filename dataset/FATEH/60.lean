@@ -2,6 +2,8 @@ import Mathlib
 
 open Polynomial
 /--
+Difficulty: Hard (FATE-H)
+
 For a positive integer $a$, consider the polynomial $$ f_a = x^6 + 3ax^4 + 3x^3 + 3ax^2 + 1.
  $$ Let $F$ be the splitting field of $f_a$. Show that its Galois group is solvable.
 -/

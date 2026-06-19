@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem7
 
 /--
+Difficulty: Expert (FATE-X)
+
 Prove that if $\#G = 1785$ then $G$ is not simple.
 -/
 theorem not_isSimpleGroup_of_card_eq_1785 (G : Type) [Group G]

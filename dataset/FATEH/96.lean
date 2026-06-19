@@ -2,6 +2,8 @@ import Mathlib
 
 open Polynomial
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( I_1, I_2 \subseteq K[x_1, \dots, x_n] \) be two ideals. With \( y \) an additional
 indeterminate, form the ideal
 \[

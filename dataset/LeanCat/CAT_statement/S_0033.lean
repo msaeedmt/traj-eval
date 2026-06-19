@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: $\mathcal{T}\mathrm{op}^{CH}$ has precisely two full, isomorphism-closed, coreflective subcategories.
+-/
+
 import Mathlib
 
 open CategoryTheory Topology

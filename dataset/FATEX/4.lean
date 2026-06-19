@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem4
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $p$ be an odd prime number, and let $G$ be a finite group of order $p(p + 1)$. Assume that $G$
 does not have a normal Sylow $p$-subgroup. Prove that $p + 1$ is a power of $2$.
 -/

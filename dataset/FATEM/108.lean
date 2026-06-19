@@ -3,6 +3,8 @@ import Mathlib
 open Equiv Equiv.Perm
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that if $\tau_{1}, \tau_{2}$, and $\tau_{3}$ are transpositions, then
 $\tau_{1} \tau_{2} \tau_{3} \neq e$, the identity element of $S_{n}$.
 -/

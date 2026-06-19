@@ -3,6 +3,8 @@ import Mathlib
 open MvPolynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $m$ be a maximal ideal of $\mathbb{Z}[x_1, \dots, x_n]$ and $F = \mathbb{Z}[x_1, \dots, x_n]
 /m$. Show that $F$ cannot have characteristic $0$.
 -/

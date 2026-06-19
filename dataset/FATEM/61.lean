@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Show that an intersection of normal subgroups of a group $G$ is again a normal subgroup of $G$.
 -/
 theorem Subgroup.inf_normal_of_normal {G : Type*} [Group G]

@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem19
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $E$ denote the algebra $\mathbb{Q}(\sqrt{(2+\sqrt 2)(3+\sqrt 3)})
 -/
 abbrev E : Type := (Algebra.adjoin ℚ {Real.sqrt ((2 + Real.sqrt 2) * (3 + Real.sqrt 3))})

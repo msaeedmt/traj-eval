@@ -1,3 +1,10 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: Suppose $\mathcal{C}$ is cocomplete and $G :\mathcal{D} \to \mathcal{C}$ is monadic.
+    Then $\mathcal{D}$ is cocomplete if and only if $\mathcal{D}$ has coequalizers.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

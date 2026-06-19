@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $p$ be a prime number and let $F$ be a field containing $p$-th roots of unity.
 Let $K$ be a Galois extension of $F$ with Galois group $\mathbb{Z}_p \times \mathbb{Z}_p$.
 Show that there exist two elements $\alpha, \beta \in K^\times$ such that

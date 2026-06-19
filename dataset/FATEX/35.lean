@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem35
 
 /--
+Difficulty: Expert (FATE-X)
+
 A commutative ring whose prime ideals are finitely generated is Noetherian.
 -/
 theorem noetherian_of_prime_ideals_fg (R : Type) [CommRing R]

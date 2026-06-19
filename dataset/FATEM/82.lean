@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Give an example of $\alpha, \beta, \gamma \in S_{5}$, none of which is the identity (1),
 with $\alpha \beta=\beta \alpha$ and $\alpha \gamma=\gamma \alpha$,
 but with $\beta \gamma \neq \gamma \beta$.

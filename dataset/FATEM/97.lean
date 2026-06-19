@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a group such that all subgroups of $G$ are normal in $G$. If $a, b \in G$,
 prove that $b a=a^{j} b$ for some $j$.
 -/

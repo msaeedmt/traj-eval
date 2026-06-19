@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $G$ is a group and $H \triangleleft G$, show that if $a \in G$ has finite order $o(a)$,
 then $H a$ in $G / H$ has finite order $m$, where $m \mid o(a)$.
 -/

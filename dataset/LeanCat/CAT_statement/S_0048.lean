@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: A reflective subcategory $\mathcal{C}$ of a cocomplete category $\mathcal{D}$ is also cocomplete.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

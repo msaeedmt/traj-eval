@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Suppose that a ring $S$ is integral over the image of a ring homomorphism $R \to S$. Show that
 the Krull dimension of $M$ as an $S$-module is the same as the Krull dimension of $M$ as an
 $R$-module.

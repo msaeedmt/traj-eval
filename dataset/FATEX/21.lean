@@ -5,6 +5,8 @@ namespace Problem21
 open Polynomial
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $F$ be a field and let $f(x) \in F[x]$ be an irreducible polynomial.
 Suppose that $K$ is a splitting field for $f(x)$ over $F$ and assume that there exists an element
 $\alpha \in K$ such that both $\alpha$ and $\alpha+1$ are roots of $f(x)$.

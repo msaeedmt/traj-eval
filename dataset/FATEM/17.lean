@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose that $R$ is a commutative ring with identity. For a subset $S$ of $R$,
 let $\operatorname{Span}(S)$ be the minimal ideal containing elements in $S$. Prove that
 $\operatorname{Span}(S)=\left\{\sum_{s\in S'}r_ss|S'\text{ is a finite subset of }S,r_s\in R\

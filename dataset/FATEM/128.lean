@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $n \in \mathbb{Z}$ with $n \geq 3$. Prove the following: $Z\left(D_{2 n}\right)=1$
 if $n$ is odd.
 -/

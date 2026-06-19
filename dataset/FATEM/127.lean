@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a monoid with identity. An element $b \in G$ is the inverse of $a \in G$ if and only if
 the following relations hold:
 \[ a b a = a \quad \text{and} \quad a b^2 a = 1. \]

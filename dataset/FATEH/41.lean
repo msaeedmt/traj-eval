@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $p$ be a prime integer. Suppose that the degree of every finite extension of a field $F$
  is divisible by $p$. Prove that the degree of every finite extension of $F$ is a power of $p$.
 -/

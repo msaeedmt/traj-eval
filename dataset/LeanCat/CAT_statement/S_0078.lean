@@ -1,3 +1,15 @@
+/-
+Difficulty: High
+Informal statement:
+Definition: For $F : \mathcal{C} \to \mathcal{D}$, we define the induced cocontinuous functor $\mathrm{Lan}_{F^{op}} : \mathcal{P}sh(\mathcal{C}) \to \mathcal{P}sh(\mathcal{D})$, by $\phi\mapsto \phi \star yF$, where $\phi\star yF$ is the $\phi$-weighted colimit of the diagram $yF$ and $y$ is the Yoneda embedding.
+
+Notation: $\mathrm{Sind}(\mathcal{C})$ := free cocompletion of $\mathcal{C}$ under small sifted colimits;
+
+Theorem: For any full and faithful $I : \mathcal{C} \to \mathcal D$ between small categories, $\phi\in [\mathcal C ^{op}, \mathcal Set]$ is in $\mathrm{Sind}(\mathcal C)$ iff $\mathrm{Lan}_{I^{op}}$ is in $\mathrm{Sind}(\mathcal D)$.
+
+Reference: Lemma 6.2, Chen Ruiyuan 2021, On sifted colimits in the presence of pullbacks, arXiv:2109.12708
+-/
+
 import Mathlib
 
 namespace CAT_statement_S_0078

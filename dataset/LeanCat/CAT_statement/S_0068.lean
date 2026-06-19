@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: There is a category $\mathcal{C}$ such that there exists two regular epimorphisms $f:c\to d$ and $g:c'\to d'$ in which the product of $f$ and $g$ is not regularly epic.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

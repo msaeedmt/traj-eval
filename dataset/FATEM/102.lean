@@ -3,6 +3,8 @@ import Mathlib
 open Classical
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $|G|=p^{3}$ and $|Z(G)| \geq p^{2}$, prove that $G$ is abelian.
 -/
 theorem commutative_of_center_card_eq_prime_pow_three {G : Type*} {p : ℕ} [Group G] [Fintype G]

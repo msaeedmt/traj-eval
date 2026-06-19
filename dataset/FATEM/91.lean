@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a ring, and suppose there exists a positive even integer $n$ such that $x^{n}=x$ for all
 $x \in R$. Prove that $-x=x$ for all $x \in R$.
 -/

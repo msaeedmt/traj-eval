@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose that $G$ is a group for which every element has order a power $p^{n}$ of a fixed prime $p$.
 Let $\varphi: G \rightarrow H$ be a surjective homomorphism. Prove that $H$ is a $p$-group too.
 -/

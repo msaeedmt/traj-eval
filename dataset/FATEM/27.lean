@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $D$ is an integral domain but not a field, then the polynomial ring $D[x]$ is not a principal
 ideal domain (PID).
 -/

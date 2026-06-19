@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem9
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $G$ be a finite group and let $\mathrm{Syl}_p(G)$ denote its set of Sylow $p$-subgroups.
 Suppose that $S$ and $T$ are distinct members of
 $\mathrm{Syl}_p(G)$ chosen so that $\#(S \cap T)$ is maximal

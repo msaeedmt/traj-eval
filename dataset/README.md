@@ -1,14 +1,24 @@
-# Lean Dataset
+# Mini FATE + LeanCat Benchmark
 
-This folder is a single Lean 4 benchmark project for FATE and LeanCat.
+This is a compact Lean 4 / Mathlib benchmark for trajectory evaluation.
+It contains 30 theorem-proving tasks:
+
+- Easy: 2 LeanCat Easy + 8 FATE-M
+- Medium: 2 LeanCat Medium + 8 FATE-H
+- Hard: 2 LeanCat High + 8 FATE-X
+
+The old large benchmark corpus is kept private in the local checkout. The
+public dataset surface is the `MiniFATELeanCat` library and `metadata.json`.
 
 ## Layout
 
-- `FATEH/`, `FATEM/`, `FATEX/`: FATE Lean statements.
-- `LeanCat/CAT_statement/`: LeanCat Lean statements.
-- `LeanCat/problems/`: LeanCat natural-language problem text.
-- `LeanCat/records.jsonl`: LeanCat records.
-- `lean-toolchain`, `lakefile.lean`, `lake-manifest.json`, `Benchmarks.lean`: shared Lean project files.
+- `MiniFATELeanCat/Easy/`: 10 easy tasks.
+- `MiniFATELeanCat/Medium/`: 10 medium tasks.
+- `MiniFATELeanCat/Hard/`: 10 hard tasks.
+- `Benchmarks.lean`: package-level benchmark entrypoint; imports all 30 task files.
+- `metadata.json`: source, difficulty, and import metadata.
+
+Each task imports focused Mathlib modules instead of `import Mathlib`.
 
 ## Build
 
@@ -18,21 +28,3 @@ lake update
 lake exe cache get
 lake build
 ```
-
-The Lake cache and build outputs live under `.lake/` and are intentionally not committed.
-
-## Verify Counts
-
-From the repository root:
-
-```bash
-uv run python -m traj_eval.dataset.verify
-```
-
-Expected counts:
-
-- FATEH: 100 Lean files
-- FATEM: 150 Lean files
-- FATEX: 100 Lean files
-- LeanCat statements: 100 Lean files
-- LeanCat records: 100 JSONL rows

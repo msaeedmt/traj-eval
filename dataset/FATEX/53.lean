@@ -8,6 +8,8 @@ instance (R : Type) [CommRing R] : CategoryTheory.HasExt.{0} (ModuleCat.{0} R) :
   CategoryTheory.hasExt_of_enoughProjectives.{0} (ModuleCat.{0} R)
 
 /--
+Difficulty: Expert (FATE-X)
+
 A Noetherian local ring $R$ is a Gorenstein ring if $\mathrm{inj}.\dim_R R < +\infty$.
 -/
 class IsGorensteinLocalRing (R : Type) [CommRing R] : Prop extends

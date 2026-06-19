@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem62
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( \varphi: R \to S \) be a smooth ring map. Let \( \sigma: S \to R \) be a left inverse
 to \( \varphi \). Set \( I = \operatorname{Ker}(\sigma) \). If \( I / I^{2} \) is free,
 show \( S^{\wedge} \cong R[[t_{1}, \ldots, t_{d}]] \) as \( R \)-algebras,

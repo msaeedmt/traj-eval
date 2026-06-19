@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem37
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $R=\mathbb{C}[x_{11},x_{12},\dots,x_{1n},x_{21},x_{22},\dots,
 x_{2n},\dots,x_{n1},x_{n2},\dots,x_{nn}]/(\det(x_{ij})-1)$.
 -/

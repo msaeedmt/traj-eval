@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: A functor $G : \mathcal{D} \to \mathcal{C}$ has a left adjoint if and only if for each $c \in\mathcal{C}$, the comma category $(c \downarrow G)$ has an initial object.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

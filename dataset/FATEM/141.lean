@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that every subgroup of a solvable group is solvable.
 -/
 theorem Subgroup.solvable_of_solvable {G : Type*} [Group G] [IsSolvable G] (H : Subgroup G) :

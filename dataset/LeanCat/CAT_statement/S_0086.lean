@@ -1,3 +1,10 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: Let $\mathcal{A}$ be an abelian category and let $P\in\mathcal{A}$.
+    Then $\hom_{\mathcal{A}}(P,-):\mathcal{A}\to \mathcal{A}\mathrm{b}$ is right exact if and only if $\hom_{\mathcal{A}}(P,-):\mathcal{A}\to \mathcal{A}\mathrm{b}$ preserves epimorphism.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits Opposite

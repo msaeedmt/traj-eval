@@ -5,6 +5,8 @@ namespace Problem40
 open TensorProduct
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $A$ be a reduced local ring with residue field $k$ and finite set $\Sigma$ of minimal primes.
 For each $\mathfrak{p}\in\Sigma$, set $K(\mathfrak{p})=\mathrm{Frac}(A/\mathfrak{p})$.
 Let $P$ be a finitely generated module. Show that $P$ is free of rank $r$ if and only if

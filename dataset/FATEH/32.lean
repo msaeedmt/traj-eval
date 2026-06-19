@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 The Galois group of the splitting field of $x^4 - 2x^2 - 2$ over $\mathbb{Q}$ is the
 dihedral group with eight elements
 -/

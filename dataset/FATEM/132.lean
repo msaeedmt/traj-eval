@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Show that a ring $R$ has no nonzero nilpotent element if and only if 0 is the only solution
 of $x^{2}=0$ in $R$.
 -/

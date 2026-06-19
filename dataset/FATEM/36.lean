@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Assume $R$ is commutative. Prove that if $P$ is a prime ideal of $R$ and $P$ contains no zero
 divisors then $R$ is an integral domain.
 -/

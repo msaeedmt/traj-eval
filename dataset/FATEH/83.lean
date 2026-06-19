@@ -2,6 +2,8 @@ import Mathlib
 
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $M$ be a finitely-generated module over a Dedekind domain. Prove that $M$ is flat if and
 only if $M$ is torsion-free.
 -/

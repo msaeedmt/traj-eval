@@ -5,6 +5,8 @@ namespace Problem44
 open MvPolynomial
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $k$ be a field. Let $S$ be a finite type $k$-algebra. We say that $S$ is a
 \textit{global complete intersection over $k$} if there exists a presentation
 $S = k[x_1, \dots, x_n]/(f_1, \dots, f_c)$ such that $\dim(S) = n - c$.

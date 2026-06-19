@@ -2,6 +2,8 @@ import Mathlib
 
 open IntermediateField
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( \alpha \) be a non-zero complex number such that \( \alpha + \alpha^{-1} \) is contained
 in a quadratic number field. Let \( L \) be the normal closure of \( \mathbb{Q}(\alpha) \). Show
 that \( [L : \mathbb{Q}] \) divides \( 8 \).

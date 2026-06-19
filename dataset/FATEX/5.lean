@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem5
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \(p\) be a prime, let \(G\) be a finite p-group. Let A be a maximal normal abelian subgroup
 of \(G\). Prove that A is also a maximal abelian subgroup of \(G\).
 -/

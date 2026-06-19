@@ -3,6 +3,8 @@ import Mathlib
 open scoped commutatorElement
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $a, b$ be any two elements of a group $G$. If $a$, $b$ commute with their commutator $[a, b]$,
 then for all integers $m$ and $n$,
 \[

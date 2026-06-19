@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( R' / R \) be an integral extension of rings. Show that \( \text{rad}(R) = \text{rad}(R') \cap R \),
 where $\text{rad}(R)$ denotes the nilpotent radical of $R$.
 -/

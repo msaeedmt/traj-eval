@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem92
 
 /--
+Difficulty: Expert (FATE-X)
+
 \(a_n = 2n+1\) if \(n \le k\) else \(a_n = n + k + 1\), for some \(k \in \mathbb{N} \{+\infty\}\).
 -/
 def a (k : ℕ∞) (n : ℕ) :=

@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem68
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $A$ be a Noetherian local ring with maximal ideal $\mathfrak{m}$.
 For any $f\in \mathfrak{m}$ such that $f$ is not nilpotent, $A_f$ is Jacobson.
 -/

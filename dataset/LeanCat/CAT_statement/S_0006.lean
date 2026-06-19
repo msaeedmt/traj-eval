@@ -1,3 +1,15 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: Let $\mathcal{C}$ and $\mathcal{D}$ be two categories.
+    Let $F:\mathcal{C}\to\mathcal{D}$ be a functor.
+    Then $F$ has a quasi-inverse if and only if
+    \begin{enumerate}
+        \item $F$ is fully faithful;
+        \item $F$ is essentially surjective.
+    \end{enumerate}
+-/
+
 import Mathlib
 
 open CategoryTheory

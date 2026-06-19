@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $K$ be a field with $\operatorname{char}(K) \neq 2$. Consider a Galois extension $L/K$.
 Show that $\operatorname{Gal}(L/K) \cong (\mathbb{Z}/2\mathbb{Z})^2$ if and only if
 the extensions $L/K$ has the form $L = K(\sqrt{a}, \sqrt{b})$ for $a, b \in K^\times$ such that

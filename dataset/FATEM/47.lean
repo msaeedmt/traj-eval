@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $U$ and $V$ have the same dimension $n$. Prove that $h$ is injective iff $h$ is surjective.
 -/
 theorem LinearMap.injective_iff_surjective_of_finiteDimentional

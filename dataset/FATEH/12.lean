@@ -3,6 +3,8 @@ import Mathlib
 open MatrixGroups
 
 /--
+Difficulty: Hard (FATE-H)
+
 Prove that \( SL_2(\mathbb{F}_3) / Z(SL_2(\mathbb{F}_3)) \le A_4 \).
 -/
 theorem exists_sl_quot_center_monoidHom_alternatingGroup :

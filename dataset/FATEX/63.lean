@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem63
 
 /--
+Difficulty: Expert (FATE-X)
+
 The universal property:
 Given any commutative diagram
 \[

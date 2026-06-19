@@ -5,6 +5,8 @@ namespace Problem38
 open Polynomial DualNumber
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( k \) be a field, and let \( R = k[t]/(t^2) \). Set
 \[
 p(x) = tx^3 + tx^2 - x^2 - x \in R[x].

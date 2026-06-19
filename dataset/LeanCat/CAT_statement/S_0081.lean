@@ -1,3 +1,10 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: Let $\mathcal{A}$ be an abelian category and let $f$ be a morphism in $\mathcal{A}$.
+    Then $f$ is monic if and only if $\ker(f)=0$.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits Category

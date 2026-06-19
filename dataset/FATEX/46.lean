@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem46
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \(M\) be an \(R\)-module. Then \(M\) is flat if and only if the following condition holds:
 if \(P\) is a finitely presented \(R\)-module and \(f: P \to M\) a \(R\)-linear map,
 then there is a free finite \(R\)-module \(F\) and module maps \(h: P \to F\) and \(g: F \to M\)

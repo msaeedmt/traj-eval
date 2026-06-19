@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem50
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \((A, \mathfrak{m}, K)\) be a complete local ring containing a field,
 and suppose that \(\mathfrak{m}\) is finitely generated over \(A\). Then \(A\) is Noetherian.
 -/

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $P$ is a $p$-Sylow subgroup of $G$, show that $N(N(P))=N(P)$.
 -/
 theorem Sylow.normalizer_normalizer_eq_normalizer {G : Type*} [Group G] {p : ℕ} [Fact (Nat.Prime p)]

@@ -5,6 +5,8 @@ namespace Problem67
 open scoped TensorProduct
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $A$ be the ring $k[[x_1, \dots, x_n]]$, where $k$ is a field, $n \in \mathbb{N}$, $n \ne 0$.
 Show that there is \textbf{no} isomorphism
 \[

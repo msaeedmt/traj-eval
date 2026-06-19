@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem87
 
 /--
+Difficulty: Expert (FATE-X)
+
 There exists two commutative rings \(R, S\), such that \(R[x]\) is isomorphic to \(S[x]\) but \(R\)
 is not isomorphic to \(S\).
 -/

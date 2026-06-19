@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem39
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( R \) be a normal Noetherian domain, \( K \) its fraction field, \( L/K \) a finite
 field extension, and \( \overline{R} \) the integral closure of \( R \) in \( L \).
 Prove that only finitely many primes \( \mathfrak{P} \) of \( \overline{R} \) lie over a given

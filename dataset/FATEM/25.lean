@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a commutative ring with identity, and let $P_1, \dots, P_m$ be prime ideals of $R$.
 If $A$ is an ideal of $R$ such that
 \[ A \subseteq P_1 \cup \cdots \cup P_m, \]

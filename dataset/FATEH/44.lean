@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $k$ be a finite field of size $q$. Show that the number of degree-$19$ monic irreducible
 polynomials over $k$ is $\frac{q^{19} - q}{19}$.
 -/

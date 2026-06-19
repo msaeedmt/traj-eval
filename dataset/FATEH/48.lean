@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Prove that the cardinality $\mathrm{Aut}(\CC)$ (i.e. the group of field automorphism of $\CC$)
 is infinite.
 -/

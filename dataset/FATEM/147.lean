@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose $|G|=p^2q$ where $p>q$ are primes. Let $P$ be a Sylow $p$-subgroup of $G$, then $P\lhd G$.
 -/
 theorem Sylow.normal_of_card_eq_p_pow_two_q {G : Type} [Group G] [Fintype G]

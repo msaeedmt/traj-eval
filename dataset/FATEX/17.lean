@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem17
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $K$ be a subfield of $\mathbb{C}$ maximal with respect to the property that $\sqrt 2 \notin K$.
 Deduce that $[\mathbb{C} : K]$ is countable (and not finite).
 -/

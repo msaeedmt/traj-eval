@@ -5,6 +5,8 @@ namespace Problem97
 open scoped Polynomial
 
 /--
+Difficulty: Expert (FATE-X)
+
 If $k$ is a field of characteristic zero, $n \in \mathbb{N}$, $n \ne 0$,
 and $\phi \colon k[x_1, \dots, x_n] \to k[x_1, \dots, x_n]$ is given by $(x_1, \dots, x_n) \mapsto
 (f_1(x_1), \dots, f_n(x_n))$, where $f_i(x_i) \in k[x_i]$ having degree at least two, then there

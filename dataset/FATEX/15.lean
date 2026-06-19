@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem15
 
 /--
+Difficulty: Expert (FATE-X)
+
 A subgroup `H₁` is a maximal normal subgroup of `H₂` if it is contained in `H₂`,
 and `H₁` is maximal normal in `H₂`.
 -/

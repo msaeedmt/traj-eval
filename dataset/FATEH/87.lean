@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 If $R$ is a valuation ring of Krull dimension 1 and $K$ its field of fractions, then there do
 not exist any rings intermediate between $R$ and $K$.
 -/

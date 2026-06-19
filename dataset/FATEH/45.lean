@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $F$ be a field, and let $f, g \in F[x] \setminus \{0\}$ be relatively prime and not both
 constant. Show that $F(x)$ has finite degree $d = \max(\deg(f), \deg(g))$ over its subfield $F\left
 (\frac{f}{g}\right)$.

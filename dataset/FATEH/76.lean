@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Show that a finite torsion-free module over a Dedekind domain is projective.
 -/
 theorem projective_of_noZeroSMulDivisor {R M : Type} [CommRing R] [AddCommGroup M] [Module R M]

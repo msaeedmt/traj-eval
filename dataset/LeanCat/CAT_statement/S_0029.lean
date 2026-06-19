@@ -1,3 +1,9 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: Let $(-)^{\times}: \mathcal{R}\mathrm{ing} \to \mathcal{G}\mathrm{rp}$ mapping a ring to its group of units. Then it admits a left adjoint.
+-/
+
 import Mathlib
 
 open CategoryTheory

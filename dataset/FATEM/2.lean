@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a cyclic group with generator $a$, and let $G^{\prime}$ be a group isomorphic to $G$.
 If $\phi: G \rightarrow G^{\prime}$ is an isomorphism, show that, for every $x \in G, \phi(x)$ is
 completely determined by the value $\phi(a)$. That is, if $\phi: G \rightarrow G^{\prime}$ and

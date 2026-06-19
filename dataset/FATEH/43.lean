@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $F$ be a field with $\mathbb{Q} \subseteq F \subseteq \mathbb{C}$, where $F/\mathbb{Q}$ is a
 finite \emph{abelian} Galois extension. Let $\alpha \in F$ and let $f(x) \in \mathbb{Q}[x]$ be its
 minimal monic polynomial. Assume that $|\alpha| =1$. Prove that $|\beta| = 1$ for every complex

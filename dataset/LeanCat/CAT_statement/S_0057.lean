@@ -1,3 +1,9 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: A functor that reflects equalizers (or finite products) reflects isomorphisms.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

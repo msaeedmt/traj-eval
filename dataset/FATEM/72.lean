@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that if $G$ is a finite cyclic group with more than two elements,
 then $G$ has more than one element whose order equals to $|G|$.
 -/

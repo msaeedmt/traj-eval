@@ -2,6 +2,8 @@ import Mathlib
 
 open Polynomial
 /--
+Difficulty: Hard (FATE-H)
+
 Prove that for any $a,b \in \mathbb{F}_{p^n}$ that if $x^3+ax+b$ is irreducible then $-4a^3-27b^2$ is a
  square in $\mathbb{F}_{p^n}$.
 -/

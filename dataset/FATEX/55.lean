@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem55
 
 /--
+Difficulty: Expert (FATE-X)
+
 A module \( M \) over a ring \( R \) is \textit{stably free} if there exists a free finitely
 generated module \( F \) over \( R \) such that
 \[

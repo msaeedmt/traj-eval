@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $\mathcal{O}$ be an integral domain in which all nonzero ideals admit a unique factorization
 into prime ideals. Show that $\mathcal{O}$ is a Dedekind domain.
 -/

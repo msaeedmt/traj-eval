@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $R$ is a ring and $e \in R$ is such that $e^{2}=e$, show that $(x e-e x e)^{2}=0$ for
 every $x \in R$.
 -/

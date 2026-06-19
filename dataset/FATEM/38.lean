@@ -3,6 +3,8 @@ import Mathlib
 open Pointwise
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $H \leq G$ and let $g \in G$. Prove that if the right coset $H g$ equals some left coset of
 $H$ in $G$ then it equals the left coset $g H$ and $g$ must be in $N_{G}(H)$.
 -/

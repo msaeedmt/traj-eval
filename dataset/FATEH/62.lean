@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $F$ be a field and let $f(x) \in F[x]$ be an irreducible polynomial with splitting field $E$ over $F$.
 Choose $\alpha \in E$ with $f(\alpha) =0$. Furthermore, for some fixed integer $n \geq 1$,
 let $g(x)$ be an irreducible polynomial in $F[x]$ with $g(\alpha^n)=0$. If $\deg(f) / \deg(g) = n$

@@ -2,6 +2,8 @@ import Mathlib
 
 open Polynomial
 /--
+Difficulty: Hard (FATE-H)
+
 Let $K$ be a finite extension of a field $F$, and let $f(x) \in K[x]$. Prove that there exists a
 nonzero polynomial $g(x) \in K[x]$ such that $f(x)g(x) \in F[x]$.
 -/

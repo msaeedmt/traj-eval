@@ -5,6 +5,8 @@ namespace Problem82
 open IsLocalRing
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( A \) be a Noetherian complete local ring of dimension \( d \), of mixed characteristic
 (i.e., $\mathrm{Char} A = 0$ and $\mathrm{Char} A / \mathfrak{m}$), and let
 \( p = \text{char}(A/\mathfrak{m}) \). Assume that \( \text{ht}(p \cdot A) = 1 \).

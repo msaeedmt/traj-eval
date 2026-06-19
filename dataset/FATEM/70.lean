@@ -3,6 +3,8 @@ import Mathlib
 open Classical
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a finite ring, and consider its additive group and its group of units.
 Show that these two groups cannot be isomorphic.
 -/

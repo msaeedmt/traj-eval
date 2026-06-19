@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $G$ is a finite group where every non-identity element is a generator of $G$,
 show that the order of $G$ is prime or $1$.
 -/

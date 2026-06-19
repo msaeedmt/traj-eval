@@ -1,3 +1,11 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: Let $\mathcal{A}$ be an additive category.
+    Let $x,y,z$ be objects in $\mathcal{A}$.
+    Then the composition $\hom_{\mathcal{A}}(y,z)\times \hom_{\mathcal{A}}(x,y)\to \hom_{\mathcal{A}}(x,z)$ is bilinear map.
+-/
+
 import Mathlib
 
 open CategoryTheory

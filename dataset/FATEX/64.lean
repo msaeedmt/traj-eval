@@ -33,6 +33,8 @@ end
 open MvPolynomial
 
 /--
+Difficulty: Expert (FATE-X)
+
 Prove that the homogeneous coordinate ring of a smooth rational quartic in three-space
 \[
 R=k[s^4, s^3t, st^3, t^4] \subset k[s,t]

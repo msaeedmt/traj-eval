@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: Suppose $\mathcal{B}$ is locally small, complete, has a small coseparating set $S$, and has the property that every family of subobjects has an intersection. Then $\mathcal{B}$ has an initial object.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

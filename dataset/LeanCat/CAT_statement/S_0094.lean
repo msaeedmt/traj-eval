@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: Let $\mathcal{B}$ be a category and $\mathcal{C}$ be a full reflective subcategory of $\mathcal{B}$. Then the monad associated to the inclusion functor $U : \mathcal{C} \to \mathcal{B}$ is idempotent.
+-/
+
 import Mathlib
 
 open CategoryTheory Functor

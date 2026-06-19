@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: There are precisely two concrete functors from the category $\mathcal{S}\mathrm{et}$ of sets to the category $\mathcal{T}\mathrm{op}$ of topological spaces, but a proper class of concrete functors from $\mathcal{T}\mathrm{op}$ into itself.
+-/
+
 import Mathlib
 
 open CategoryTheory

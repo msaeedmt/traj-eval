@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a group of order $p^{2}$, where $p$ is prime.
 Show that every proper subgroup of $G$ is cyclic.
 -/

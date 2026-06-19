@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem16
 
 /--
+Difficulty: Expert (FATE-X)
+
 A Galois extension such that the degree of the extension is a power of a prime \( p \) is
 called a p-extension.
 -/

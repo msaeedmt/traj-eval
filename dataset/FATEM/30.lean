@@ -3,6 +3,8 @@ import Mathlib
 open Classical
 
 /--
+Difficulty: Medium (FATE-M)
+
 The order of a permutation is equal to the least common multiple of the lengths of its disjoint cycles
 in the cycle decomposition.
 -/

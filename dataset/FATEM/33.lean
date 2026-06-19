@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that in a Boolean ring, every prime ideal is a maximal ideal.
 -/
 theorem BooleanRing.isMaximal_of_isPrime {R : Type*} [BooleanRing R] {I : Ideal R}

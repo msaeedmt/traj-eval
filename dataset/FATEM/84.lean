@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that every element in a dihedral group $D_{2 n}$ has a unique factorization of the
 form $a^{i} b^{j}$, where $0 \leq i < a$ and $j=0$ or 1.
 -/

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Prove that every finitely generated extension of $\mathbb{Q}$ can be embeded into $\mathbb{C}$.
 -/
 theorem exists_algHom_complex_injective {F : Type} [Field F] [Algebra ℚ F]

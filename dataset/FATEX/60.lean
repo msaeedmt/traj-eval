@@ -5,6 +5,8 @@ namespace Problem60
 open Problem60
 
 /--
+Difficulty: Expert (FATE-X)
+
 For a Noetherian domain \( R \), we say that an ideal \( I \subset R \) is invertible if
 it is it not the zero ideal and there exists an ideal \( N \) such that \( N \cdot I \) is principal
 and \( N \) is not the zero ideal.

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Consider $S_{n}$ for a fixed $n \geq 2$ and let $\sigma$ be a fixed odd permutation.
 Show that every odd permutation in $S_{n}$ is a product of $\sigma$ and some permutation in $A_{n}$.
 -/

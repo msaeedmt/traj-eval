@@ -2,6 +2,8 @@ import Mathlib
 
 open RingTheory
 /--
+Difficulty: Hard (FATE-H)
+
 Let \((R, \mathfrak{m})\) be a Noetherian local ring. Let \(x, y \in \mathfrak{m}\) be a regular
 sequence of length \(2\). For any \(n \geq 2\) show that there do not exist \(a, b \in R\) with
 \[

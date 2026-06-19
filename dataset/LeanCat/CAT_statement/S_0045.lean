@@ -1,3 +1,11 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: Let $\omega$ be the ordinal of natural numbers.
+    Consider $F:\omega^{op}\to \mathcal{R}\mathrm{ing}$ with $F_n:=\mathbb{Z}/p^n\mathbb{Z}$ and $f_n:F_{n+1}\to F_n$.
+    Then the limit exists.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits Opposite

@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a commutative ring, and let $p(x), f(x)$, and $g(x)$ be polynomials in $R[x]$.
 Prove that if $p(x)$ divides both $f(x)$ and $g(x)$ in $R[x]$,
 then for any polynomials $u(x)$ and $v(x)$ in $R[x]$, $p(x)$ divides $f(x) u(x)+g(x) v(x)$.

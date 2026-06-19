@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem27
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $p$ be a prime number. Let $K/\mathbb{Q}$ be a finite extension, such that the $p^{2}$th
 root of unity is contained in $K$. Let $L/K$ be a Galois extension of degree $p$, show that there
 exists a Galois extension $L'/L$ of degree $p$, such that the extension $L'/K$ is Galois.

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $N \triangleleft G$, let $B(N)=\{x \in G \mid x a=a x$ for all $a \in N\}$.
 Prove that $B(N) \triangleleft G$.
 -/

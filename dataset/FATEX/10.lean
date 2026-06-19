@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem10
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let \( A = \mathbb{R}[X, Y]/(X^2 + Y^2 + 1) \). Then it is a principal ideal domain.
 -/
 theorem isPrincipalIdealRing_quot_X_pow_two_plus_Y_pow_two_plus_one :

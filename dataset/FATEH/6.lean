@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Show that a prime $p$ can be written as $p = a^2+ab+b^2$ with $a,b \in \mathbb{Z}$ if and only
 if $p=3$ or $p \equiv 1 \pmod 3$.
 -/

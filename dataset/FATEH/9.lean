@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 If \( n \) is odd and \( n \geq 3 \), show that the identity is the only element of
 \( D_{2n} \) which commutes with all elements of \( D_{2n} \).
 -/

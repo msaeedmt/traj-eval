@@ -8,6 +8,8 @@ instance (R : Type) [CommRing R] : CategoryTheory.HasExt.{0} (ModuleCat.{0} R) :
   CategoryTheory.hasExt_of_enoughProjectives.{0} (ModuleCat.{0} R)
 
 /--
+Difficulty: Expert (FATE-X)
+
 A commutative local noetherian ring $R$ is regular if $\dim m/m^2 = \dim R$.
 -/
 class IsRegularLocalRing (R : Type) [CommRing R] : Prop extends

@@ -3,6 +3,8 @@ import Mathlib
 open Pointwise
 
 /--
+Difficulty: Medium (FATE-M)
+
 In a group $G$, show that the intersection of a left coset of $H \leqq G$ and a left coset of
 $K \leqq G$ is either empty or a left coset of $H \cap K$.
 -/

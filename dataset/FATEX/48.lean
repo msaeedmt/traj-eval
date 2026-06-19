@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem48
 
 /--
+Difficulty: Expert (FATE-X)
+
 A commutative ring \( A \) is \textit{absolutely flat} if every \( A \)-module is flat.
 -/
 class IsAbsolutelyFlat (R : Type) [CommRing R] : Prop where

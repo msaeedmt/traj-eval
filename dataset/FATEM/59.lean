@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that if a finite abelian group has order a power of a prime $p$,
 then the order of every element in the group is a power of $p$.
 -/

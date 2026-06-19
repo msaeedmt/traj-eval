@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 If $F$ is a field that is not perfect, show that $F$ has a nontrivial purely inseparable
 extension.
 -/

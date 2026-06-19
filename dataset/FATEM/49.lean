@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose that $G$ is a group and $a$ and $b$ are elements of $G$ that satisfy $a * b=b * a^{3}$.
 Then the element $(a * b)^{2}$ can be written in the form $b^{k} a^{r}$.
 -/

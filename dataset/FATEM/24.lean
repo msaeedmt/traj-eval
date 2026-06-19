@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be an integral domain. An element $p \in R$ is a prime element if and only if the principal
 ideal $\langle p \rangle$ is a nonzero prime ideal of $R$.
 -/

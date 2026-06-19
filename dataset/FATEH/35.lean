@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial IntermediateField
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $D \in \mathbb{Z}$ be a squarefree integer and let $a \in \mathbb{Q}$ be a nonzero rational
 number. Show that $\mathbb{Q}(\sqrt{a\sqrt D})$ cannot be a cyclic extension of degree $4$ over
 $\mathbb{Q}$.

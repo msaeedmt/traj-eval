@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $A \leq G$ be a subgroup of $G$. Then $C_G(C_G(C_G(A))) = C_G(A)$.
 -/
 theorem Subgroup.centralizer_centralizer_centralizer {G : Type*} [Group G]

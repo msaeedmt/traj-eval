@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that the order of any $p$-group is a power of $p$.
 -/
 theorem IsPGroup.card_eq_pow {p : ℕ} {G : Type*} [h₁ : Group G] [Fact (Nat.Prime p)]

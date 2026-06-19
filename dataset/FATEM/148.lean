@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a commutative ring and $a \in R$ a non-unit element.
 Then there exists a maximal ideal $M$ of $R$ containing $a$.
 -/

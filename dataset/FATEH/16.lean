@@ -2,6 +2,8 @@ import Mathlib
 
 open MvPolynomial Ideal
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( R \) be an integral domain and let \( i, j \) be relatively prime integers. Prove that the ideal \( (x^i - y^j) \) is a prime ideal in \( R[x, y] \).
 -/
 theorem span_pow_sub_pow_isPrime_of_coprime {R : Type} [CommRing R] [IsDomain R] {i j : ℕ}

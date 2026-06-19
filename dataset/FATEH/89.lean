@@ -2,6 +2,8 @@ import Mathlib
 
 open MvPolynomial
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( K \) be a field and \( L \) an extension field of \( K \). If \( P \) is a prime ideal of
 \( L[X_1, \dots, X_n] \) and \( \mathfrak{p} = P \cap K[X_1, \dots, X_n] \), then \(
 \operatorname{ht}(P) \geq \operatorname{ht}(\mathfrak{p}) \).

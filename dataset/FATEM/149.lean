@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $H$ is a subgroup of $G$ and if $x \in H$, prove that $$C_{H}(x)=H \cap C_{G}(x).$$
 -/
 theorem Subgroup.centralizer_eq_self_inf_centralizer

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Prove that $R$ is a P.I.D. if and only if $R$ is a U.F.D. that is also a Bezout Domain.
 -/
 theorem isPrincipalIdealRing_iff_uniqueFactorizationMonoid_and_isBezout

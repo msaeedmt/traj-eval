@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem85
 
 /--
+Difficulty: Expert (FATE-X)
+
 Definition of a Euclidean norm taking value in \(\mathbb{N}\).
 -/
 class EuclideanNormNat (R : Type) [CommRing R] extends Nontrivial R where

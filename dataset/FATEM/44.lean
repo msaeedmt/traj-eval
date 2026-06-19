@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $A$ be an integral domain. Let $a \in A$. If $A$ has characteristic $\mathrm{p}$, and
 $\mathrm{n} \cdot a=0$ where $\mathrm{n}$ is not a multiple of $\mathrm{p}$, then $a=0$.
 -/

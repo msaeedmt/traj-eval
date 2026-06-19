@@ -31,6 +31,8 @@ class IsCohenMacaulayRing : Prop where
 end
 
 /--
+Difficulty: Expert (FATE-X)
+
 A commutative local noetherian ring $R$ is regular if $\dim m/m^2 = \dim R$.
 -/
 class IsRegularLocalRing (R : Type) [CommRing R] : Prop extends

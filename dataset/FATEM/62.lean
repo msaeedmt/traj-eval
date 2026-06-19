@@ -3,6 +3,8 @@ import Mathlib
 open Pointwise
 
 /--
+Difficulty: Medium (FATE-M)
+
 Show that if $H$ and $K$ are normal subgroups of a group $G$ such that $H \cap K=\{e\}$, then
 $h k=k h$ for all $h \in H$ and $k \in K$.
 -/

@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: The category $\mathcal{T}\mathrm{op}^{CH}$ of compact Hausdorff space is dually equivalent to the category of commutative unital $C^*$-algebras and algebra homomorphisms.\nomenclature{$\mathcal{T}\mathrm{op}^{CH}$}{the category of compact Hausdorff topological spaces}
+-/
+
 import Mathlib
 
 open CategoryTheory

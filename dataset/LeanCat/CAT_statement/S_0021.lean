@@ -1,3 +1,10 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: Let $\mathcal{C}$ and $\mathcal{D}$ be categories and let $F:\mathcal{C}\to \mathcal{D}$ be a functor that admits a right adjoint $G$.
+    Then $G$ is an equivalence of categories if and only if $F$ is fully faithful and $G$ is conservative.
+-/
+
 import Mathlib
 
 open CategoryTheory

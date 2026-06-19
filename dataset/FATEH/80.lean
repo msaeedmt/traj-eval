@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( R \subset R' \) be an extension of integral domains, and let \( \overline{R} \) be the integral closure of \( R \) in \( R' \).
 Show that for any two monic polynomials \( f, g \in R'[t] \) with \( f \cdot g \in R[t] \),
 we have \( f, g \in \overline{R}[t] \).

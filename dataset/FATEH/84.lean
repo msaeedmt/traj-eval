@@ -2,6 +2,8 @@ import Mathlib
 
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $A$ be a Dedekind domain and $\mathfrak{a} \neq 0$ an ideal in $A$. Show that every ideal in
  $A/\mathfrak{a}$ is principal.
 -/

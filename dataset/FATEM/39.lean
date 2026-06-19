@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a group, and $a, b \in G$. For any positive integer $n$ we define $a^{n}$ by
 $a^{n}=\underbrace{a a a \cdots a}_{n \text { factors }}$
 In general, $a$ has an $n$th root in $G$ if $a=z^{n}$ for some $z \in G$. Prove

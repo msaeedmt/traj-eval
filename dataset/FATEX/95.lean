@@ -5,6 +5,8 @@ namespace Problem95
 open Polynomial Bivariate
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $f : \mathbb{C}[x, y] \to \mathbb{C}[x, y]$, $x \mapsto p(x) + ay, y \mapsto x$,
 where $a \in \mathbb{C}$, $p(x) \in \mathbb{C}[x]$.
 -/

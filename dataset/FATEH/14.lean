@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $S$ be any ring and let $n>2$ be an integer.
 Propose a proof that if $A$ is any strictly upper triangular matrix in $M_n(S)$, then $A^n = 0$.
 (A strictly upper triangular matrix is one whose entries on and below the main diagonal are all

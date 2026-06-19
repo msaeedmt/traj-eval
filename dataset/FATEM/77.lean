@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose that $G$ is an infinite group, and $H$ is a subgroup of $G$ with finitely many elements.
 Then there are infinitly many distinct cosets of $H$.
 -/

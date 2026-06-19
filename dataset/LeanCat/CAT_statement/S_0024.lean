@@ -1,3 +1,9 @@
+/-
+Difficulty: Easy
+Informal statement:
+Theorem: The forgetful functor $U : \mathcal{A}\mathrm{b} \to \mathcal{G}\mathrm{rp}$ admits a left adjoint.
+-/
+
 import Mathlib
 open CategoryTheory
 universe u

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $H$ and $K$ are subgroups of a group $G$, then $H \cup K$ cannot be a subgroup
 unless $H \subseteq K$ or $K \subseteq H$.
 -/

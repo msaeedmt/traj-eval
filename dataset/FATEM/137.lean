@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a group and regard $G \times G$ as the direct product of $G$ with itself.
 If the multiplication $\mu: G \times G \rightarrow G$ is a group homomorphism,
 prove that $G$ must be abelian.

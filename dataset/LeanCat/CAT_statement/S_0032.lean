@@ -1,3 +1,9 @@
+/-
+Difficulty: High
+Informal statement:
+Theorem: $\mathcal{S}\mathrm{et}$ has precisely three full, isomorphism-closed, reflective subcategories.
+-/
+
 import Mathlib
 
 open CategoryTheory Functor Limits

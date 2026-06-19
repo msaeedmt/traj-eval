@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Prove that if $p$ is a prime and $P$ is a non-abelian group of order $p^3$, then $|Z(P)| = p$
 and $P/Z(P) \cong \mathbb{Z}/p\mathbb{Z} \times \mathbb{Z}/p\mathbb{Z}$.
 -/

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose $D$ is integral domain, $m$ and $n$ are coprime positive integers.
 Prove that for any $a, b \in D$, if $a^{m}=b^{m}$ and $a^{n}=b^{n}$, we have $a=b$
 -/

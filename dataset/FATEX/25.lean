@@ -3,6 +3,8 @@ import Mathlib
 namespace Problem25
 
 /--
+Difficulty: Expert (FATE-X)
+
 Prove that the automorphism group of $\mathbb{F}_2(t)$ is isomorphic to $S_3$, and its fixed field is
 $\mathbb{F}_2(u)$ with $$u = \frac{(t^4-t)^3}{(t^2-t)^5} = \frac{(t^2+t+1)^3}{(t^2-t)^2}$$.
 -/

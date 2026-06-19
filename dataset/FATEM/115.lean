@@ -2,6 +2,8 @@ import Mathlib
 
 
 /--
+Difficulty: Medium (FATE-M)
+
 $R$ is a relation on set $A$, $R^{-1} := \{ (x,y) ~|~ (y,x) \in R\}$,
 prove that $R$ is transitive if and only if $R^{-1}$ is transitive.
 -/

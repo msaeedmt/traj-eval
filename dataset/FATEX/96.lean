@@ -5,6 +5,8 @@ namespace Problem96
 open RatFunc
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $f(x) \in \mathbb{Q}(x)$ be a rational function of degree at least 2, $\alpha \in \mathbb{Q}$.
 If the orbit $\mathcal{O}_f(\alpha)$ contains infinitely many integers, then $f^2(x)$ is
 a polynomial.

@@ -1,3 +1,11 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: Let $\omega$ be the ordinal of natural numbers.
+    Consider $F:\omega^{op}\to \mathcal{R}\mathrm{ing}$ with $F_n:=k[x]/(x^n)$ and $f_n:k[x]/(x^{n+1})\to k[x]/(x^n)$.
+    Then the limit exists and is isomorphic to $k[[x]]$.
+-/
+
 import Mathlib
 open CategoryTheory Polynomial Limits
 

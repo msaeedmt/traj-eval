@@ -2,6 +2,8 @@ import Mathlib
 
 open Polynomial
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( f \in \mathbb{Q}[X] \) and \( \xi \in \mathbb{C} \) be a root of unity. Show that \( f(\xi) \neq 2^{\frac{1}{4}} \).
 -/
 theorem eval₂_algebraMap_ne_two_pow_one_dvd_four {n : ℕ} (hn : 1 ≤ n) (f : ℚ[X]) (ξ : ℂˣ)

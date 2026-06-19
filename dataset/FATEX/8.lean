@@ -5,6 +5,8 @@ namespace Problem8
 open Quaternion
 
 /--
+Difficulty: Expert (FATE-X)
+
 Let $A, B \in \mathbb{Q}^\times$ be rational numbers. Consider the quaternion ring
 $$
 D_{A, B, \mathbb{R}} = \{a+b\boldsymbol{i} +c\boldsymbol{j}+d\boldsymbol{k}\;|\; a,b,c,d \in

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose that $G$ is a group and $a, b \in G$ satisfy $a * b=b * a^{\prime}$ where as usual,
 $a^{\prime}$ is the inverse for $a$. Prove that $b * a=a^{\prime} * b$.
 -/

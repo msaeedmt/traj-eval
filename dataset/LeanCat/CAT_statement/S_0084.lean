@@ -1,3 +1,9 @@
+/-
+Difficulty: Medium
+Informal statement:
+Theorem: $\mathcal{G}\mathrm{rp}$ is not an additive category.
+-/
+
 import Mathlib
 
 open CategoryTheory Limits

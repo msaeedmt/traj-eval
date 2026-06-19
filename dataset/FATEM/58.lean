@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Show that if $\sigma$ is a cycle of odd length, then $\sigma^{2}$ is a cycle.
 -/
 theorem Equiv.Perm.pow_two_isCycle_of_odd (n : ℕ) (f : Equiv.Perm (Fin n))

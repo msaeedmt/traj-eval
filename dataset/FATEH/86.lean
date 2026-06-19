@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $M$ be an $R$-module. The following are equivalent:
 
 \begin{enumerate}

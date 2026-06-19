@@ -5,6 +5,8 @@ namespace Problem34
 open PowerSeries
 
 /--
+Difficulty: Expert (FATE-X)
+
 If \( R \) is a valuation ring of Krull dimension \( \geq 2 \),
 then the formal power series ring \( R[[X]] \) is not integrally closed.
 -/

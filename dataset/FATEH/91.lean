@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 If a ring \( R \), not a field, is a maximal proper subring of a field \( K \), show \( R \) is
 a valuation ring of Krull dimension 1.
 -/

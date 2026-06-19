@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( D \) be a unique factorization domain.
 Prove that if every nonzero prime ideal of \( D \) is maximal, then \( D \) is a principal ideal domain.
 -/

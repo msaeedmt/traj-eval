@@ -3,6 +3,8 @@ import Mathlib
 open IntermediateField RatFunc
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $\mathbb{F}_4$ be the field with $4$ elements, $t$ a transcendental over $\mathbb{F}_4$,
 and $F =\mathbb{F}_4(t^4 + t)$ and $K =\mathbb{F}_4(t)$. Show that $K$ is Galois over $F$.
 -/

@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 If $a$ and $b$ are positive integers with $(a, b)=1$, and if $a b$ is a square,
 prove that both $a$ and $b$ are squares.
 -/

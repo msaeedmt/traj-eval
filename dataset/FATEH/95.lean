@@ -3,6 +3,8 @@ import Mathlib
 open RingTheory
 
 /--
+Difficulty: Hard (FATE-H)
+
 Show that if $x_1, \dots, x_r$ is a regular sequence in $R$,
 then so is $x_1^{a_1}, \dots, x_r^{a_r}$ for any positive integers $a_1, \dots, a_r$.
 -/

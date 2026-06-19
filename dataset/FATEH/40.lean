@@ -3,6 +3,8 @@ import Mathlib
 open Polynomial
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let $K$ be the splitting field of a irreducible quintic polynomial $f(x) \in \mathbb{Q} [x]$
 and let $\{\alpha_1, \dots, \alpha_5\}$ be zeros of $f(x)$ in $K$. Show that if $\mathbb{Q}
 (\alpha_1, \alpha_2, \alpha_3) \neq K$, then $\\mathrm{Gal}(K/\mathbb{Q}) \cong S_5$.

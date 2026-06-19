@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Inductively define $G^n=G\times G\times\cdots \times G$, the product of $n$ same groups $G$.
 If $G$ is a finite group, prove that this group has order $|G|^n$.
 -/

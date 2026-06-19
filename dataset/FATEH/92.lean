@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Hard (FATE-H)
+
 Let \( R \) be a Dedekind domain. Show the following:
 
 If \( P_1, \dots, P_n \in \operatorname{Spec}(R) \) are pairwise distinct, non-zero prime ideals

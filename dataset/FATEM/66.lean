@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $G$ be a group, and $a, b, c \in G$.
 Prove that the equation $a x c=b$ has a unique solution in $G$.
 -/

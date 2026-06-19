@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Suppose $g=(a, b) \in G \times H$, where $a$ has order $m$ and $b$ has order $n$.
 Prove that $\operatorname{ord}(g)=\operatorname{LCM}(m,n)$.
 -/

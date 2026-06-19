@@ -1,6 +1,8 @@
 import Mathlib
 
 /--
+Difficulty: Medium (FATE-M)
+
 Let $R$ be a ring with identity $1$ and $x$ be an element not equal to zero. If there exists
 $y \in R$ s.t. $xy = 1$ and $z \in R$ s.t. $zx = 1$, then $y=z$.
 -/
