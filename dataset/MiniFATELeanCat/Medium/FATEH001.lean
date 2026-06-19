@@ -1,6 +1,10 @@
 /-
 Source: FATE-H 1
 Difficulty: Medium
+Informal statement:
+Prove that if $H$ is a subgroup of $G$ of index $n$, then there is a normal subgroup $K$ of $G$
+such that $K\leq H$ and $[G:K]\leq n!$
+
 -/
 
 import Mathlib.GroupTheory.FiniteIndexNormalSubgroup

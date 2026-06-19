@@ -1,6 +1,9 @@
 /-
 Source: FATE-M 11
 Difficulty: Easy
+Informal statement:
+In any ring $R$ and $a,b,c\in R$, $a(b-c)=a b-a c$ and $(b-c) a=b a-c a$.
+
 -/
 
 import Mathlib.Algebra.Ring.Basic

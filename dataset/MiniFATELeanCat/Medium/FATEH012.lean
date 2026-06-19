@@ -1,6 +1,9 @@
 /-
 Source: FATE-H 12
 Difficulty: Medium
+Informal statement:
+Prove that \( SL_2(\mathbb{F}_3) / Z(SL_2(\mathbb{F}_3)) \le A_4 \).
+
 -/
 
 import Mathlib.LinearAlgebra.Matrix.SpecialLinearGroup

@@ -1,6 +1,10 @@
 /-
 Source: LeanCat S_0061
 Difficulty: Hard
+Informal statement:
+Theorem: Let $\mathcal{C} = \mathrm{Vec}_{\mathbb{k}}$ be the category of finite dimensional vector spaces over a field $\mathbb{k}$.
+The coend of the hom functor $\mathrm{Hom} : \mathcal{C}^{\mathrm{op}} \times \mathcal{C} \to \mathcal{C}$ is $\mathbb{k}$ equipped with the usual trace maps $\mathrm{Hom}(V,V) \to \mathbb{k}$.
+
 -/
 
 import Mathlib.CategoryTheory.Limits.Shapes.Products

@@ -1,6 +1,10 @@
 /-
 Source: FATE-H 11
 Difficulty: Medium
+Informal statement:
+Let $G$ be a group of order $3825$. Prove that if $H$ is a normal subgroup of order $17$ in $G$,
+then $H \leq Z(G)$.
+
 -/
 
 import Mathlib.GroupTheory.Subgroup.Center

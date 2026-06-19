@@ -1,6 +1,9 @@
 /-
 Source: FATE-X 48
 Difficulty: Hard
+Informal statement:
+A commutative ring \( A \) is \textit{absolutely flat} if every \( A \)-module is flat.
+
 -/
 
 import Mathlib.RingTheory.Ideal.Basic

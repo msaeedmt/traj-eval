@@ -1,6 +1,10 @@
 /-
 Source: FATE-X 5
 Difficulty: Hard
+Informal statement:
+Let \(p\) be a prime, let \(G\) be a finite p-group. Let A be a maximal normal abelian subgroup
+of \(G\). Prove that A is also a maximal abelian subgroup of \(G\).
+
 -/
 
 import Mathlib.GroupTheory.Subgroup.Center

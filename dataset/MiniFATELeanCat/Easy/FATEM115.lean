@@ -1,6 +1,10 @@
 /-
 Source: FATE-M 115
 Difficulty: Easy
+Informal statement:
+$R$ is a relation on set $A$, $R^{-1} := \{ (x,y) ~|~ (y,x) \in R\}$,
+prove that $R$ is transitive if and only if $R^{-1}$ is transitive.
+
 -/
 
 import Mathlib.Logic.Relation

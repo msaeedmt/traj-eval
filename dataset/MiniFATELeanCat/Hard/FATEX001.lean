@@ -1,6 +1,10 @@
 /-
 Source: FATE-X 1
 Difficulty: Hard
+Informal statement:
+Let $R$ be a UFD with two nonassociate prime elements $p$ and $q$ such that every prime
+element is an associate of either $p$ or $q$. Prove that $R$ is a PID.
+
 -/
 
 import Mathlib.RingTheory.UniqueFactorizationDomain.Basic

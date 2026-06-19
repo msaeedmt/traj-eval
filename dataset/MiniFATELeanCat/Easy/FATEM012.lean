@@ -1,6 +1,10 @@
 /-
 Source: FATE-M 12
 Difficulty: Easy
+Informal statement:
+Let $R$ be a ring with unit. Then there is a unique homomorphism
+$f:\mathbb Z\to R$ such that $1\mapsto 1_R$.
+
 -/
 
 import Mathlib.Algebra.Ring.Basic

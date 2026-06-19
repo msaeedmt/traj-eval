@@ -1,6 +1,9 @@
 /-
 Source: FATE-H 97
 Difficulty: Medium
+Informal statement:
+Prove that $\sin 1^{\circ}$ is algebraic over $\mathbb{Q}$.
+
 -/
 
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic

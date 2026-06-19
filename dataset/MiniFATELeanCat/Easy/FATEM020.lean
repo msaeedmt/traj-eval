@@ -1,6 +1,9 @@
 /-
 Source: FATE-M 20
 Difficulty: Easy
+Informal statement:
+In a field $F$, as a ring, it has only ideals $(0)=\{0\},(1)=F$.
+
 -/
 
 import Mathlib.RingTheory.Ideal.Basic

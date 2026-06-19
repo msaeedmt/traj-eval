@@ -1,6 +1,10 @@
 /-
 Source: FATE-X 3
 Difficulty: Hard
+Informal statement:
+Let $H$ be a subgroup of finite index of a group $G$. Show that there exists a subset $S$ of $G$,
+such that $S$ is both a set of representatives of the left and the right cosets of $H$ in $G$.
+
 -/
 
 import Mathlib.GroupTheory.Complement

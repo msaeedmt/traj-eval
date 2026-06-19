@@ -1,6 +1,9 @@
 /-
 Source: FATE-H 13
 Difficulty: Medium
+Informal statement:
+Prove that the number of Sylow $p$-subgroups of $\operatorname{GL}_2(\mathbb{F}_p)$ is $p + 1$.
+
 -/
 
 import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Basic

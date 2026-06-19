@@ -1,6 +1,10 @@
 /-
 Source: FATE-H 9
 Difficulty: Medium
+Informal statement:
+If \( n \) is odd and \( n \geq 3 \), show that the identity is the only element of
+\( D_{2n} \) which commutes with all elements of \( D_{2n} \).
+
 -/
 
 import Mathlib.GroupTheory.SpecificGroups.Dihedral

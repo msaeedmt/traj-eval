@@ -1,6 +1,9 @@
 /-
 Source: FATE-M 109
 Difficulty: Easy
+Informal statement:
+If $R$ is an integral domain and $a b=a c$ for $a \neq 0, b, c \in R$, show that $b=c$.
+
 -/
 
 import Mathlib.Algebra.Ring.Basic

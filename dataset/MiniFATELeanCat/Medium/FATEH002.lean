@@ -1,6 +1,9 @@
 /-
 Source: FATE-H 2
 Difficulty: Medium
+Informal statement:
+Prove that if $\#G = 56$ then $G$ is not simple.
+
 -/
 
 import Mathlib.GroupTheory.Sylow

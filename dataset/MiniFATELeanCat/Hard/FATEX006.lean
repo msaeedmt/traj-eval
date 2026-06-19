@@ -1,6 +1,9 @@
 /-
 Source: FATE-X 6
 Difficulty: Hard
+Informal statement:
+Prove that if $\#G = 396$ then $G$ is not simple.
+
 -/
 
 import Mathlib.GroupTheory.Subgroup.Simple
