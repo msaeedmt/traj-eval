@@ -7,19 +7,30 @@ except to reuse the canonical role names.
 """
 
 from traj_eval.agents.config import build_llm_config
+from traj_eval.agents.controller import build_stepped_team
 from traj_eval.agents.group_chat import build_team
+from traj_eval.agents.observer import TraceObserver, make_trial_meta
+from traj_eval.agents.plan import Plan, PlanParseError, parse_plan
 from traj_eval.agents.roles import (
     make_critic,
     make_engineer,
     make_executor,
     make_planner,
 )
+from traj_eval.agents.routing import RoutingLedger
 
 __all__ = [
+    "Plan",
+    "PlanParseError",
+    "RoutingLedger",
+    "TraceObserver",
     "build_llm_config",
+    "build_stepped_team",
     "build_team",
     "make_critic",
     "make_engineer",
     "make_executor",
     "make_planner",
+    "make_trial_meta",
+    "parse_plan",
 ]

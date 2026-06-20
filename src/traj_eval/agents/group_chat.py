@@ -22,17 +22,23 @@ from __future__ import annotations
 
 from autogen import GroupChat, GroupChatManager, LLMConfig, UserProxyAgent
 
+from traj_eval.agents.markers import VERDICT_APPROVE, VERDICT_REJECT
 from traj_eval.agents.roles import (
     make_critic,
     make_engineer,
     make_executor,
     make_planner,
 )
+from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import AgentRole
 
-# Markers the role prompts agree to emit; read here to drive the loop.
-_VERDICT_APPROVE = "VERDICT: APPROVE"
-_VERDICT_REJECT = "VERDICT: REJECT"
+
+def _role_for_agent(agent) -> AgentRole:
+    """Map an agent to its schema role (names were pinned to AgentRole values)."""
+    try:
+        return AgentRole(agent.name)
+    except ValueError:
+        return AgentRole.SYSTEM
 
 
 def _last_content(groupchat: GroupChat) -> str:
@@ -47,6 +53,7 @@ def build_team(
     *,
     max_repairs: int = 2,
     max_round: int = 20,
+    ledger: RoutingLedger | None = None,
 ) -> tuple[GroupChatManager, UserProxyAgent, GroupChat]:
     """Build the four-role group chat and its manager.
 
@@ -55,6 +62,11 @@ def build_team(
 
     ``max_repairs`` caps the critic-reject -> engineer loop; once exceeded the
     run terminates even without approval (a perseveration outcome).
+
+    If a ``ledger`` is passed, every routing decision is recorded as a
+    single-parent cause (the last speaker's latest event) so the observer can
+    stamp routing-derived ``caused_by`` edges (Step 2b). Without a ledger the
+    selector behaves exactly as before (pure 1d control flow).
     """
     planner = make_planner(llm_config)
     engineer = make_engineer(llm_config)
@@ -74,6 +86,18 @@ def build_team(
     # mutate it without `nonlocal` gymnastics across calls.
     repair_count = {"n": 0}
 
+    def _route_to(next_agent, cause_role: AgentRole):
+        """Record (single-parent) routing cause, then return the next agent.
+
+        The cause is the latest event of ``cause_role`` -- the speaker whose
+        turn triggered this transition. No-op if no ledger is wired.
+        """
+        if ledger is not None:
+            cause = ledger.latest_event_id(cause_role)
+            next_role = _role_for_agent(next_agent)
+            ledger.record_routing(next_role, [cause] if cause else [])
+        return next_agent
+
     def select_next(last_speaker, groupchat: GroupChat):
         """Deterministic workflow transitions. Returns the next agent or None.
 
@@ -83,19 +107,21 @@ def build_team(
         name = last_speaker.name
 
         if name == "user":
-            return planner
+            # planner's first turn is caused by the user's task message.
+            return _route_to(planner, AgentRole.SYSTEM)
         if name == AgentRole.PLANNER.value:
-            return engineer
+            return _route_to(engineer, AgentRole.PLANNER)
         if name == AgentRole.ENGINEER.value:
-            return critic
+            return _route_to(critic, AgentRole.ENGINEER)
         if name == AgentRole.CRITIC.value:
             content = _last_content(groupchat).upper()
-            if _VERDICT_APPROVE in content:
-                return executor
-            if _VERDICT_REJECT in content:
+            if VERDICT_APPROVE in content:
+                return _route_to(executor, AgentRole.CRITIC)
+            if VERDICT_REJECT in content:
                 if repair_count["n"] < max_repairs:
                     repair_count["n"] += 1
-                    return engineer  # repair loop
+                    # repair: the revision is caused by the critic's rejection.
+                    return _route_to(engineer, AgentRole.CRITIC)
                 return None  # gave up after max_repairs (perseveration)
             # Malformed verdict: stop rather than guess.
             return None
