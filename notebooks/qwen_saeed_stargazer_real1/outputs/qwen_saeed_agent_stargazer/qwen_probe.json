@@ -1,0 +1,7 @@
+{
+  "provider_reachable": true,
+  "model": "openai/Qwen3.5-27B-Q5_K_M.gguf",
+  "available_model_count": 1,
+  "chat_ok": true,
+  "finish_reason": "stop"
+}

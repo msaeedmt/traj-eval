@@ -1,0 +1,21 @@
+{
+  "input_file": "stargazer_observations.json",
+  "output_file": "agent_submission.json",
+  "hidden_truth_available_to_agents": false,
+  "engineer_rules": [
+    "return Python code only",
+    "read stargazer_observations.json from the working directory",
+    "parse the top-level observations field before reading times_days/rvs_ms/sigmas_ms/instruments",
+    "write agent_submission.json in the working directory",
+    "do not read hidden truth, benchmark, answer, or hidden task files"
+  ],
+  "critic_acceptance_criteria": [
+    "Code is standalone and runnable from the workflow directory.",
+    "Code uses only public observations and repo-local public support logic.",
+    "Code correctly handles the top-level observations object.",
+    "Code writes agent_submission.json with a planets list.",
+    "Planet fields are numeric and physically plausible: P_days > 0, m_sin_i_mjup >= 0, 0 <= e < 1.",
+    "No hidden benchmark, truth file, answer file, or real_001 hidden task file is read.",
+    "Execution succeeds and the produced JSON is ready for the separate evaluation notebook."
+  ]
+}

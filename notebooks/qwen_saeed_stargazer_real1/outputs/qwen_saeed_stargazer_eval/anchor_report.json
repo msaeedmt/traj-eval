@@ -1,0 +1,58 @@
+{
+  "anchors": [
+    {
+      "anchor": "planner_event_present",
+      "passed": true,
+      "layer": "trajectory",
+      "evidence": "planner event exists"
+    },
+    {
+      "anchor": "engineer_event_present",
+      "passed": true,
+      "layer": "trajectory",
+      "evidence": "engineer event exists"
+    },
+    {
+      "anchor": "critic_review_present",
+      "passed": true,
+      "layer": "trajectory",
+      "evidence": "review records exist"
+    },
+    {
+      "anchor": "critic_code_approved",
+      "passed": false,
+      "layer": "trajectory",
+      "evidence": "critic approved code before execution"
+    },
+    {
+      "anchor": "executor_event_present",
+      "passed": false,
+      "layer": "trajectory",
+      "evidence": "executor_count=0"
+    },
+    {
+      "anchor": "submission_json_exists",
+      "passed": false,
+      "layer": "output",
+      "evidence": "missing"
+    },
+    {
+      "anchor": "submission_schema_ok",
+      "passed": false,
+      "layer": "output",
+      "evidence": "schema_ok=False"
+    },
+    {
+      "anchor": "ready_for_evaluation",
+      "passed": false,
+      "layer": "output",
+      "evidence": "ready=False"
+    }
+  ],
+  "first_violated_anchor": {
+    "anchor": "critic_code_approved",
+    "passed": false,
+    "layer": "trajectory",
+    "evidence": "critic approved code before execution"
+  }
+}
