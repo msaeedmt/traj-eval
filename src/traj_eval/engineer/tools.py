@@ -138,7 +138,7 @@ def execute_action_list(ctx: RunContext, args: argparse.Namespace, actions: list
         )
         try:
             result = handler(ctx, action, args)
-            ok = True
+            ok = not (tool == "run" and int(result.get("returncode", 0)) != 0)
             error = None
         except Exception as exc:
             result = {}

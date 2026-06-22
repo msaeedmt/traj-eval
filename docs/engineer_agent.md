@@ -36,5 +36,24 @@ Git.
 python scripts\engineer_agent.py --task-id demo --task "Explain the prompt only." --write-prompt-only
 ```
 
+Stargazer task evidence:
+
+```powershell
+python -m pytest tests\engineer\test_stargazer_task.py
+```
+
+This public test validates the committed
+`tests/engineer/evidence/stargazer_true_task/` bundle. The bundle is a scrubbed
+full artifact from a real Qwen-based Stargazer engineer run through the public
+package: prompt, Qwen response, JSONL actions, monitor log, tool outputs,
+manifest, trace validation, generated fitting script, fit diagnostics, and
+submission. The test rejects placeholder constants and requires data-derived
+fit diagnostics.
+On Windows worktrees where pytest cache/temp permissions are restricted, run:
+
+```powershell
+python -m pytest tests\engineer\test_stargazer_task.py --basetemp runs\pytest-temp -p no:cacheprovider
+```
+
 For a live Qwen run, provide a local env file with `OPENAI_BASE_URL`,
 `OPENAI_API_KEY`, and model settings, then pass `--qwen --execute-qwen-actions`.

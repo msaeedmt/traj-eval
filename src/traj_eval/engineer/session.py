@@ -21,7 +21,7 @@ from .prompts import (
     append_context_files,
     append_version_context,
     build_engineer_prompt,
-    build_stargazer_smoke_task,
+    build_stargazer_task,
     write_action_example,
     write_critic_note,
 )
@@ -33,9 +33,9 @@ from .tools import execute_action_list, execute_actions
 def task_from_args(args: argparse.Namespace) -> str:
     if args.task_file:
         return Path(args.task_file).read_text(encoding="utf-8")
-    if args.stargazer_smoke_task:
+    if args.stargazer_task:
         repo = find_repo_root(Path(args.repo_root))
-        return build_stargazer_smoke_task(repo, args.stargazer_output_rel)
+        return build_stargazer_task(repo, args.stargazer_output_rel)
     return str(args.task)
 
 
@@ -134,9 +134,7 @@ def call_qwen_interactive(ctx: RunContext, prompt: str, args: argparse.Namespace
                 "tools": [str(action.get("tool", "")) for action in actions],
             }
         )
-        if any(not row.get("ok") for row in turn_results):
-            break
-        if any(row.get("tool") == "finish" and row.get("ok") for row in turn_results):
+        if all(row.get("ok") for row in turn_results) and any(row.get("tool") == "finish" for row in turn_results):
             break
         messages.append({"role": "assistant", "content": text})
         messages.append({"role": "user", "content": tool_results_message(turn, turn_results)})
@@ -157,8 +155,8 @@ def call_qwen_interactive(ctx: RunContext, prompt: str, args: argparse.Namespace
 
 
 def run_session(args: argparse.Namespace) -> Path:
-    if args.stargazer_smoke_task and not args.stargazer_output_rel:
-        args.stargazer_output_rel = "runs/engineer/tmp/stargazer_qwen_smoke"
+    if args.stargazer_task and not args.stargazer_output_rel:
+        args.stargazer_output_rel = "runs/engineer/tmp/stargazer_qwen_task"
 
     repo = find_repo_root(Path(args.repo_root))
     task_id = slugify(args.task_id)
@@ -167,7 +165,8 @@ def run_session(args: argparse.Namespace) -> Path:
     ensure_clean_if_branching(repo, args.create_branch, args.allow_dirty)
 
     run_id = f"{stamp()}-{task_id}"
-    run_dir = repo / "runs" / "engineer" / task_id / run_id
+    run_root = repo / getattr(args, "run_root_rel", "runs/engineer")
+    run_dir = run_root / task_id / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
     ctx = RunContext(
         repo=repo,
@@ -212,7 +211,9 @@ def run_session(args: argparse.Namespace) -> Path:
         action_results = execute_actions(ctx, args)
 
     after = capture_git_state(repo, run_dir, "after")
-    changed = snapshot_changed_files(repo, run_dir)
+    changed = [] if getattr(args, "skip_changed_files", False) else snapshot_changed_files(repo, run_dir)
+    if getattr(args, "skip_changed_files", False):
+        write_json(run_dir / "changed_files.json", changed)
     artifact_roots = list(args.artifact_rel or [])
     if args.stargazer_output_rel:
         artifact_roots.append(args.stargazer_output_rel)
@@ -260,6 +261,6 @@ def run_session(args: argparse.Namespace) -> Path:
     print(f"example_actions: {example_actions}")
     print(f"critic_entrypoint: {critic_note}")
     print(f"changed_files: {len(changed)}")
-    if args.write_prompt_only or (not args.actions_file and not args.execute_qwen_actions):
+    if args.write_prompt_only or (not args.actions_file and not args.execute_qwen_actions and not args.qwen_interactive_tools):
         print("No actions executed. Give engineer_prompt.md to the engineer model, then pass --actions-file or use --qwen --execute-qwen-actions.")
     return run_dir

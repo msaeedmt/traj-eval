@@ -84,6 +84,7 @@ def strip_fences(text: str) -> str:
 def parse_jsonl_actions_text(text: str) -> list[dict[str, Any]]:
     actions: list[dict[str, Any]] = []
     cleaned = strip_fences(text)
+    decoder = json.JSONDecoder()
     try:
         parsed_whole = json.loads(cleaned)
         if isinstance(parsed_whole, dict) and "tool" in parsed_whole:
@@ -104,6 +105,27 @@ def parse_jsonl_actions_text(text: str) -> list[dict[str, Any]]:
             continue
         if isinstance(parsed, dict) and "tool" in parsed:
             actions.append(parsed)
+    if actions:
+        return actions
+
+    index = 0
+    while index < len(cleaned):
+        while index < len(cleaned) and cleaned[index].isspace():
+            index += 1
+        if cleaned[index : index + 2] == "\\n":
+            index += 2
+            continue
+        start = cleaned.find("{", index)
+        if start < 0:
+            break
+        try:
+            parsed, end = decoder.raw_decode(cleaned[start:])
+        except json.JSONDecodeError:
+            index = start + 1
+            continue
+        if isinstance(parsed, dict) and "tool" in parsed:
+            actions.append(parsed)
+        index = start + end
     if not actions:
         raise ValueError("Qwen response did not contain parseable JSONL tool actions.")
     return actions
