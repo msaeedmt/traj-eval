@@ -62,6 +62,64 @@ def _message_text(message: dict[str, Any] | str) -> str:
     return message or ""
 
 
+def _classify(message: dict[str, Any] | str) -> EventType:
+    """Decide the event kind from the message shape (Step 4c).
+
+    AG2 carries tool interactions as ordinary messages on the same outgoing
+    path, distinguishable only by their shape: a caller's suggestion has a
+    ``tool_calls`` list; an executor's result has ``role == "tool"`` (and a
+    ``tool_responses`` list). Everything else is a plain MESSAGE. These two
+    shapes were confirmed against ag2 0.13 directly, not assumed -- the same
+    probe verified both pass through ``process_message_before_send``, which is
+    why the observer can classify them here rather than needing a second hook.
+    """
+    if isinstance(message, dict):
+        if message.get("tool_calls"):
+            return EventType.TOOL_CALL
+        if message.get("role") == "tool" or message.get("tool_responses"):
+            return EventType.EXECUTION_RESULT
+    return EventType.MESSAGE
+
+
+def _tool_call_payload(message: dict[str, Any]) -> dict[str, Any]:
+    """Structured payload for a TOOL_CALL: one row per suggested call.
+
+    Keeps the raw argument string rather than parsing it -- the argument is the
+    proof code the agent wants checked, and re-serialising risks changing it.
+    The downstream metric ('was the submitted proof the thing last compiled?')
+    needs the bytes as sent.
+    """
+    calls = []
+    for tc in message.get("tool_calls") or []:
+        fn = tc.get("function", {})
+        calls.append(
+            {
+                "id": tc.get("id"),
+                "name": fn.get("name"),
+                "arguments": fn.get("arguments"),
+            }
+        )
+    return {"tool_calls": calls}
+
+
+def _tool_result_payload(message: dict[str, Any]) -> dict[str, Any]:
+    """Structured payload for an EXECUTION_RESULT: the tool's returned text.
+
+    AG2 puts the result under ``tool_responses`` (a list keyed by call id) and
+    mirrors it into ``content``; we record both so the result can be tied back
+    to its TOOL_CALL by id and read as plain text without re-parsing.
+    """
+    responses = []
+    for tr in message.get("tool_responses") or []:
+        responses.append(
+            {
+                "id": tr.get("tool_call_id"),
+                "content": tr.get("content"),
+            }
+        )
+    return {"tool_responses": responses, "text": _message_text(message)}
+
+
 class StepContext:
     """Shared step pointer the controller writes and the observer reads.
 
@@ -157,29 +215,44 @@ class TraceObserver:
     ) -> dict[str, Any] | str:
         """The hook. Emits a TraceEvent, then returns the message UNCHANGED."""
         role = _role_for(sender.name)
+        event_type = _classify(message)
 
         # Routing-derived parents, if a ledger is wired. Empty otherwise (the
         # pure 2a behaviour). take_pending consumes the decision exactly once.
         caused_by = self._ledger.take_pending(role) if self._ledger else []
 
-        text = _message_text(message)
-        # Minimal marker parsing: stamp the decision (approve/reject, ok/fail)
-        # or has_final flag as structured payload fields (Step 2c). Richer
-        # extraction is deferred to the anchor-validation design.
+        # Common payload: who/whom, plus the type-specific body below.
         payload: dict[str, Any] = {
             "sender": sender.name,
             "recipient": getattr(recipient, "name", str(recipient)),
-            "text": text,
         }
-        payload.update(parse_decision(role, text))
+
+        # Type-specific body (Step 4c). Tool messages travel the same path as
+        # plain messages and are told apart only by shape, so the payload shape
+        # follows the classified type rather than the role.
+        if event_type is EventType.TOOL_CALL:
+            payload.update(_tool_call_payload(message))  # type: ignore[arg-type]
+        elif event_type is EventType.EXECUTION_RESULT:
+            payload.update(_tool_result_payload(message))  # type: ignore[arg-type]
+        else:
+            text = _message_text(message)
+            payload["text"] = text
+            # Minimal marker parsing: stamp the decision (approve/reject) or
+            # has_final flag as structured fields (Step 2c). Only meaningful for
+            # plain messages; tool events carry no verdict.
+            payload.update(parse_decision(role, text))
 
         # Stamp the plan step this turn belongs to, if a stepped controller is
-        # driving (Step 2a). Only the per-step roles carry a step: the planner
-        # authors the plan rather than executing a step, and SYSTEM is not an
-        # agent turn. Reading the shared context here -- at emit time -- is what
-        # makes the step pointer reflect *this* turn (the controller has already
-        # set attempt to the current repair count before the engineer speaks).
-        if self._step_context is not None and role in (AgentRole.ENGINEER, AgentRole.CRITIC):
+        # driving (Step 2a), extended in 4c to tool events as well: a compiler
+        # call and its result belong to the same step as the engineer turn that
+        # issued them, so they must carry the same stamp for per-step
+        # accumulation and the "did this step verify its proof" metric. The
+        # executor speaks the result, so stamp ENGINEER/CRITIC *and* the tool
+        # event types regardless of the speaking role.
+        is_tool_event = event_type in (EventType.TOOL_CALL, EventType.EXECUTION_RESULT)
+        if self._step_context is not None and (
+            role in (AgentRole.ENGINEER, AgentRole.CRITIC) or is_tool_event
+        ):
             payload["step_idx"] = self._step_context.step_idx
             payload["attempt"] = self._step_context.attempt
 
@@ -189,7 +262,7 @@ class TraceObserver:
             trial_id=self._trial_id,
             seq=self._next_seq(),
             timestamp=datetime.now(UTC),
-            event_type=EventType.MESSAGE,
+            event_type=event_type,
             agent_role=role,
             caused_by=caused_by,
             payload=payload,
