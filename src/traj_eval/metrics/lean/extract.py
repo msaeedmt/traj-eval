@@ -125,6 +125,32 @@ def extract_lean_code(text: str) -> Extracted:
     return Extracted(code=None, method="none")
 
 
+def lean_code_blocks(text: str) -> list[str]:
+    """All Lean code blocks in a message, in document order, as a list.
+
+    Same detection as ``extract_lean_code`` (explicit ```lean fences first, then
+    untagged Lean-looking blocks) but WITHOUT concatenating -- the caller decides
+    which block matters. The validator needs this because a final message often
+    shows several blocks (e.g. a ``sorry`` scaffold AND the real proof); gluing
+    them yields a file with duplicate declarations that cannot compile, so the
+    submitted artifact must be ONE chosen block, not their concatenation.
+    """
+    text = text or ""
+    lean_blocks = [_clean(m.group(1)) for m in _LEAN_FENCE_RE.finditer(text)]
+    lean_blocks = [b for b in lean_blocks if b]
+    if lean_blocks:
+        return lean_blocks
+
+    generic_blocks: list[str] = []
+    for m in _ANY_FENCE_RE.finditer(text):
+        info, body = m.group(1).strip().lower(), _clean(m.group(2))
+        if info and not info.startswith("lean"):
+            continue
+        if body and _looks_like_lean(body):
+            generic_blocks.append(body)
+    return generic_blocks
+
+
 def extract_from_event(event: TraceEvent) -> Extracted:
     """Extract Lean code from a TraceEvent, guarding role/type.
 

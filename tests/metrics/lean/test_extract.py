@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from traj_eval.anchors.lean.extract import (
+from traj_eval.metrics.lean.extract import (
     Extracted,
     extract_from_event,
     extract_lean_code,
