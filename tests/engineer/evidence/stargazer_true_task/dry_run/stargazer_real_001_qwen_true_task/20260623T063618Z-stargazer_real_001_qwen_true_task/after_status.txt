@@ -8,11 +8,11 @@
  M notebooks/qwen_saeed_stargazer_real1/outputs/qwen_saeed_agent_stargazer/planner_summary.txt
  M notebooks/qwen_saeed_stargazer_real1/outputs/qwen_saeed_agent_stargazer/qwen_trace_full.json
  M notebooks/qwen_saeed_stargazer_real1/qwen_saeed_agent_stargazer.ipynb
- M src/traj_eval/engineer/cli.py
- M src/traj_eval/engineer/prompts.py
- M src/traj_eval/engineer/qwen_client.py
- M src/traj_eval/engineer/session.py
- M src/traj_eval/engineer/tools.py
+ M src/traj_eval/agents/engineer/cli.py
+ M src/traj_eval/agents/engineer/prompts.py
+ M src/traj_eval/agents/engineer/qwen_client.py
+ M src/traj_eval/agents/engineer/session.py
+ M src/traj_eval/agents/engineer/tools.py
  D tests/engineer/evidence/qwen_stargazer_run/README.md
  D tests/engineer/evidence/qwen_stargazer_run/artifact_index.json
  D tests/engineer/evidence/qwen_stargazer_run/dry_run/stargazer_real_001_qwen_test_dry_run/20260622T220529Z-stargazer_real_001_qwen_test_dry_run/after_branch.txt

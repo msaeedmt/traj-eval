@@ -21,7 +21,6 @@ from .prompts import (
     append_context_files,
     append_version_context,
     build_engineer_prompt,
-    build_stargazer_task,
     write_action_example,
     write_critic_note,
 )
@@ -33,9 +32,6 @@ from .tools import execute_action_list, execute_actions
 def task_from_args(args: argparse.Namespace) -> str:
     if args.task_file:
         return Path(args.task_file).read_text(encoding="utf-8")
-    if args.stargazer_task:
-        repo = find_repo_root(Path(args.repo_root))
-        return build_stargazer_task(repo, args.stargazer_output_rel)
     return str(args.task)
 
 
@@ -155,9 +151,6 @@ def call_qwen_interactive(ctx: RunContext, prompt: str, args: argparse.Namespace
 
 
 def run_session(args: argparse.Namespace) -> Path:
-    if args.stargazer_task and not args.stargazer_output_rel:
-        args.stargazer_output_rel = "runs/engineer/tmp/stargazer_qwen_task"
-
     repo = find_repo_root(Path(args.repo_root))
     task_id = slugify(args.task_id)
     task = task_from_args(args)
@@ -215,8 +208,6 @@ def run_session(args: argparse.Namespace) -> Path:
     if getattr(args, "skip_changed_files", False):
         write_json(run_dir / "changed_files.json", changed)
     artifact_roots = list(args.artifact_rel or [])
-    if args.stargazer_output_rel:
-        artifact_roots.append(args.stargazer_output_rel)
     private_artifacts = collect_artifacts(repo, artifact_roots)
     critic_note = write_critic_note(run_dir, ctx.task_id, ctx.trial_id)
     trace_validation = validate_with_traj_eval_schema(repo, ctx.event_log)

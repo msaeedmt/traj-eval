@@ -5,7 +5,7 @@
   "task_type": "stargazer_public_data_fit",
   "engineer_contract": {
     "entrypoint": "scripts/engineer_agent.py",
-    "source_package": "src/traj_eval/engineer",
+    "source_package": "src/traj_eval/agents/engineer",
     "output_submission": "tests/engineer/evidence/stargazer_true_task/workdir/stargazer_workdir/agent_submission.json",
     "fit_diagnostics": "tests/engineer/evidence/stargazer_true_task/workdir/stargazer_workdir/fit_diagnostics.json"
   },

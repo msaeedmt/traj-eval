@@ -18,13 +18,13 @@ task / plan.md
 ## Code Map
 
 ```text
-src/traj_eval/engineer/cli.py          CLI arguments
-src/traj_eval/engineer/session.py      main engineer loop
-src/traj_eval/engineer/qwen_client.py  Qwen request and JSONL parsing
-src/traj_eval/engineer/tools.py        tool handlers
-src/traj_eval/engineer/evidence.py     git snapshots, diagnosis, version index
-src/traj_eval/engineer/prompts.py      prompt and context-file construction
-scripts/engineer_agent.py              command-line entrypoint
+src/traj_eval/agents/engineer/cli.py          CLI arguments
+src/traj_eval/agents/engineer/session.py      main engineer loop
+src/traj_eval/agents/engineer/qwen_client.py  Qwen request and JSONL parsing
+src/traj_eval/agents/engineer/tools.py        tool handlers
+src/traj_eval/agents/engineer/evidence.py     git snapshots, diagnosis, version index
+src/traj_eval/agents/engineer/prompts.py      prompt and context-file construction
+scripts/engineer_agent.py                     command-line entrypoint
 ```
 
 Generated run artifacts are written under `runs/engineer/`, which is ignored by
