@@ -197,3 +197,45 @@ def test_finalize_preserves_existing_reason():
     state.terminated, state.reason = True, "clean"
     finalize_run(state)
     assert state.reason == "clean"  # not overwritten
+
+
+def _tool_msg(name, code):
+    import json
+
+    return {
+        "name": name,
+        "content": None,
+        "tool_calls": [
+            {
+                "id": "c",
+                "type": "function",
+                "function": {"name": "check_lean", "arguments": json.dumps({"code": code})},
+            }
+        ],
+    }
+
+
+def test_perseveration_bound_terminates_stuck():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+    bad = "import Mathlib\ntheorem t := by rw [Nat.add_succ, ih]"
+    # default max_identical_calls=4: the 4th identical submission trips 'stuck'
+    results = []
+    for _ in range(5):
+        gc.messages = gc.messages + [_tool_msg(AgentRole.ENGINEER.value, bad)]
+        results.append(sel(_Speaker(AgentRole.ENGINEER.value), gc))
+    assert state.terminated and state.reason == "stuck"
+    assert state.max_identical_calls_seen >= 4
+    # once stuck, the selector returned None (no next speaker)
+    assert results[-1] is None
+
+
+def test_distinct_calls_do_not_trip_bound():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+    for i in range(5):
+        gc.messages = gc.messages + [_tool_msg(AgentRole.ENGINEER.value, f"attempt number {i}")]
+        nxt = sel(_Speaker(AgentRole.ENGINEER.value), gc)
+        assert nxt.name == AgentRole.EXECUTOR.value  # each routes to executor
+    assert state.reason != "stuck"
+    assert state.consecutive_identical_calls == 1  # last one was unique

@@ -63,6 +63,7 @@ class RoutingConfig:
     roles: dict[AgentRole, RoleSpec] = field(default_factory=dict)
     max_turns: int = 40
     max_consecutive_invalid: int = 3  # consecutive bad hand-offs -> 'stuck'
+    max_identical_calls: int = 4  # identical tool submissions in a row -> 'stuck'
 
     def spec(self, role: AgentRole) -> RoleSpec | None:
         return self.roles.get(role)
@@ -77,6 +78,13 @@ class _RunState:
     terminated: bool = False
     reason: str | None = None  # 'clean' | 'cap' | 'stuck'
     invalid_handoffs: int = 0  # total coordination errors seen
+    # Perseveration bound (4d): the last tool-call code and how many times in a
+    # row it has been resubmitted identically. Repeated identical submission is
+    # perseveration; we stop the run rather than let it burn the whole budget,
+    # and record the count so the offline detector confirms what the bound saw.
+    last_call_code: str | None = None
+    consecutive_identical_calls: int = 0
+    max_identical_calls_seen: int = 0
 
 
 def _role_of(name: str) -> AgentRole | None:
@@ -105,6 +113,32 @@ def _is_native_tool_call(message: dict[str, Any]) -> bool:
     marker because AG2 has no native 'choose next agent' mechanism.)
     """
     return bool(message.get("tool_calls"))
+
+
+def _normalise_call_code(message: dict[str, Any]) -> str | None:
+    """Whitespace-normalised concatenation of the tool call(s) arguments.
+
+    Used by the perseveration bound to tell whether this submission repeats the
+    previous one. Parses each tool_call's ``arguments`` (clean JSON) and joins
+    the values; falls back to the raw arguments string if parsing fails. Mirrors
+    the detector's normalisation so the live bound and the offline detector
+    agree on what 'identical' means.
+    """
+    import json as _json
+
+    parts: list[str] = []
+    for tc in message.get("tool_calls") or []:
+        args = tc.get("function", {}).get("arguments")
+        if not args:
+            continue
+        try:
+            parsed = _json.loads(args)
+            parts.append(" ".join(str(v) for v in parsed.values()))
+        except (ValueError, TypeError, AttributeError):
+            parts.append(str(args))
+    if not parts:
+        return None
+    return " ".join(" ".join(parts).split())
 
 
 def build_free_routing_team(
@@ -201,6 +235,24 @@ def build_free_routing_team(
             called = {tc.get("function", {}).get("name") for tc in last_msg.get("tool_calls") or []}
             if called and called <= spec.tools:
                 state.consecutive_invalid = 0
+                # Perseveration bound: if this submission is byte-identical
+                # (after whitespace normalisation) to the previous one, count
+                # it; past the threshold the agent is stuck resubmitting the
+                # same thing, so stop the run as 'stuck' rather than loop to the
+                # turn cap. The count is recorded so the offline detector can
+                # confirm and characterise the episode.
+                code = _normalise_call_code(last_msg)
+                if code is not None and code == state.last_call_code:
+                    state.consecutive_identical_calls += 1
+                else:
+                    state.consecutive_identical_calls = 1
+                    state.last_call_code = code
+                state.max_identical_calls_seen = max(
+                    state.max_identical_calls_seen, state.consecutive_identical_calls
+                )
+                if state.consecutive_identical_calls >= config.max_identical_calls:
+                    state.terminated, state.reason = True, "stuck"
+                    return None
                 return _route(executor, role)
             return _invalid(state, config, agents)  # called a tool it may not
 
