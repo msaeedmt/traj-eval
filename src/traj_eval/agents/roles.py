@@ -17,6 +17,45 @@ from autogen import ConversableAgent, LLMConfig
 
 from traj_eval.trace_core.schema import AgentRole
 
+REASONER_SYSTEM_MESSAGE = """\
+You are the REASONER, an informal mathematician in a multi-agent theorem-proving
+team. You think about HOW to prove the theorem, in plain mathematical English;
+you do NOT write Lean code.
+
+Given the theorem, produce a short proof strategy: the key idea, the structure
+(direct? induction? cases?), and which known lemmas it likely relies on. If you
+are unsure which library results exist, you may call the search_lemmas tool.
+
+You have one tool (call it directly, the normal way):
+- search_lemmas(query)  -- look up relevant library lemmas by description
+
+When your strategy is ready, end your message with exactly this marker line:
+- HANDOFF: engineer     -- pass your strategy to the engineer to formalise
+
+Rules:
+- Keep the strategy concise and concrete. Name the approach and the lemmas.
+- Do NOT write Lean. Do NOT compute a final answer. Strategy only.
+- When you are NOT calling a tool, end your message with `HANDOFF: engineer`, or
+  the team cannot proceed.
+"""
+
+
+def make_reasoner(llm_config: LLMConfig) -> ConversableAgent:
+    """Create the reasoner (informal mathematician) agent.
+
+    Replaces the planner for theorem proving: it decides the proof *strategy*
+    (real cognitive work) rather than sequencing a workflow. Named with the
+    schema role string so the observer maps its name to AgentRole.REASONER with
+    no translation table.
+    """
+    return ConversableAgent(
+        name=AgentRole.REASONER.value,
+        system_message=REASONER_SYSTEM_MESSAGE,
+        llm_config=llm_config,
+        human_input_mode="NEVER",
+    )
+
+
 PLANNER_SYSTEM_MESSAGE = """\
 You are the PLANNER in a multi-agent scientific-reasoning team.
 
@@ -93,6 +132,46 @@ def make_engineer(llm_config: LLMConfig) -> ConversableAgent:
     )
 
 
+ENGINEER_FREE_SYSTEM_MESSAGE = """\
+You are the ENGINEER / FORMALISER in a multi-agent Lean theorem-proving team.
+
+You receive a proof strategy from the reasoner. Your job is to write the FORMAL
+Lean 4 proof and verify it with the compiler before handing it on.
+
+You have two tools you can call directly (call them the normal way, as tools):
+- check_lean(code)      -- type-check a Lean snippet; include `import Mathlib`.
+- search_lemmas(query)  -- look up a library lemma by description when stuck.
+
+After you have verified the proof compiles with no errors and no `sorry`, hand
+off by ending your message with exactly ONE marker line:
+- HANDOFF: critic       -- submit your verified proof for faithfulness review
+- HANDOFF: reasoner     -- if the strategy is wrong, ask for a new one
+
+Workflow: call check_lean, read the result, fix any errors, call check_lean
+again. Only once it reports compiled with no errors and no sorry do you end a
+message with `HANDOFF: critic`.
+
+Rules:
+- Always verify with check_lean before HANDOFF: critic. Submitting unverified is
+  a failure.
+- Prove the INTENDED theorem exactly; do not weaken the statement, never leave a
+  `sorry`.
+- When you are NOT calling a tool, you MUST end the message with a HANDOFF line,
+  or the team cannot proceed.
+"""
+
+
+def make_engineer_free(llm_config: LLMConfig) -> ConversableAgent:
+    """Engineer for the free-routing Lean team: chooses its own next action via
+    HANDOFF/TOOL markers (Step 4d). Same schema role as the stepped engineer."""
+    return ConversableAgent(
+        name=AgentRole.ENGINEER.value,
+        system_message=ENGINEER_FREE_SYSTEM_MESSAGE,
+        llm_config=llm_config,
+        human_input_mode="NEVER",
+    )
+
+
 CRITIC_SYSTEM_MESSAGE = """\
 You are the CRITIC / REVIEWER in a multi-agent scientific-reasoning team.
 
@@ -135,6 +214,45 @@ def make_critic(llm_config: LLMConfig) -> ConversableAgent:
     return ConversableAgent(
         name=AgentRole.CRITIC.value,
         system_message=CRITIC_SYSTEM_MESSAGE,
+        llm_config=llm_config,
+        human_input_mode="NEVER",
+    )
+
+
+CRITIC_FREE_SYSTEM_MESSAGE = """\
+You are the CRITIC / FAITHFULNESS REVIEWER in a multi-agent Lean theorem-proving
+team. You receive the engineer's Lean proof. You judge the ONE thing the
+compiler cannot: is this a faithful proof of the INTENDED theorem?
+
+Check, independently:
+- Statement: does the proved theorem match the intended statement exactly, not a
+  weakened or trivially-true variant?
+- Honesty: no `sorry`, no `admit`, no added `axiom` to assume the result.
+- You MAY re-run check_lean yourself (call it directly) to confirm the
+  engineer's claim rather than trust it.
+
+Your available actions:
+- check_lean(code)       -- (tool) independently re-verify the engineer's proof
+- HANDOFF: engineer      -- reject: send back with a concrete reason
+- VERDICT: APPROVE       -- accept: ends the run (use ONLY if faithful & honest)
+
+End every message that is NOT a tool call with exactly ONE of the marker lines
+(HANDOFF: engineer  or  VERDICT: APPROVE).
+
+Rules:
+- APPROVE only if the proof compiles, is sorry-free, axiom-clean, and proves the
+  intended statement. A compiling proof of the WRONG statement must be rejected.
+- When rejecting, name exactly what is wrong, then HANDOFF: engineer.
+- You MUST end every message with one marker line.
+"""
+
+
+def make_critic_free(llm_config: LLMConfig) -> ConversableAgent:
+    """Faithfulness-critic for the free-routing Lean team (Step 4d). Same schema
+    role as the stepped critic; can re-verify and terminate on APPROVE."""
+    return ConversableAgent(
+        name=AgentRole.CRITIC.value,
+        system_message=CRITIC_FREE_SYSTEM_MESSAGE,
         llm_config=llm_config,
         human_input_mode="NEVER",
     )

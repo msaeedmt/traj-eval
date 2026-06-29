@@ -21,16 +21,25 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-SCHEMA_VERSION = "0.1.0"
+SCHEMA_VERSION = "0.2.0"  # 0.2.0: added REASONER role + handoff payload fields
 
 
 class AgentRole(StrEnum):
-    """Fixed four-role decomposition from the proposal (Methodology §4.1)."""
+    """Agent roles. Additive over the original four-role decomposition
+    (Methodology §4.1): REASONER was added when the Lean setup moved to an
+    informal-reasoner + formalizer + faithfulness-critic structure (the planner
+    as a workflow-sequencer was dropped for theorem proving). PLANNER is kept,
+    not removed, so traces logged under the old setup still validate.
 
-    PLANNER = "planner"
+    Role meaning is set by each agent's prompt, not by this enum; the enum only
+    has to be a stable, exhaustive set of slot names a trace can reference.
+    """
+
+    REASONER = "reasoner"  # informal strategy / lemma planning, writes no code
+    PLANNER = "planner"  # (legacy) workflow sequencer; superseded by REASONER
     ENGINEER = "engineer"  # engineer / formaliser
-    CRITIC = "critic"  # critic / reviewer
-    EXECUTOR = "executor"  # executor / repairer
+    CRITIC = "critic"  # critic / reviewer (faithfulness)
+    EXECUTOR = "executor"  # mechanical tool runner
     SYSTEM = "system"  # orchestrator / environment, not an agent
 
 

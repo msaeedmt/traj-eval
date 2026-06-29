@@ -1,8 +1,9 @@
 {
   "$defs": {
     "AgentRole": {
-      "description": "Fixed four-role decomposition from the proposal (Methodology \u00a74.1).",
+      "description": "Agent roles. Additive over the original four-role decomposition\n(Methodology \u00a74.1): REASONER was added when the Lean setup moved to an\ninformal-reasoner + formalizer + faithfulness-critic structure (the planner\nas a workflow-sequencer was dropped for theorem proving). PLANNER is kept,\nnot removed, so traces logged under the old setup still validate.\n\nRole meaning is set by each agent's prompt, not by this enum; the enum only\nhas to be a stable, exhaustive set of slot names a trace can reference.",
       "enum": [
+        "reasoner",
         "planner",
         "engineer",
         "critic",
@@ -89,7 +90,7 @@
   "description": "A single node in the directed interaction graph G.",
   "properties": {
     "schema_version": {
-      "default": "0.1.0",
+      "default": "0.2.0",
       "title": "Schema Version",
       "type": "string"
     },

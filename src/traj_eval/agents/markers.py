@@ -1,4 +1,4 @@
-"""Machine-readable role markers and a minimal decision parser (Step 2c).
+"""Machine-readable role markers and a minimal decision parser (Step 2c; 4d).
 
 The role prompts end their messages with a marked line so downstream code can
 read the outcome without re-grepping prose:
@@ -7,17 +7,27 @@ read the outcome without re-grepping prose:
     critic    -> VERDICT: APPROVE   |  VERDICT: REJECT - <reason>
     executor  -> EXECUTION: OK - <answer>  |  EXECUTION: FAIL - <detail>
 
-This module is the single source of truth for the marker strings. The selector
-(group_chat) imports the verdict constants to route on; the observer imports
-``parse_decision`` to stamp a structured ``decision`` field onto each event.
+Free-routing markers (Step 4d): under agent-chosen routing, an agent ends its
+message by naming who acts next, or which tool to run:
 
-Minimal by design: this extracts only the *decision* (approve/reject, ok/fail)
-and a flag that the engineer submitted a FINAL. The richer extraction of the
-marker payload (the answer value, the reject reason, the failure detail) is
-deferred until the anchor-validation design specifies what fields it needs.
+    HANDOFF: <agent_role>     -- hand control to another agent
+    TOOL: <tool_name>         -- request a tool call (the controller routes to
+                                 the executor, which runs it)
+
+These are how coordination becomes a *measured choice*: the controller routes on
+the expressed target, and the gap between what an agent is ALLOWED to reach and
+what it actually names is a coordination signal. Parsing lives here (the single
+source of truth for marker strings); validating a target against an agent's
+allowed set is the controller's job, not this module's.
+
+This module is substrate-agnostic: it knows marker grammar, not Lean. Minimal by
+design -- it extracts the decision / handoff target / tool name, not the full
+payload.
 """
 
 from __future__ import annotations
+
+import re
 
 from traj_eval.trace_core.schema import AgentRole
 
@@ -31,6 +41,35 @@ EXECUTION_FAIL = "EXECUTION: FAIL"
 
 # Engineer submission marker.
 FINAL = "FINAL:"
+
+# Free-routing markers (4d).
+HANDOFF = "HANDOFF:"
+TOOL = "TOOL:"
+
+# A handoff/tool marker line: the keyword, then the target token (a role name or
+# tool name). Case-insensitive; tolerant of surrounding whitespace.
+_HANDOFF_RE = re.compile(r"HANDOFF:\s*([A-Za-z_][A-Za-z0-9_]*)", re.IGNORECASE)
+_TOOL_RE = re.compile(r"TOOL:\s*([A-Za-z_][A-Za-z0-9_]*)", re.IGNORECASE)
+
+
+def parse_handoff(text: str) -> dict[str, object]:
+    """Extract an expressed handoff or tool request from a message, or {}.
+
+    Returns at most one of:
+      {"tool_request": "<tool>"}    -- agent requested a tool call
+      {"handoff_target": "<role>"}  -- agent named who acts next
+    A TOOL request takes precedence if both appear (a tool call is the more
+    immediate action). The target is lowercased for a stable match against
+    role/tool names; validity is judged by the controller, not here.
+    """
+    text = text or ""
+    m_tool = _TOOL_RE.search(text)
+    if m_tool:
+        return {"tool_request": m_tool.group(1).lower()}
+    m_hand = _HANDOFF_RE.search(text)
+    if m_hand:
+        return {"handoff_target": m_hand.group(1).lower()}
+    return {}
 
 
 def parse_decision(role: AgentRole, text: str) -> dict[str, object]:

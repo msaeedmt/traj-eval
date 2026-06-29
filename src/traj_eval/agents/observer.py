@@ -31,7 +31,7 @@ from typing import Any
 
 from autogen import Agent, ConversableAgent
 
-from traj_eval.agents.markers import parse_decision
+from traj_eval.agents.markers import parse_decision, parse_handoff
 from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import (
     AgentRole,
@@ -241,6 +241,13 @@ class TraceObserver:
             # has_final flag as structured fields (Step 2c). Only meaningful for
             # plain messages; tool events carry no verdict.
             payload.update(parse_decision(role, text))
+            # Stamp the expressed coordination marker (4d free-routing): which
+            # agent this one chose to hand to, or which tool it requested. We
+            # record only what was EXPRESSED here -- judging whether the target
+            # was allowed needs the RoutingConfig, which is the controller's /
+            # metrics layer's concern, not the observer's. Keeping validity out
+            # of the observer keeps it agnostic and config-free.
+            payload.update(parse_handoff(text))
 
         # Stamp the plan step this turn belongs to, if a stepped controller is
         # driving (Step 2a), extended in 4c to tool events as well: a compiler
