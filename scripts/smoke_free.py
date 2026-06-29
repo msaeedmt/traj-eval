@@ -50,12 +50,6 @@ def fake_search_lemmas(query: str) -> str:
     return "Nat.add_comm : ∀ (n m : ℕ), n + m = m + n  [FAKE result]"
 
 
-def placeholder_search_lemmas(query: str) -> str:
-    "Search the library for lemmas matching a natural-language description."
-    # Real retrieval is a later step; placeholder so the tool exists to call.
-    return "search_lemmas is not yet wired to a real backend."
-
-
 TASK = (
     "Prove this Lean 4 theorem:\n"
     "    theorem add_comm_example (a b : Nat) : a + b = b + a\n"
@@ -73,11 +67,12 @@ def main() -> None:
         check_tool, search_tool = fake_check_lean, fake_search_lemmas
     else:
         from traj_eval.tools.lean_compiler import LeanCompiler
+        from traj_eval.tools.lean_search import make_search_lemmas
 
         print(f"Starting REAL Lean compiler against {PROJECT_DIR} (first run is slow)...")
         compiler = LeanCompiler(PROJECT_DIR)
         print("Compiler ready.")
-        check_tool, search_tool = compiler.as_tool(), placeholder_search_lemmas
+        check_tool, search_tool = compiler.as_tool(), make_search_lemmas(num_results=5)
 
     llm_config = build_llm_config()
     ledger = RoutingLedger()
