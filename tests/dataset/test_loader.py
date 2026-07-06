@@ -82,7 +82,30 @@ def test_to_lean_task_bridge():
 
 def test_parse_file_directly():
     p = ROOT / "MiniFATELeanCat" / "Easy" / "FATEM011.lean"
-    statement, informal, imports = parse_problem_file(p)
+    statement, informal, imports, context = parse_problem_file(p)
     assert statement.startswith("theorem fatem_011")
     assert "distribute over subtraction" in informal
     assert imports == ["Mathlib.Algebra.Ring.Basic"]
+    assert context == ""  # self-contained FATE-M problem, no preamble
+
+
+def test_context_captured_for_leancat():
+    # LeanCat problems declare `variable {C : Type*} [Category C]` + `open
+    # CategoryTheory` before the theorem; the loader must keep them, or the
+    # statement references an undeclared C and is unprovable.
+    rec = next(r for r in load_dataset(ROOT) if r.id == "easy_leancat_001")
+    assert "variable" in rec.context
+    assert "Category" in rec.context
+    assert "open CategoryTheory" in rec.context
+    # and the prelude the validator uses includes the context after the imports
+    task = to_lean_task(rec)
+    assert "import Mathlib.CategoryTheory" in task.imports
+    assert "variable {C" in task.imports
+    # imports come before context in the prelude
+    assert task.imports.index("import") < task.imports.index("variable")
+
+
+def test_no_spurious_context_for_self_contained():
+    rec = next(r for r in load_dataset(ROOT) if r.id == "easy_fatem_011")
+    assert rec.context == ""
+    assert to_lean_task(rec).imports == "import Mathlib.Algebra.Ring.Basic"

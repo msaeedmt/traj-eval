@@ -40,14 +40,17 @@ LOG_DIR = Path("data/runs")
 
 
 def _task_prompt(record) -> str:
+    context_note = (
+        f"\n\nThe theorem is stated in this context (already in scope; keep these "
+        f"when you write the proof):\n{record.context}"
+        if record.context
+        else ""
+    )
     return (
         f"Prove this Lean 4 theorem (source: {record.source}, "
         f"difficulty: {record.difficulty}).\n\n"
         f"Informal statement:\n{record.informal}\n\n"
-        f"Formal statement to prove:\n{record.statement}\n\n"
-        "The reasoner should give a strategy (use search_lemmas to find relevant "
-        "Mathlib results), the engineer should formalise and verify with "
-        "check_lean, and the critic should review faithfulness."
+        f"Formal statement to prove:\n{record.statement}{context_note}\n\n"
     )
 
 

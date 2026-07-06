@@ -36,6 +36,12 @@ _BODY_START = re.compile(r":=\s*by\b")
 _INFORMAL = re.compile(r"Informal statement:\s*(.*?)\s*-/", re.DOTALL)
 _IMPORT = re.compile(r"^\s*import\s+.+$", re.MULTILINE)
 _THEOREM = re.compile(r"\btheorem\b")
+# Context lines that set up the theorem's elaboration environment: `open`,
+# `variable`, `namespace`, `universe`, `set_option`. These sit between the
+# imports and the `theorem` keyword and MUST be kept -- e.g. LeanCat problems
+# declare `variable {C : Type*} [Category C]` there, and the theorem references
+# C without binding it. Dropping them hands the agent an unstatable goal.
+_CONTEXT_KW = ("open ", "variable ", "variable{", "namespace ", "universe ", "set_option ")
 
 
 @dataclass(frozen=True)
@@ -47,6 +53,7 @@ class ProblemRecord:
     difficulty: str  # 'easy' | 'medium' | 'hard'
     imports: list[str] = field(default_factory=list)
     statement: str = ""  # theorem signature, no proof body
+    context: str = ""  # open/variable/namespace lines the theorem needs
     informal: str = ""  # natural-language problem description
     module: str = ""
     source_id: str = ""
@@ -54,13 +61,37 @@ class ProblemRecord:
 
     @property
     def import_block(self) -> str:
-        """The imports as a Lean prelude (falls back to plain Mathlib)."""
-        return "\n".join(f"import {m}" for m in self.imports) if self.imports else "import Mathlib"
+        """The full prelude a re-check needs: imports THEN context (open /
+        variable / etc). Context must follow imports and precede the theorem,
+        which is exactly where the validator prepends this block. Falls back to
+        plain Mathlib when no imports are listed.
+        """
+        imp = "\n".join(f"import {m}" for m in self.imports) if self.imports else "import Mathlib"
+        return f"{imp}\n{self.context}" if self.context else imp
 
 
 def _extract_informal(text: str) -> str:
     m = _INFORMAL.search(text)
     return " ".join(m.group(1).split()) if m else ""
+
+
+def _extract_context(text: str) -> str:
+    """The elaboration-context lines (open / variable / namespace / universe /
+    set_option) that appear before the theorem. Returned in file order, joined
+    by newlines. Empty when the theorem is self-contained (e.g. the FATE-M
+    problems, whose variables are all bound in the signature).
+
+    We scan only the region before the first `theorem`, so proof-body lines can
+    never be mistaken for context.
+    """
+    tm = _THEOREM.search(text)
+    head = text[: tm.start()] if tm else text
+    lines = []
+    for raw in head.splitlines():
+        s = raw.strip()
+        if s.startswith(_CONTEXT_KW):
+            lines.append(s)
+    return "\n".join(lines)
 
 
 def _extract_statement(text: str) -> str:
@@ -79,17 +110,19 @@ def _extract_statement(text: str) -> str:
     return sig.strip()
 
 
-def parse_problem_file(path: Path) -> tuple[str, str, list[str]]:
-    """Parse a benchmark .lean file -> (statement, informal, imports).
+def parse_problem_file(path: Path) -> tuple[str, str, list[str], str]:
+    """Parse a benchmark .lean file -> (statement, informal, imports, context).
 
     Imports here are read from the FILE; the metadata also carries them and is
     treated as authoritative by load_dataset (the file is the fallback).
+    ``context`` is the open/variable/namespace preamble the theorem needs.
     """
     text = path.read_text(encoding="utf-8")
     statement = _extract_statement(text)
     informal = _extract_informal(text)
     imports = [line.split("import", 1)[1].strip() for line in _IMPORT.findall(text)]
-    return statement, informal, imports
+    context = _extract_context(text)
+    return statement, informal, imports, context
 
 
 def load_dataset(
@@ -115,9 +148,9 @@ def load_dataset(
         # module 'MiniFATELeanCat.Easy.FATEM011' -> path under root
         rel = Path(*row["module"].split(".")).with_suffix(".lean")
         path = root / rel
-        statement, informal, file_imports = ("", "", [])
+        statement, informal, file_imports, context = ("", "", [], "")
         if path.exists():
-            statement, informal, file_imports = parse_problem_file(path)
+            statement, informal, file_imports, context = parse_problem_file(path)
         records.append(
             ProblemRecord(
                 id=row["id"],
@@ -126,6 +159,7 @@ def load_dataset(
                 # metadata imports are authoritative; file imports are fallback
                 imports=row.get("imports") or file_imports,
                 statement=statement,
+                context=context,
                 informal=informal,
                 module=row.get("module", ""),
                 source_id=str(row.get("source_id", "")),
