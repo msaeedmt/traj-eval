@@ -179,6 +179,17 @@ def extract_artifacts(events: list[TraceEvent]) -> TrialArtifacts:
         if rec.compiled and rec.code is not None:
             last_verified = rec.code
 
+    # 3b. Submission fallback. The engineer often verifies via check_lean and
+    #     then hands off with a bare `HANDOFF: critic` message that carries NO
+    #     code block (the proof lives in the tool-call arguments, not re-pasted
+    #     into prose). In that case step 1 found no `submitted`; fall back to
+    #     what the agent last successfully verified -- which is the truest
+    #     record of what it shipped. When the engineer DID paste a final block,
+    #     that explicit submission is kept as primary, so a genuine
+    #     submitted-vs-verified discrepancy is still detectable.
+    if submitted is None:
+        submitted = last_verified
+
     n_failed = sum(1 for rec in tool_calls if rec.compiled is False)
 
     # 4. declared_success: the final critic verdict in the trace is APPROVE.

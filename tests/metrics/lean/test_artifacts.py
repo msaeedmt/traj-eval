@@ -180,3 +180,42 @@ def test_trailing_non_final_message_ignored():
     art = extract_artifacts(events)
     # submitted is still the real proof, not the empty 'thanks' turn
     assert art.submitted is not None and "True" in art.submitted
+
+
+def test_submitted_falls_back_to_verified_when_no_final_block():
+    # The real FATE-M run: engineer verifies via check_lean, then hands off with
+    # a bare 'HANDOFF: critic' message carrying NO code block. submitted must
+    # fall back to the last successfully verified code, not be None.
+    proof = "example : True := trivial"
+    handoff = _ev(
+        6,
+        AgentRole.ENGINEER,
+        EventType.MESSAGE,
+        {"text": "HANDOFF: critic", "has_final": True},  # no ```lean block
+    )
+    events = [
+        _tool_call(2, "c1", proof),
+        _tool_result(3, "c1", True, True),
+        handoff,
+        _critic(7, "approve"),
+    ]
+    art = extract_artifacts(events)
+    assert art.submitted is not None and "trivial" in art.submitted
+    # nothing distinct was pasted, so submitted == last_verified (not a mismatch)
+    assert art.submitted_eq_last_verified is True
+
+
+def test_explicit_final_block_still_primary():
+    # When the engineer DOES paste a distinct final block, that stays primary
+    # (so a real submitted-vs-verified discrepancy remains detectable).
+    verified = "example : True := trivial"
+    pasted = "example : True := by trivial"  # different text
+    events = [
+        _tool_call(2, "c1", verified),
+        _tool_result(3, "c1", True, True),
+        _engineer_final(4, pasted),
+        _critic(5, "approve"),
+    ]
+    art = extract_artifacts(events)
+    assert "by trivial" in art.submitted  # the pasted block, not the verified one
+    assert art.submitted_eq_last_verified is False
