@@ -50,11 +50,16 @@ def fake_search_lemmas(query: str) -> str:
     return "Nat.add_comm : ∀ (n m : ℕ), n + m = m + n  [FAKE result]"
 
 
+# TASK = (
+#     "Prove this Lean 4 theorem:\n"
+#     "    theorem add_comm_example (a b : Nat) : a + b = b + a\n"
+#     "The reasoner should give a strategy, the engineer should formalise and "
+#     "verify it with check_lean, and the critic should review faithfulness."
+# )
+
 TASK = (
     "Prove this Lean 4 theorem:\n"
-    "    theorem add_comm_example (a b : Nat) : a + b = b + a\n"
-    "The reasoner should give a strategy, the engineer should formalise and "
-    "verify it with check_lean, and the critic should review faithfulness."
+    "    theorem inv_mul_rev {G : Type*} [Group G] (a b : G) : (a * b)⁻¹ = b⁻¹ * a⁻¹\n"
 )
 
 

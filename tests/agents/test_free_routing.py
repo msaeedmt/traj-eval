@@ -239,3 +239,60 @@ def test_distinct_calls_do_not_trip_bound():
         assert nxt.name == AgentRole.EXECUTOR.value  # each routes to executor
     assert state.reason != "stuck"
     assert state.consecutive_identical_calls == 1  # last one was unique
+
+
+def _exec_result(compiled):
+    # an executor tool-result message carrying a check_lean verdict (repr dict)
+    d = {"compiled": compiled, "sorry_free": True, "n_sorries": 0, "summary": "x"}
+    return {
+        "name": AgentRole.EXECUTOR.value,
+        "content": None,
+        "tool_responses": [{"id": "c", "content": repr(d)}],
+        "text": repr(d),
+    }
+
+
+def test_no_progress_bound_terminates_stuck():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+    # 6 consecutive failed compiles (default max_failed_compiles=6) -> stuck.
+    result = None
+    for _ in range(6):
+        gc.messages = gc.messages + [_exec_result(False)]
+        result = sel(_Speaker(AgentRole.EXECUTOR.value), gc)
+    assert state.terminated and state.reason == "stuck"
+    assert state.max_failed_compiles_seen >= 6
+    assert result is None
+
+
+def test_success_resets_no_progress_counter():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+    # 5 failures, then a success, then 5 more: never hits 6 in a row -> not stuck
+    for _ in range(5):
+        gc.messages = gc.messages + [_exec_result(False)]
+        sel(_Speaker(AgentRole.EXECUTOR.value), gc)
+    gc.messages = gc.messages + [_exec_result(True)]
+    sel(_Speaker(AgentRole.EXECUTOR.value), gc)
+    assert state.consecutive_failed_compiles == 0
+    for _ in range(5):
+        gc.messages = gc.messages + [_exec_result(False)]
+        sel(_Speaker(AgentRole.EXECUTOR.value), gc)
+    assert state.reason != "stuck"
+
+
+def test_search_result_does_not_count_as_failed_compile():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+    # a search_lemmas result has no 'compiled' key -> must not increment
+    search_msg = {
+        "name": AgentRole.EXECUTOR.value,
+        "content": None,
+        "tool_responses": [{"id": "s", "content": "Top matches (name ...)"}],
+        "text": "Top matches (name ...)",
+    }
+    for _ in range(8):
+        gc.messages = gc.messages + [search_msg]
+        sel(_Speaker(AgentRole.EXECUTOR.value), gc)
+    assert state.consecutive_failed_compiles == 0
+    assert state.reason != "stuck"

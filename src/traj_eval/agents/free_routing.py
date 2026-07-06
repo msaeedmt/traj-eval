@@ -64,6 +64,7 @@ class RoutingConfig:
     max_turns: int = 40
     max_consecutive_invalid: int = 3  # consecutive bad hand-offs -> 'stuck'
     max_identical_calls: int = 4  # identical tool submissions in a row -> 'stuck'
+    max_failed_compiles: int = 6  # consecutive failed compiles w/ no success -> 'stuck'
 
     def spec(self, role: AgentRole) -> RoleSpec | None:
         return self.roles.get(role)
@@ -85,6 +86,12 @@ class _RunState:
     last_call_code: str | None = None
     consecutive_identical_calls: int = 0
     max_identical_calls_seen: int = 0
+    # No-progress bound: consecutive failed compiles with no success between
+    # them. Unlike the identical-calls bound, this catches "reworded thrashing"
+    # -- the agent varying its code cosmetically while never compiling. A
+    # successful compile resets it to 0.
+    consecutive_failed_compiles: int = 0
+    max_failed_compiles_seen: int = 0
 
 
 def _role_of(name: str) -> AgentRole | None:
@@ -113,6 +120,30 @@ def _is_native_tool_call(message: dict[str, Any]) -> bool:
     marker because AG2 has no native 'choose next agent' mechanism.)
     """
     return bool(message.get("tool_calls"))
+
+
+def _compile_verdict(message: dict[str, Any]) -> bool | None:
+    """Read a check_lean compile verdict from an executor result message.
+
+    Returns True/False if this is a check_lean result, or None if it is not a
+    compile result at all (e.g. a search_lemmas result, which must NOT count
+    toward the no-progress bound). ag2 stringifies the tool's dict with repr(),
+    so we parse leniently with ast.literal_eval.
+    """
+    import ast
+
+    responses = message.get("tool_responses") or []
+    for r in responses:
+        content = r.get("content")
+        if not content:
+            continue
+        try:
+            d = ast.literal_eval(content)
+        except (ValueError, SyntaxError):
+            continue
+        if isinstance(d, dict) and "compiled" in d:
+            return bool(d["compiled"])
+    return None
 
 
 def _normalise_call_code(message: dict[str, Any]) -> str | None:
@@ -190,8 +221,15 @@ def build_free_routing_team(
     state = _RunState()
 
     def _route(agent, parent_role: AgentRole):
+        # Record the causal edge: the NEXT agent's event will be caused by the
+        # PARENT role's most recent event. record_routing expects a LIST of
+        # event-ids, not a role -- passing the role here caused it to iterate the
+        # enum's string value character-by-character (the ["s","y","s","t","e","m"]
+        # bug), corrupting every caused_by edge in the graph.
         if ledger is not None and agent is not None:
-            ledger.record_routing(_role_of(agent.name) or AgentRole.SYSTEM, parent_role)
+            next_role = _role_of(agent.name) or AgentRole.SYSTEM
+            cause = ledger.latest_event_id(parent_role)
+            ledger.record_routing(next_role, [cause] if cause else [])
         return agent
 
     def select_next(last_speaker, groupchat: GroupChat):
@@ -210,6 +248,21 @@ def build_free_routing_team(
         # The caller is the last non-executor agent; recover it from the ledger
         # if present, else from the message before the tool result.
         if name == AgentRole.EXECUTOR.value:
+            # Track compile progress: a check_lean result updates the
+            # consecutive-failure counter (a success resets it). search_lemmas
+            # results return None here and are ignored. Past the threshold the
+            # agent is thrashing without ever compiling -- stop as 'stuck'.
+            verdict = _compile_verdict(_last_message(groupchat))
+            if verdict is True:
+                state.consecutive_failed_compiles = 0
+            elif verdict is False:
+                state.consecutive_failed_compiles += 1
+                state.max_failed_compiles_seen = max(
+                    state.max_failed_compiles_seen, state.consecutive_failed_compiles
+                )
+                if state.consecutive_failed_compiles >= config.max_failed_compiles:
+                    state.terminated, state.reason = True, "stuck"
+                    return None
             caller = _last_caller_before_executor(groupchat)
             return _route(agents.get(caller), AgentRole.EXECUTOR) if caller else None
 

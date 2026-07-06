@@ -54,6 +54,14 @@ class RoutingLedger:
         ``cause_event_ids`` are the parents to stamp on ``next_role``'s next
         event. None entries are dropped (e.g. a missing 'latest' at trial start).
         """
+        # Guard: a bare string is iterable, so ``[c for c in "abc"]`` silently
+        # yields ['a','b','c'] and corrupts caused_by. event-ids are always
+        # passed as a LIST; reject a raw string rather than mangle it.
+        if isinstance(cause_event_ids, str):
+            raise TypeError(
+                f"record_routing expects a list of event-ids, got a str "
+                f"{cause_event_ids!r}. Pass [event_id], not the id or a role."
+            )
         self._pending[next_role] = [c for c in cause_event_ids if c is not None]
 
     def take_pending(self, role: AgentRole) -> list[str]:
