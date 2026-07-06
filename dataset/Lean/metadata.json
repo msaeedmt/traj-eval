@@ -1,0 +1,325 @@
+[
+    {
+        "id":  "easy_leancat_001",
+        "module":  "MiniFATELeanCat.Easy.LeanCat001",
+        "source":  "LeanCat",
+        "source_id":  "S_0001",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.CategoryTheory.Functor.Basic",
+                        "Mathlib.CategoryTheory.Functor.Category",
+                        "Mathlib.CategoryTheory.NatTrans"
+                    ]
+    },
+    {
+        "id":  "easy_leancat_002",
+        "module":  "MiniFATELeanCat.Easy.LeanCat002",
+        "source":  "LeanCat",
+        "source_id":  "S_0002",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.CategoryTheory.Category.Basic"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_011",
+        "module":  "MiniFATELeanCat.Easy.FATEM011",
+        "source":  "FATE-M",
+        "source_id":  "11",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.Algebra.Ring.Basic"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_012",
+        "module":  "MiniFATELeanCat.Easy.FATEM012",
+        "source":  "FATE-M",
+        "source_id":  "12",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.Algebra.Ring.Basic",
+                        "Mathlib.Algebra.Ring.Hom.Defs",
+                        "Mathlib.Algebra.Ring.Int.Defs",
+                        "Mathlib.Data.Int.Basic"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_019",
+        "module":  "MiniFATELeanCat.Easy.FATEM019",
+        "source":  "FATE-M",
+        "source_id":  "19",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.Data.ZMod.Basic",
+                        "Mathlib.Algebra.Field.IsField"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_020",
+        "module":  "MiniFATELeanCat.Easy.FATEM020",
+        "source":  "FATE-M",
+        "source_id":  "20",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.RingTheory.Ideal.Basic"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_041",
+        "module":  "MiniFATELeanCat.Easy.FATEM041",
+        "source":  "FATE-M",
+        "source_id":  "41",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.GroupTheory.OrderOfElement"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_109",
+        "module":  "MiniFATELeanCat.Easy.FATEM109",
+        "source":  "FATE-M",
+        "source_id":  "109",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.Algebra.Ring.Basic"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_111",
+        "module":  "MiniFATELeanCat.Easy.FATEM111",
+        "source":  "FATE-M",
+        "source_id":  "111",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.Algebra.Ring.Commute"
+                    ]
+    },
+    {
+        "id":  "easy_fatem_115",
+        "module":  "MiniFATELeanCat.Easy.FATEM115",
+        "source":  "FATE-M",
+        "source_id":  "115",
+        "difficulty":  "easy",
+        "imports":  [
+                        "Mathlib.Logic.Relation"
+                    ]
+    },
+    {
+        "id":  "medium_leancat_008",
+        "module":  "MiniFATELeanCat.Medium.LeanCat008",
+        "source":  "LeanCat",
+        "source_id":  "S_0008",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.GroupTheory.Coprod.Basic",
+                        "Mathlib.Algebra.Category.Grp.Basic",
+                        "Mathlib.CategoryTheory.Limits.Shapes.BinaryProducts"
+                    ]
+    },
+    {
+        "id":  "medium_leancat_021",
+        "module":  "MiniFATELeanCat.Medium.LeanCat021",
+        "source":  "LeanCat",
+        "source_id":  "S_0021",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.CategoryTheory.Adjunction.Basic"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_001",
+        "module":  "MiniFATELeanCat.Medium.FATEH001",
+        "source":  "FATE-H",
+        "source_id":  "1",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.GroupTheory.FiniteIndexNormalSubgroup"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_002",
+        "module":  "MiniFATELeanCat.Medium.FATEH002",
+        "source":  "FATE-H",
+        "source_id":  "2",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.GroupTheory.Sylow",
+                        "Mathlib.GroupTheory.Subgroup.Simple",
+                        "Mathlib.SetTheory.Cardinal.Finite"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_009",
+        "module":  "MiniFATELeanCat.Medium.FATEH009",
+        "source":  "FATE-H",
+        "source_id":  "9",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.GroupTheory.SpecificGroups.Dihedral"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_010",
+        "module":  "MiniFATELeanCat.Medium.FATEH010",
+        "source":  "FATE-H",
+        "source_id":  "10",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.Data.Nat.ModEq"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_011",
+        "module":  "MiniFATELeanCat.Medium.FATEH011",
+        "source":  "FATE-H",
+        "source_id":  "11",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.GroupTheory.Subgroup.Center",
+                        "Mathlib.SetTheory.Cardinal.Finite"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_012",
+        "module":  "MiniFATELeanCat.Medium.FATEH012",
+        "source":  "FATE-H",
+        "source_id":  "12",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.LinearAlgebra.Matrix.SpecialLinearGroup",
+                        "Mathlib.GroupTheory.Perm.Sign",
+                        "Mathlib.GroupTheory.SpecificGroups.Alternating"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_013",
+        "module":  "MiniFATELeanCat.Medium.FATEH013",
+        "source":  "FATE-H",
+        "source_id":  "13",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Basic",
+                        "Mathlib.GroupTheory.Sylow"
+                    ]
+    },
+    {
+        "id":  "medium_fateh_097",
+        "module":  "MiniFATELeanCat.Medium.FATEH097",
+        "source":  "FATE-H",
+        "source_id":  "97",
+        "difficulty":  "medium",
+        "imports":  [
+                        "Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic",
+                        "Mathlib.RingTheory.Algebraic.Defs"
+                    ]
+    },
+    {
+        "id":  "hard_leancat_041",
+        "module":  "MiniFATELeanCat.Hard.LeanCat041",
+        "source":  "LeanCat",
+        "source_id":  "S_0041",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.Order.Category.CompleteLat",
+                        "Mathlib.SetTheory.Cardinal.Basic"
+                    ]
+    },
+    {
+        "id":  "hard_leancat_061",
+        "module":  "MiniFATELeanCat.Hard.LeanCat061",
+        "source":  "LeanCat",
+        "source_id":  "S_0061",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.CategoryTheory.Limits.Shapes.End",
+                        "Mathlib.Algebra.Category.ModuleCat.Basic",
+                        "Mathlib.LinearAlgebra.Trace"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_001",
+        "module":  "MiniFATELeanCat.Hard.FATEX001",
+        "source":  "FATE-X",
+        "source_id":  "1",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.RingTheory.UniqueFactorizationDomain.Basic",
+                        "Mathlib.RingTheory.Ideal.Span"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_003",
+        "module":  "MiniFATELeanCat.Hard.FATEX003",
+        "source":  "FATE-X",
+        "source_id":  "3",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.GroupTheory.Complement"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_004",
+        "module":  "MiniFATELeanCat.Hard.FATEX004",
+        "source":  "FATE-X",
+        "source_id":  "4",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.GroupTheory.Sylow"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_005",
+        "module":  "MiniFATELeanCat.Hard.FATEX005",
+        "source":  "FATE-X",
+        "source_id":  "5",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.GroupTheory.PGroup",
+                        "Mathlib.GroupTheory.Subgroup.Center"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_006",
+        "module":  "MiniFATELeanCat.Hard.FATEX006",
+        "source":  "FATE-X",
+        "source_id":  "6",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.GroupTheory.Subgroup.Simple",
+                        "Mathlib.SetTheory.Cardinal.Finite"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_009",
+        "module":  "MiniFATELeanCat.Hard.FATEX009",
+        "source":  "FATE-X",
+        "source_id":  "9",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.GroupTheory.Sylow"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_013",
+        "module":  "MiniFATELeanCat.Hard.FATEX013",
+        "source":  "FATE-X",
+        "source_id":  "13",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.Algebra.Ring.Idempotent",
+                        "Mathlib.Algebra.Field.IsField"
+                    ]
+    },
+    {
+        "id":  "hard_fatex_048",
+        "module":  "MiniFATELeanCat.Hard.FATEX048",
+        "source":  "FATE-X",
+        "source_id":  "48",
+        "difficulty":  "hard",
+        "imports":  [
+                        "Mathlib.RingTheory.Flat.Basic",
+                        "Mathlib.RingTheory.Ideal.Operations"
+                    ]
+    }
+]
