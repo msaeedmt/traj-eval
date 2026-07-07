@@ -22,4 +22,3 @@ variable {G H : GrpCat.{u}}
 theorem freeProdGrp_iso_coprod [HasBinaryCoproduct G H] :
     Nonempty (GrpCat.of (Monoid.Coprod G H) ≅ coprod G H) := by
   sorry
-  

@@ -94,13 +94,12 @@ def main() -> None:
     # Number of observed events should equal number of role-agent messages.
     n_role_msgs = len(roles_observed)
     print(
-        f"  events == role msgs   : {len(events) == n_role_msgs} "
-        f"({len(events)} vs {n_role_msgs})"
+        f"  events == role msgs   : {len(events) == n_role_msgs} ({len(events)} vs {n_role_msgs})"
     )
 
     print("\nRoles captured (in seq order):")
     for e in events:
-        print(f"  [{e.seq}] {e.agent_role.value:9s} -> " f"{e.payload.get('recipient', '?')}")
+        print(f"  [{e.seq}] {e.agent_role.value:9s} -> {e.payload.get('recipient', '?')}")
 
 
 if __name__ == "__main__":

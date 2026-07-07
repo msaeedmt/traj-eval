@@ -9,6 +9,18 @@ change what the team does (the non-invasiveness property O1 depends on).
 Step 2a scope: MESSAGE events only. No causal edges yet (`caused_by` is left
 empty; the routing-derived edge rule is Step 2b) and no anchors (filled
 post-hoc by domain logic, never here).
+
+Step-index stamping (Phase 3): the per-step controller knows which plan step
+an engineer/critic turn belongs to, but that knowledge lives only in the
+selector closure -- it never reaches the logged event. Rather than have the
+anchor layer re-derive step boundaries by replaying critic verdicts (which
+would duplicate the controller's advance state machine in a second place and
+silently mis-attribute steps whenever the two drift), the controller stamps the
+truth at the source via a shared ``StepContext``. The observer reads it when
+emitting an engineer/critic event, so the trace is self-describing: an event
+carries its own ``step_idx``/``attempt`` the way it already carries
+``has_final``. This mirrors how the RoutingLedger bridges selector and observer
+for causal edges -- same one-writer/one-reader shape, different field.
 """
 
 from __future__ import annotations
@@ -19,7 +31,7 @@ from typing import Any
 
 from autogen import Agent, ConversableAgent
 
-from traj_eval.agents.markers import parse_decision
+from traj_eval.agents.markers import parse_decision, parse_handoff
 from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import (
     AgentRole,
@@ -50,6 +62,86 @@ def _message_text(message: dict[str, Any] | str) -> str:
     return message or ""
 
 
+def _classify(message: dict[str, Any] | str) -> EventType:
+    """Decide the event kind from the message shape (Step 4c).
+
+    AG2 carries tool interactions as ordinary messages on the same outgoing
+    path, distinguishable only by their shape: a caller's suggestion has a
+    ``tool_calls`` list; an executor's result has ``role == "tool"`` (and a
+    ``tool_responses`` list). Everything else is a plain MESSAGE. These two
+    shapes were confirmed against ag2 0.13 directly, not assumed -- the same
+    probe verified both pass through ``process_message_before_send``, which is
+    why the observer can classify them here rather than needing a second hook.
+    """
+    if isinstance(message, dict):
+        if message.get("tool_calls"):
+            return EventType.TOOL_CALL
+        if message.get("role") == "tool" or message.get("tool_responses"):
+            return EventType.EXECUTION_RESULT
+    return EventType.MESSAGE
+
+
+def _tool_call_payload(message: dict[str, Any]) -> dict[str, Any]:
+    """Structured payload for a TOOL_CALL: one row per suggested call.
+
+    Keeps the raw argument string rather than parsing it -- the argument is the
+    proof code the agent wants checked, and re-serialising risks changing it.
+    The downstream metric ('was the submitted proof the thing last compiled?')
+    needs the bytes as sent.
+    """
+    calls = []
+    for tc in message.get("tool_calls") or []:
+        fn = tc.get("function", {})
+        calls.append(
+            {
+                "id": tc.get("id"),
+                "name": fn.get("name"),
+                "arguments": fn.get("arguments"),
+            }
+        )
+    return {"tool_calls": calls}
+
+
+def _tool_result_payload(message: dict[str, Any]) -> dict[str, Any]:
+    """Structured payload for an EXECUTION_RESULT: the tool's returned text.
+
+    AG2 puts the result under ``tool_responses`` (a list keyed by call id) and
+    mirrors it into ``content``; we record both so the result can be tied back
+    to its TOOL_CALL by id and read as plain text without re-parsing.
+    """
+    responses = []
+    for tr in message.get("tool_responses") or []:
+        responses.append(
+            {
+                "id": tr.get("tool_call_id"),
+                "content": tr.get("content"),
+            }
+        )
+    return {"tool_responses": responses, "text": _message_text(message)}
+
+
+class StepContext:
+    """Shared step pointer the controller writes and the observer reads.
+
+    One instance per stepped trial. The controller updates ``step_idx`` and
+    ``attempt`` as it advances the plan / consumes the repair budget; the
+    observer reads them when stamping an engineer or critic event. Kept as a
+    mutable object (not a value passed through the hook) for the same reason as
+    the RoutingLedger: AG2 owns the hook signature, so selector and observer
+    must share state through a side channel, not arguments.
+
+    ``step_idx`` is 0-based and stays at its last value once the plan is
+    exhausted; ``attempt`` is 0 for the first engineer try on a step and
+    increments per step-local repair, resetting when the step advances. A turn
+    that is not part of a plan step (planner, the opening task) leaves both at
+    their defaults and is simply not stamped by the observer.
+    """
+
+    def __init__(self) -> None:
+        self.step_idx: int = 0
+        self.attempt: int = 0
+
+
 class TraceObserver:
     """Attaches to agents and records their outgoing messages as TraceEvents.
 
@@ -66,6 +158,7 @@ class TraceObserver:
         *,
         trial_id: str,
         ledger: RoutingLedger | None = None,
+        step_context: StepContext | None = None,
     ):
         self._writer = writer
         self._trial_id = trial_id
@@ -74,6 +167,9 @@ class TraceObserver:
         # observer reads routing-derived parents for each event and reports each
         # emit back so later edges can point at it (Step 2b).
         self._ledger = ledger
+        # Optional bridge to the per-step controller. When present, engineer and
+        # critic events are stamped with the plan step they belong to (Step 2a).
+        self._step_context = step_context
 
     def _next_seq(self) -> int:
         s = self._seq
@@ -119,21 +215,53 @@ class TraceObserver:
     ) -> dict[str, Any] | str:
         """The hook. Emits a TraceEvent, then returns the message UNCHANGED."""
         role = _role_for(sender.name)
+        event_type = _classify(message)
 
         # Routing-derived parents, if a ledger is wired. Empty otherwise (the
         # pure 2a behaviour). take_pending consumes the decision exactly once.
         caused_by = self._ledger.take_pending(role) if self._ledger else []
 
-        text = _message_text(message)
-        # Minimal marker parsing: stamp the decision (approve/reject, ok/fail)
-        # or has_final flag as structured payload fields (Step 2c). Richer
-        # extraction is deferred to the anchor-validation design.
+        # Common payload: who/whom, plus the type-specific body below.
         payload: dict[str, Any] = {
             "sender": sender.name,
             "recipient": getattr(recipient, "name", str(recipient)),
-            "text": text,
         }
-        payload.update(parse_decision(role, text))
+
+        # Type-specific body (Step 4c). Tool messages travel the same path as
+        # plain messages and are told apart only by shape, so the payload shape
+        # follows the classified type rather than the role.
+        if event_type is EventType.TOOL_CALL:
+            payload.update(_tool_call_payload(message))  # type: ignore[arg-type]
+        elif event_type is EventType.EXECUTION_RESULT:
+            payload.update(_tool_result_payload(message))  # type: ignore[arg-type]
+        else:
+            text = _message_text(message)
+            payload["text"] = text
+            # Minimal marker parsing: stamp the decision (approve/reject) or
+            # has_final flag as structured fields (Step 2c). Only meaningful for
+            # plain messages; tool events carry no verdict.
+            payload.update(parse_decision(role, text))
+            # Stamp the expressed coordination marker (4d free-routing): which
+            # agent this one chose to hand to, or which tool it requested. We
+            # record only what was EXPRESSED here -- judging whether the target
+            # was allowed needs the RoutingConfig, which is the controller's /
+            # metrics layer's concern, not the observer's. Keeping validity out
+            # of the observer keeps it agnostic and config-free.
+            payload.update(parse_handoff(text))
+
+        # Stamp the plan step this turn belongs to, if a stepped controller is
+        # driving (Step 2a), extended in 4c to tool events as well: a compiler
+        # call and its result belong to the same step as the engineer turn that
+        # issued them, so they must carry the same stamp for per-step
+        # accumulation and the "did this step verify its proof" metric. The
+        # executor speaks the result, so stamp ENGINEER/CRITIC *and* the tool
+        # event types regardless of the speaking role.
+        is_tool_event = event_type in (EventType.TOOL_CALL, EventType.EXECUTION_RESULT)
+        if self._step_context is not None and (
+            role in (AgentRole.ENGINEER, AgentRole.CRITIC) or is_tool_event
+        ):
+            payload["step_idx"] = self._step_context.step_idx
+            payload["attempt"] = self._step_context.attempt
 
         event_id = str(uuid.uuid4())
         event = TraceEvent(
@@ -141,7 +269,7 @@ class TraceObserver:
             trial_id=self._trial_id,
             seq=self._next_seq(),
             timestamp=datetime.now(UTC),
-            event_type=EventType.MESSAGE,
+            event_type=event_type,
             agent_role=role,
             caused_by=caused_by,
             payload=payload,

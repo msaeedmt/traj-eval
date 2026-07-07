@@ -16,13 +16,14 @@ uv.lock.bak
 /lake-packages/
 /.lake/
 build/
-/dataset/.lake/
-/dataset/**/.lake/
 
-# Trial logs & generated runs
+# Trial logs & datasets are large / regenerable: track structure, not contents
+/data/**
+!/data/.gitkeep
 /runs/
+*.jsonl
 
-# Secrets - never commit API keys
+# Secrets — never commit API keys
 .env
 *.key
 

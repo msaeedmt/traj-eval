@@ -52,6 +52,6 @@ def parse_plan(text: str) -> Plan:
     steps = [s.strip() for s in raw if s and s.strip()]
     if not steps:
         raise PlanParseError(
-            "Planner output contained no <step>...</step> blocks. " f"Got: {text[:200]!r}"
+            f"Planner output contained no <step>...</step> blocks. Got: {text[:200]!r}"
         )
     return Plan(steps=steps)

@@ -2,8 +2,8 @@
 
 Trajectory-level evaluation framework for multi-agent scientific reasoning.
 
-NLP Lab - CAISA Lab - University of Bonn - Summer Semester 2026
-Jiadong Han - Mohammad Saeed Motevali Amin
+NLP Lab · CAISA Lab · University of Bonn · Summer Semester 2026
+Jiadong Han · Mohammad Saeed Motevali Amin
 
 ## What this is
 
@@ -11,7 +11,7 @@ Output-centric evaluation cannot say *where* a multi-agent reasoning failure
 originates or how it propagates. This framework instruments inter-agent
 communication as a directed event graph, scores both the reasoning process and
 the final artefact, and attributes anchor violations to specific events and
-agents - across two testbeds with contrasting step-checkability:
+agents — across two testbeds with contrasting step-checkability:
 
 * **Lean 4** theorem proving (step-verifiable; kernel ground truth)
 * **Astrophysical inference** (partially step-verifiable; Stargazer forward model)
@@ -37,7 +37,7 @@ src/traj_eval/
     astro/       domain-adaptable anchor logic (forward model)
   detectors/     trajectory-level failure detectors             (O2)
   experiments/   architecture / backbone / stress matrix        (O3)
-  dataset/       local benchmark verifier (FATE, LeanCat)
+  datasets/      loaders + count assertions (FATE, LeanCat, Stargazer)
   dashboard/     trajectory views & anchor inspection (built last)
 schema/          exported JSON Schema (generated)
 tests/           pytest suite
@@ -45,7 +45,7 @@ tests/           pytest suite
 
 ## Objectives (from the proposal)
 
-* **O1** Localisation infrastructure - non-invasive observer, schema-validated
+* **O1** Localisation infrastructure — non-invasive observer, schema-validated
   event log, directed graph, attribution of first anchor violation.
 * **O2** Failure taxonomy & automatic detectors over G.
 * **O3** Early prediction across verification regimes (stretch).

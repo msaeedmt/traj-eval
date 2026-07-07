@@ -22,6 +22,9 @@ dependencies = [
 agents = [                  # AutoGen / AG2 substrate [12]
     "ag2[openai]>=0.13,<0.14",
 ]
+lean = [                    # in-loop Lean compiler tool (Step 4e); needs a Lean
+    "lean-interact>=0.3",   # toolchain + a built project (e.g. ~/lean_anchor)
+]
 dashboard = [
     "streamlit>=1.36",      # O1 trajectory dashboard (built last)
     "plotly>=5.22",
