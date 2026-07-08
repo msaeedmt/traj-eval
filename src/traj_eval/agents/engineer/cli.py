@@ -14,6 +14,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--task")
     source.add_argument("--task-file")
+    source.add_argument("--step-file", help="JSON step context produced by the outer runtime.")
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--actions-file", help="JSONL actions produced by the engineer model.")
     parser.add_argument("--allow-shell", action="store_true", help="Allow run tool actions to execute shell commands.")

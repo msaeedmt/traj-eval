@@ -29,7 +29,64 @@ from .core import RUN_SCHEMA, RunContext, append_jsonl, emit_event, find_repo_ro
 from .tools import execute_action_list, execute_actions
 
 
+def task_from_step_file(path: Path) -> str:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    step = payload.get("step") or payload
+    criteria = step.get("criteria") or payload.get("criteria") or {}
+    previous = payload.get("previous_step_summaries") or []
+    feedback = payload.get("critic_feedback") or payload.get("feedback") or []
+    allowed_paths = step.get("allowed_paths") or payload.get("allowed_paths") or []
+
+    lines = [
+        "Orchestrated runtime step.",
+        "",
+        f"Step id: {step.get('id', payload.get('step_id', 'unknown'))}",
+        f"Attempt: {payload.get('attempt', 0)}",
+        "",
+        "Objective:",
+        str(step.get("objective", payload.get("objective", ""))).strip(),
+        "",
+        "Allowed repo-relative paths:",
+    ]
+    lines.extend(f"- {path}" for path in allowed_paths)
+
+    success_criteria = criteria.get("success_criteria") or []
+    if success_criteria:
+        lines.extend(["", "Visible success criteria:"])
+        lines.extend(f"- {item}" for item in success_criteria)
+
+    expected_artifacts = criteria.get("expected_artifacts") or []
+    if expected_artifacts:
+        lines.extend(["", "Expected artifacts to produce or update:"])
+        lines.extend(f"- {item}" for item in expected_artifacts)
+
+    suggested_commands = criteria.get("suggested_commands") or []
+    if suggested_commands:
+        lines.extend(["", "Suggested verification commands you may run:"])
+        for command in suggested_commands:
+            argv = command.get("argv", [])
+            lines.append("- " + " ".join(str(item) for item in argv))
+
+    if previous:
+        lines.extend(["", "Accepted previous step summaries:"])
+        lines.extend(f"- {item}" for item in previous)
+
+    if feedback:
+        lines.extend(["", "Critic feedback for this attempt:"])
+        lines.extend(f"- {item}" for item in feedback)
+
+    lines.extend(
+        [
+            "",
+            "Hidden post-hoc evaluation specs and benchmark scoring rubrics are intentionally not included in this live engineer context.",
+        ]
+    )
+    return "\n".join(lines).strip() + "\n"
+
+
 def task_from_args(args: argparse.Namespace) -> str:
+    if getattr(args, "step_file", None):
+        return task_from_step_file(Path(args.step_file))
     if args.task_file:
         return Path(args.task_file).read_text(encoding="utf-8")
     return str(args.task)
@@ -224,6 +281,7 @@ def run_session(args: argparse.Namespace) -> Path:
             "repo": str(repo),
             "repo_guard": guard,
             "branch_created": branch_created,
+            "step_file": getattr(args, "step_file", None),
             "task": str(run_dir / "task.md"),
             "engineer_prompt": str(run_dir / "engineer_prompt.md"),
             "version_index": str(run_dir / "version_index.json"),

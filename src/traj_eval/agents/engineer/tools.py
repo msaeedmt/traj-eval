@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
@@ -14,6 +15,22 @@ from .core import (
     run_process,
     write_text,
 )
+
+MAX_RUN_PROCESS_TIMEOUT_SECONDS = 3600
+SHELL_WRAPPER_NAMES = {
+    "bash",
+    "bash.exe",
+    "cmd",
+    "cmd.exe",
+    "powershell",
+    "powershell.exe",
+    "pwsh",
+    "pwsh.exe",
+    "sh",
+    "sh.exe",
+}
+SHELL_COMMAND_FLAGS = {"-c", "/c", "-command"}
+EXECUTOR_TOOLS = {"run", "run_process"}
 
 
 def tool_read_file(ctx: RunContext, action: dict[str, Any], _: argparse.Namespace) -> dict[str, Any]:
@@ -68,6 +85,79 @@ def tool_run(ctx: RunContext, action: dict[str, Any], args: argparse.Namespace) 
     }
 
 
+def validate_run_process_argv(action: dict[str, Any]) -> list[str]:
+    argv = action.get("argv")
+    if not isinstance(argv, list) or not argv:
+        raise ValueError("run_process argv must be a non-empty list[str]")
+    if not all(isinstance(item, str) and item for item in argv):
+        raise ValueError("run_process argv must contain only non-empty strings")
+
+    executable = Path(argv[0]).name.lower()
+    if (
+        executable in SHELL_WRAPPER_NAMES
+        and len(argv) > 1
+        and argv[1].lower() in SHELL_COMMAND_FLAGS
+    ):
+        raise ValueError("run_process does not allow shell command wrappers")
+    return argv
+
+
+def validate_run_process_timeout(action: dict[str, Any]) -> int:
+    timeout_seconds = action.get("timeout_seconds", 120)
+    if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, int):
+        raise ValueError("run_process timeout_seconds must be an integer")
+    if timeout_seconds < 1 or timeout_seconds > MAX_RUN_PROCESS_TIMEOUT_SECONDS:
+        raise ValueError(
+            f"run_process timeout_seconds must be between 1 and {MAX_RUN_PROCESS_TIMEOUT_SECONDS}"
+        )
+    return timeout_seconds
+
+
+def validate_run_process_cwd(ctx: RunContext, action: dict[str, Any]) -> Path:
+    raw_cwd = action.get("cwd", ".")
+    if not isinstance(raw_cwd, str) or not raw_cwd:
+        raise ValueError("run_process cwd must be a non-empty repo-relative string")
+    cwd = repo_relative_path(ctx.repo, raw_cwd)
+    if not cwd.is_dir():
+        raise FileNotFoundError(f"run_process cwd does not exist or is not a directory: {raw_cwd}")
+    return cwd
+
+
+def tool_run_process(
+    ctx: RunContext,
+    action: dict[str, Any],
+    _: argparse.Namespace,
+) -> dict[str, Any]:
+    argv = validate_run_process_argv(action)
+    timeout_seconds = validate_run_process_timeout(action)
+    cwd = validate_run_process_cwd(ctx, action)
+    result = subprocess.run(
+        argv,
+        cwd=cwd,
+        text=True,
+        capture_output=True,
+        shell=False,
+        timeout=timeout_seconds,
+        encoding="utf-8",
+        errors="replace",
+    )
+    stem = f"{ctx.seq + 1:04d}_run_process"
+    stdout_path = ctx.run_dir / "tool_outputs" / f"{stem}.stdout.txt"
+    stderr_path = ctx.run_dir / "tool_outputs" / f"{stem}.stderr.txt"
+    write_text(stdout_path, result.stdout)
+    write_text(stderr_path, result.stderr)
+    return {
+        "argv": argv,
+        "cwd": repo_relative_string(ctx.repo, cwd),
+        "timeout_seconds": timeout_seconds,
+        "returncode": result.returncode,
+        "stdout": str(stdout_path),
+        "stderr": str(stderr_path),
+        "stdout_preview": result.stdout[:500],
+        "stderr_preview": result.stderr[:500],
+    }
+
+
 def tool_git_status(ctx: RunContext, _: dict[str, Any], __: argparse.Namespace) -> dict[str, Any]:
     status = git_output(ctx.repo, "status", "--short", "--branch")
     output_path = ctx.run_dir / "tool_outputs" / f"{ctx.seq + 1:04d}_git_status.txt"
@@ -91,6 +181,7 @@ TOOLS: dict[str, Callable[[RunContext, dict[str, Any], argparse.Namespace], dict
     "write_file": tool_write_file,
     "append_file": tool_append_file,
     "run": tool_run,
+    "run_process": tool_run_process,
     "git_status": tool_git_status,
     "git_diff": tool_git_diff,
     "finish": tool_finish,
@@ -138,7 +229,7 @@ def execute_action_list(ctx: RunContext, args: argparse.Namespace, actions: list
         )
         try:
             result = handler(ctx, action, args)
-            ok = not (tool == "run" and int(result.get("returncode", 0)) != 0)
+            ok = not (tool in EXECUTOR_TOOLS and int(result.get("returncode", 0)) != 0)
             error = None
         except Exception as exc:
             result = {}
@@ -146,8 +237,8 @@ def execute_action_list(ctx: RunContext, args: argparse.Namespace, actions: list
             error = f"{type(exc).__name__}: {exc}"
         after = emit_event(
             ctx,
-            event_type="execution_result" if tool == "run" else "code_event",
-            agent_role="executor" if tool == "run" else "engineer",
+            event_type="execution_result" if tool in EXECUTOR_TOOLS else "code_event",
+            agent_role="executor" if tool in EXECUTOR_TOOLS else "engineer",
             caused_by=[before],
             payload={"tool": tool, "ok": ok, "result": result, "error": error},
         )
