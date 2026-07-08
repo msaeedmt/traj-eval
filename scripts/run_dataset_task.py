@@ -17,6 +17,7 @@ Usage:
 from __future__ import annotations
 
 import sys
+import os
 from pathlib import Path
 
 from traj_eval.agents import (
@@ -35,7 +36,8 @@ from traj_eval.metrics.lean.validator import validate
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
 DATASET_ROOT = Path("dataset/Lean")
-PROJECT_DIR = Path.home() / "lean_anchor"
+PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
+LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/runs")
 
 
@@ -77,11 +79,11 @@ def main(argv: list[str]) -> int:
     print(f"=== {record.id} ({record.source}, {record.difficulty}) ===")
     print(f"imports: {record.imports}\n")
 
-    from traj_eval.tools.lean_compiler import LeanCompiler
+    from traj_eval.tools.lean_cli_compiler import LeanCliCompiler
     from traj_eval.tools.lean_search import make_search_lemmas
 
-    print(f"Starting REAL Lean compiler against {PROJECT_DIR} (first run is slow)...")
-    compiler = LeanCompiler(PROJECT_DIR)
+    print(f"Starting REAL Lean compiler against {PROJECT_DIR}...")
+    compiler = LeanCliCompiler(PROJECT_DIR, timeout=LEAN_TIMEOUT)
     print("Compiler ready.\n")
 
     llm_config = build_llm_config()

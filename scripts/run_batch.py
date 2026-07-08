@@ -47,7 +47,8 @@ from traj_eval.metrics.lean.validator import validate
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
 DATASET_ROOT = Path("dataset/Lean")
-PROJECT_DIR = Path.home() / "lean_anchor"
+PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
+LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
 
 # Substrings in a first compile error that mark an environment (import) problem
@@ -195,10 +196,10 @@ def main() -> int:
             print(f"  {r.id:22s} {r.source:8s} {r.difficulty}")
         return 0
 
-    print(f"Starting REAL Lean compiler against {PROJECT_DIR} (first run is slow)...")
-    from traj_eval.tools.lean_compiler import LeanCompiler
+    print(f"Starting REAL Lean compiler against {PROJECT_DIR}...")
+    from traj_eval.tools.lean_cli_compiler import LeanCliCompiler
 
-    compiler = LeanCompiler(PROJECT_DIR)
+    compiler = LeanCliCompiler(PROJECT_DIR, timeout=LEAN_TIMEOUT)
     print("Compiler ready.\n")
 
     outcomes: list[TrialOutcome] = []
