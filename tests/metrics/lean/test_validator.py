@@ -178,6 +178,16 @@ def test_silent_failure_statement_weakened():
     assert m.silent_failure is True
 
 
+def test_silent_failure_when_submitted_proof_does_not_compile():
+    proof = "theorem add_comm_example (a b : Nat) : a + b = b + a := by exact bad"
+    events = [_final(4, proof), _critic(5, "approve")]
+    stub = _StubCompiler([("bad", _error())])
+    m = validate(events, TASK, compiler=stub)
+    assert m.final_proof_compiles is False
+    assert m.axiom_clean is None
+    assert m.silent_failure is True
+
+
 # --- no submission: silent_failure undefined -------------------------------
 
 

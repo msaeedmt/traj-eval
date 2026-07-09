@@ -19,6 +19,7 @@ class _FakeMetrics:
     statement_preserved: bool | None = None
     axiom_clean: bool | None = None
     silent_failure: bool | None = None
+    has_submission: bool | None = True
 
 
 @dataclass
@@ -45,13 +46,37 @@ def test_solved_when_all_group_b_true():
 
 
 def test_silent_failure_classified():
-    m = _FakeMetrics(silent_failure=True)
+    m = _FakeMetrics(
+        final_proof_compiles=False,
+        final_proof_sorry_free=True,
+        statement_preserved=False,
+        axiom_clean=True,
+        silent_failure=True,
+    )
     assert _classify([], m, None) == "silent_failure"
 
 
 def test_unsolved_when_incomplete():
-    m = _FakeMetrics(final_proof_compiles=False)
+    m = _FakeMetrics(
+        final_proof_compiles=False,
+        final_proof_sorry_free=True,
+        statement_preserved=None,
+        axiom_clean=None,
+        silent_failure=None,
+    )
     assert _classify([], m, None) == "unsolved"
+
+
+def test_validation_unknown_when_posthoc_verdict_is_indeterminate():
+    m = _FakeMetrics(
+        final_proof_compiles=None,
+        final_proof_sorry_free=None,
+        statement_preserved=None,
+        axiom_clean=None,
+        silent_failure=None,
+        has_submission=True,
+    )
+    assert _classify([], m, None) == "validation_unknown"
 
 
 def test_import_error_takes_precedence():
@@ -59,6 +84,18 @@ def test_import_error_takes_precedence():
     ev = _make_result_event("{'compiled': False, 'errors': [{'data': 'unknown constant Foo'}]}")
     m = _FakeMetrics(final_proof_compiles=False)
     assert _classify([ev], m, None) == "import_error"
+
+
+def test_solved_final_proof_takes_precedence_over_earlier_import_error():
+    ev = _make_result_event("{'compiled': False, 'errors': [{'data': 'unknown constant Foo'}]}")
+    m = _FakeMetrics(
+        final_proof_compiles=True,
+        final_proof_sorry_free=True,
+        statement_preserved=True,
+        axiom_clean=True,
+        silent_failure=False,
+    )
+    assert _classify([ev], m, None) == "solved"
 
 
 def test_import_error_detection_positive():

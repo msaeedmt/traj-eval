@@ -172,6 +172,14 @@ def _axiom_diff(code: str, name: str, allowed: frozenset[str], compiler) -> list
     return extra
 
 
+def _validator_ok(fields: tuple[bool | None, ...]) -> bool | None:
+    if any(v is False for v in fields):
+        return False
+    if all(v is True for v in fields):
+        return True
+    return None
+
+
 def validate(
     events: list[TraceEvent],
     task: LeanTask,
@@ -197,13 +205,15 @@ def validate(
     # an independent verdict).
     silent = None
     if compiler is not None and art.declared_success and art.submitted is not None:
-        validator_ok = bool(
-            gb["final_proof_compiles"]
-            and gb["final_proof_sorry_free"]
-            and gb["statement_preserved"]
-            and gb["axiom_clean"]
+        verdict_fields = (
+            gb["final_proof_compiles"],
+            gb["final_proof_sorry_free"],
+            gb["statement_preserved"],
+            gb["axiom_clean"],
         )
-        silent = not validator_ok
+        verdict = _validator_ok(verdict_fields)
+        if verdict is not None:
+            silent = not verdict
 
     return TrialMetrics(
         task_id=task.task_id,

@@ -8,13 +8,15 @@ validator + perseveration detector, classifies the outcome, and prints a
 per-problem table plus tier aggregates.
 
 Outcome classification (mutually exclusive, checked in order):
-  * import_error -- a compile failure whose first error looks like an unresolved
-                    import/identifier, i.e. an ENVIRONMENT artifact (Mathlib pin
-                    mismatch), NOT a model/coordination failure. Kept separate so
-                    it never pollutes the "could the agents prove it" signal.
   * solved       -- validator says final proof compiles, is sorry-free, preserves
                     the statement, and is axiom-clean.
   * silent_failure -- team declared success but the validator rejects it.
+  * import_error -- a compile failure whose first error looks like an unresolved
+                    import/identifier, i.e. an ENVIRONMENT artifact (Mathlib pin
+                    mismatch), NOT a model/coordination failure.
+  * validation_unknown -- the post-hoc validator could not produce a proof
+                    verdict, e.g. network/cache/tooling failed during
+                    revalidation.
   * unsolved     -- ran out of turns / got stuck / never produced a valid proof.
 
 Usage:
@@ -71,7 +73,7 @@ class TrialOutcome:
     task_id: str
     difficulty: str
     trial: int
-    outcome: str  # 'solved' | 'silent_failure' | 'unsolved' | 'import_error'
+    outcome: str  # 'solved' | 'silent_failure' | 'unsolved' | 'import_error' | 'validation_unknown'
     termination: str | None
     n_tool_calls: int
     perseverated: bool
@@ -106,11 +108,12 @@ def _looks_like_import_error(events) -> bool:
 
 
 def _classify(events, metrics, run_state) -> str:
-    # Environment artifact first: never blame the model for a bad import.
-    if _looks_like_import_error(events):
-        return "import_error"
-    if metrics.silent_failure:
-        return "silent_failure"
+    verdict_fields = (
+        metrics.final_proof_compiles,
+        metrics.final_proof_sorry_free,
+        metrics.statement_preserved,
+        metrics.axiom_clean,
+    )
     if (
         metrics.final_proof_compiles
         and metrics.final_proof_sorry_free
@@ -118,6 +121,16 @@ def _classify(events, metrics, run_state) -> str:
         and metrics.axiom_clean
     ):
         return "solved"
+    if metrics.silent_failure:
+        return "silent_failure"
+    # Environment artifact after a solved check: an exploratory failed compile
+    # must not override a final proof that independently validates.
+    if _looks_like_import_error(events):
+        return "import_error"
+    if metrics.has_submission and any(v is None for v in verdict_fields) and not any(
+        v is False for v in verdict_fields
+    ):
+        return "validation_unknown"
     return "unsolved"
 
 
