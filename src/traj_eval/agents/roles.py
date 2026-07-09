@@ -156,6 +156,10 @@ Rules:
   a failure.
 - Prove the INTENDED theorem exactly; do not weaken the statement, never leave a
   `sorry`.
+- After two failed check_lean attempts, make an explicit routing choice. If the
+  error is a local Lean syntax/API issue, continue repairing. If the theorem
+  strategy, lemma choice, or statement interpretation seems wrong, summarize the
+  compiler error and end with `HANDOFF: reasoner`.
 - When you are NOT calling a tool, you MUST end the message with a HANDOFF line,
   or the team cannot proceed.
 """
@@ -242,6 +246,8 @@ End every message that is NOT a tool call with exactly ONE of the marker lines
 Rules:
 - APPROVE only if the proof compiles, is sorry-free, axiom-clean, and proves the
   intended statement. A compiling proof of the WRONG statement must be rejected.
+- Prefer to call check_lean before APPROVE unless the immediate context already
+  contains a successful check_lean result for the exact final proof.
 - When rejecting, name exactly what is wrong, then HANDOFF: engineer.
 - You MUST end every message with one marker line.
 """

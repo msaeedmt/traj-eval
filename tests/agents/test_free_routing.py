@@ -92,6 +92,24 @@ def test_valid_handoff_routes():
     assert state.invalid_handoffs == 0
 
 
+def test_engineer_can_handoff_back_to_reasoner():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+    _set(gc, AgentRole.ENGINEER.value, "strategy appears wrong.\nHANDOFF: reasoner")
+    nxt = sel(_Speaker(AgentRole.ENGINEER.value), gc)
+    assert nxt.name == AgentRole.REASONER.value
+    assert state.invalid_handoffs == 0
+
+
+def test_critic_can_send_back_to_engineer():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+    _set(gc, AgentRole.CRITIC.value, "proof does not match the task.\nHANDOFF: engineer")
+    nxt = sel(_Speaker(AgentRole.CRITIC.value), gc)
+    assert nxt.name == AgentRole.ENGINEER.value
+    assert state.invalid_handoffs == 0
+
+
 def test_tool_request_routes_to_executor():
     gc, state = _build()
     sel = gc.speaker_selection_method
@@ -250,6 +268,54 @@ def _exec_result(compiled):
         "tool_responses": [{"id": "c", "content": repr(d)}],
         "text": repr(d),
     }
+
+
+def test_non_linear_free_routing_loop_is_possible():
+    gc, state = _build()
+    sel = gc.speaker_selection_method
+
+    observed = []
+
+    _set(gc, AgentRole.REASONER.value, "initial proof strategy.\nHANDOFF: engineer")
+    observed.append(sel(_Speaker(AgentRole.REASONER.value), gc).name)
+
+    gc.messages = gc.messages + [_tool_msg(AgentRole.ENGINEER.value, "bad attempt")]
+    observed.append(sel(_Speaker(AgentRole.ENGINEER.value), gc).name)
+
+    gc.messages = gc.messages + [_exec_result(False)]
+    observed.append(sel(_Speaker(AgentRole.EXECUTOR.value), gc).name)
+
+    _set(gc, AgentRole.ENGINEER.value, "the strategy needs revision.\nHANDOFF: reasoner")
+    observed.append(sel(_Speaker(AgentRole.ENGINEER.value), gc).name)
+
+    _set(gc, AgentRole.REASONER.value, "revised proof strategy.\nHANDOFF: engineer")
+    observed.append(sel(_Speaker(AgentRole.REASONER.value), gc).name)
+
+    _set(gc, AgentRole.ENGINEER.value, "proof now compiles.\nHANDOFF: critic")
+    observed.append(sel(_Speaker(AgentRole.ENGINEER.value), gc).name)
+
+    _set(gc, AgentRole.CRITIC.value, "statement mismatch.\nHANDOFF: engineer")
+    observed.append(sel(_Speaker(AgentRole.CRITIC.value), gc).name)
+
+    _set(gc, AgentRole.ENGINEER.value, "fixed final proof.\nHANDOFF: critic")
+    observed.append(sel(_Speaker(AgentRole.ENGINEER.value), gc).name)
+
+    _set(gc, AgentRole.CRITIC.value, "faithful and verified.\nVERDICT: APPROVE")
+    observed.append(sel(_Speaker(AgentRole.CRITIC.value), gc))
+
+    assert observed == [
+        AgentRole.ENGINEER.value,
+        AgentRole.EXECUTOR.value,
+        AgentRole.ENGINEER.value,
+        AgentRole.REASONER.value,
+        AgentRole.ENGINEER.value,
+        AgentRole.CRITIC.value,
+        AgentRole.ENGINEER.value,
+        AgentRole.CRITIC.value,
+        None,
+    ]
+    assert state.invalid_handoffs == 0
+    assert state.terminated and state.reason == "clean"
 
 
 def test_no_progress_bound_terminates_stuck():
