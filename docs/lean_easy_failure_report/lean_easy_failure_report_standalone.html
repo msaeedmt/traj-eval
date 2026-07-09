@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lean Easy Failure Analysis</title>
+    <script type="text/plain" id="embedded-csv">task_id,trial_id,trial_number,source,difficulty,math_question,naive_human_strategy,domain_specific_LLM_strategy,reasoner_strategy_label,engineer_failure_label,critic_label,global_graph_pattern,validator_outcome,first_failure_stage,n_tool_calls,n_failed_compiles,perseverated,declared_success,final_proof_compiles,statement_preserved,axiom_clean,presentation_takeaway
+easy_fatem_011,easy_fatem_011_t0,0,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t1,1,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t2,2,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t3,3,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t4,4,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t5,5,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t6,6,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t7,7,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t8,8,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_011,easy_fatem_011_t9,9,FATE-M,easy,"In any ring R and for any elements a, b, and c in R, left multiplication and right multiplication distribute over subtraction. In other words, a times b minus c equals a times b minus a times c, and b minus c times a...","Expand the ring expression, split the conjunction, and use distributivity.",Use ring/distributivity lemmas such as mul_sub and sub_mul; avoid changing the statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t0,0,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,partially_valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,7,3,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t1,1,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,8,2,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t2,2,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,partially_valid_strategy,typeclass_failure,critic_false_accept,critic_masking,trace_verified,engineer,5,2,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t3,3,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,8,3,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t4,4,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,partially_valid_strategy,compile_loop,critic_false_accept,critic_masking,trace_verified,engineer,6,2,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t5,5,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,partially_valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,11,5,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t6,6,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t7,7,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,5,1,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t8,8,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,partially_valid_strategy,compile_loop,critic_false_accept,critic_masking,trace_verified,engineer,5,1,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_012,easy_fatem_012_t9,9,FATE-M,easy,Let R be a ring with unit. There is a unique ring homomorphism from the integers to R that sends one to the multiplicative identity of R.,Use the uniqueness of the integer-to-ring homomorphism.,Use RingHom extensionality and Int.cast-style lemmas rather than inventing a new map API.,partially_valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,3,1,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t0,0,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,14,1,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t1,1,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,no_submission,critic_missing,tool_overuse,import_error,engineer,14,2,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t2,2,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,application_type_mismatch,critic_missing,tool_overuse,validation_unknown,engineer,14,3,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t3,3,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,no_submission,critic_missing,tool_overuse,import_error,engineer,14,2,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t4,4,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,no_submission,critic_missing,tool_overuse,import_error,engineer,14,2,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t5,5,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,no_real_strategy,no_submission,critic_missing,tool_overuse,unsolved,reasoner,12,0,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t6,6,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,14,1,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t7,7,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,no_real_strategy,no_submission,critic_missing,free_routing_failure,unsolved,reasoner,7,0,false,false,none,none,none,"O2 evidence: engineer label no_submission localizes a concrete Lean failure mode; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t8,8,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,import_failure,critic_missing,tool_overuse,import_error,engineer,14,2,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_019,easy_fatem_019_t9,9,FATE-M,easy,"For every positive integer n at least two, the ring of integers modulo n is a field if and only if n is prime.",Connect the field structure of ZMod n with primality of n.,Search for ZMod field/primality theorems and keep the iff direction faithful.,valid_strategy,no_submission,critic_missing,tool_overuse,import_error,engineer,14,1,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t0,0,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,import_failure,critic_false_accept,critic_masking,import_error,engineer,6,2,false,true,none,none,none,"O1/O2 evidence: critic approval masked a validator-visible proof failure; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t1,1,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,import_failure,critic_false_accept,critic_masking,import_error,engineer,6,2,false,true,none,none,none,"O1/O2 evidence: critic approval masked a validator-visible proof failure; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t2,2,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,8,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t3,3,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,no_real_strategy,no_submission,critic_missing,free_routing_failure,unsolved,reasoner,5,0,false,false,none,none,none,"O2 evidence: engineer label no_submission localizes a concrete Lean failure mode; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t4,4,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,no_submission,critic_missing,tool_overuse,import_error,engineer,14,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t5,5,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,no_submission,critic_missing,free_routing_failure,unsolved,engineer,7,6,false,false,none,none,none,"O2 evidence: engineer label no_submission localizes a concrete Lean failure mode; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t6,6,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t7,7,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,8,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t8,8,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,import_failure,critic_missing,tool_overuse,import_error,engineer,14,7,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_020,easy_fatem_020_t9,9,FATE-M,easy,"A field, viewed as a ring, has only two ideals: the zero ideal and the whole ring.","In a field, every ideal is bottom or top; use an inverse for any nonzero element.",Use Ideal and field inverse lemmas; do not weaken the ideal statement.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,8,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t0,0,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t1,1,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t2,2,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t3,3,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t4,4,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t5,5,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t6,6,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t7,7,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t8,8,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_041,easy_fatem_041_t9,9,FATE-M,easy,"Let g be the pair consisting of a in G and b in H. If a has order m and b has order n, then g has order equal to the least common multiple of m and n.",Relate the order of a product to the lcm of component orders.,Use orderOf/product lemmas and check required commutativity hypotheses.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t0,0,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t1,1,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t2,2,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t3,3,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,no_real_strategy,no_submission,critic_missing,tool_overuse,unsolved,reasoner,12,0,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t4,4,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t5,5,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,3,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t6,6,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t7,7,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t8,8,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,9,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_109,easy_fatem_109_t9,9,FATE-M,easy,"Let R be an integral domain. If a is nonzero and a times b equals a times c, then b equals c.",Use no-zero-divisor cancellation to move from an equality of products to equality of factors.,Use cancellation lemmas for rings without zero divisors; avoid assuming a field.,no_real_strategy,no_submission,critic_missing,free_routing_failure,unsolved,reasoner,2,0,false,false,none,none,none,"O2 evidence: engineer label no_submission localizes a concrete Lean failure mode; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t0,0,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,compile_loop,critic_missing,tool_overuse,validation_unknown,engineer,14,8,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t1,1,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,9,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t2,2,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,perseveration,import_error,engineer,10,6,true,false,none,none,none,"O2 evidence: global behavior label perseveration explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t3,3,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,10,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t4,4,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,9,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t5,5,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,11,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t6,6,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,9,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t7,7,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,10,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t8,8,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,9,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_111,easy_fatem_111_t9,9,FATE-M,easy,"Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.","Convert Commute to a multiplication equality, expand both sides, and rewrite a^2 to zero.","Use commute_iff_eq, mul_add/add_mul, mul_assoc, and simp/ring normalization with h.",valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,11,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t0,0,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,12,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t1,1,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,10,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t2,2,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,11,5,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t3,3,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,application_type_mismatch,critic_missing,tool_overuse,validation_unknown,engineer,14,3,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t4,4,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,5,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t5,5,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,10,4,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t6,6,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,10,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t7,7,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,no_submission,critic_missing,free_routing_failure,unsolved,engineer,4,1,false,false,none,none,none,"O2 evidence: engineer label no_submission localizes a concrete Lean failure mode; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t8,8,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,application_type_mismatch,critic_false_accept,critic_masking,trace_verified,engineer,10,5,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_fatem_115,easy_fatem_115_t9,9,FATE-M,easy,"Let R be a relation on a set A, and let the inverse relation contain the pairs whose reversed pairs belong to R. Then R is transitive if and only if its inverse relation is transitive.",Unpack transitivity for the inverse relation and apply the original transitivity in reversed order.,Use Transitive/IsTrans definitions directly; avoid searching for a nonexistent special inverse lemma.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,10,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t0,0,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,valid_strategy,compile_loop,critic_missing,tool_overuse,validation_unknown,engineer,14,7,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t1,1,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,valid_strategy,compile_loop,critic_missing,tool_overuse,validation_unknown,engineer,14,7,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t2,2,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,2,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t3,3,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,13,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t4,4,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,5,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t5,5,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,valid_strategy,no_submission,critic_missing,tool_overuse,unsolved,engineer,11,6,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t6,6,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,valid_strategy,compile_loop,critic_missing,tool_overuse,validation_unknown,engineer,14,3,false,false,none,none,none,"O2 evidence: global behavior label tool_overuse explains failure beyond final accuracy; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t7,7,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,partially_valid_strategy,compile_loop,critic_false_accept,critic_masking,trace_verified,engineer,8,1,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t8,8,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_001,easy_leancat_001_t9,9,LeanCat,easy,"Let C be a category, and let the identity functor on C be given. The monoid of natural transformations from the identity functor to itself is commutative.",Show two natural transformations are equal by extensionality and componentwise naturality.,Use NatTrans.ext and naturality; keep category variables and universe context intact.,valid_strategy,compile_loop,critic_false_accept,critic_masking,trace_verified,engineer,10,5,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t0,0,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,5,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t1,1,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,no_real_strategy,no_submission,critic_missing,free_routing_failure,unsolved,reasoner,6,0,false,false,none,none,none,"O2 evidence: engineer label no_submission localizes a concrete Lean failure mode; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t2,2,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,5,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t3,3,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t4,4,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,import_failure,critic_false_accept,critic_masking,import_error,engineer,4,2,false,true,none,none,none,"O1/O2 evidence: critic approval masked a validator-visible proof failure; O3 is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t5,5,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t6,6,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,4,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t7,7,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,compile_loop,critic_false_accept,critic_masking,trace_verified,engineer,5,1,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t8,8,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,no_submission,critic_false_accept,critic_masking,trace_verified,engineer,5,0,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+easy_leancat_002,easy_leancat_002_t9,9,LeanCat,easy,"Let C be a category, and let f and g be morphisms in C. If the composite f after g is monic, then g is monic.","To prove a composed morphism is monic, cancel through the known monic factors.",Use the Mono definition and cancellation lemmas for composition.,partially_valid_strategy,compile_loop,critic_false_accept,critic_masking,trace_verified,engineer,6,1,false,true,none,none,none,"O1/O2 evidence: in-loop Lean check verified the submitted code; offline kernel recheck is not claimed. Proposal grounding: README/NLP Lab O1 localization, O2 failure taxonomy, O3 early prediction. O3 is not claimed for this 100-trace slice. MD grounding: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md and docs/REPO_LAYOUT_RULES.md. Kernel=off."
+</script>
+<script type="application/json" id="embedded-traces">[
+  {
+    "task_id": "easy_fatem_111",
+    "trial_id": "easy_fatem_111_t0",
+    "trial_number": 0,
+    "source": "FATE-M",
+    "difficulty": "easy",
+    "informal": "Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a.",
+    "formal_statement": "theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a",
+    "submitted_code": "import Mathlib\n\ntheorem test (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    a * a = 0 := by\n  simpa [pow_two] using h",
+    "last_verified_code": "import Mathlib\n\ntheorem test (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    a * a = 0 := by\n  simpa [pow_two] using h",
+    "submitted_eq_last_verified": true,
+    "declared_success": false,
+    "n_tool_calls": 14,
+    "n_failed_compiles": 8,
+    "tool_calls": [
+      {
+        "seq": 1,
+        "compiled": null,
+        "sorry_free": null,
+        "code": null
+      },
+      {
+        "seq": 3,
+        "compiled": null,
+        "sorry_free": null,
+        "code": null
+      },
+      {
+        "seq": 5,
+        "compiled": null,
+        "sorry_free": null,
+        "code": null
+      },
+      {
+        "seq": 7,
+        "compiled": null,
+        "sorry_free": null,
+        "code": null
+      },
+      {
+        "seq": 9,
+        "compiled": null,
+        "sorry_free": null,
+        "code": null
+      },
+      {
+        "seq": 12,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  calc\n    (a * x + x * a) * a = (a * x) * a + (x * a) * a := by rw [mul_add]\n    _ = a * x * a + x * a ^ 2 := by rw [← pow_two]\n    _ = a * x * a + x * 0 := by rw [h]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + a ^ 2 * x := by rw [h]\n    _ = a * x * a + a * (a * x) := by rw [← pow_two]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 14,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by ring\n    _ = a * x * a + x * 0 := by rw [← pow_two, h]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + a * a * x := by rw [← pow_two, h]\n    _ = a * (x * a) + a * (a * x) := by ring\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 16,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  simp only [mul_add, add_mul, mul_assoc, pow_two, h, mul_zero, zero_mul, add_zero]\n  <;> ring"
+      },
+      {
+        "seq": 18,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h1 : (a * x + x * a) * a = a * x * a + x * a * a := by\n    rw [mul_add, mul_assoc]\n  have h2 : a * (a * x + x * a) = a * a * x + a * x * a := by\n    rw [mul_add, mul_assoc]\n  rw [h1, h2]\n  have h3 : x * a * a = x * (a * a) := by rw [mul_assoc]\n  have h4 : a * a * x = (a * a) * x := by rw [← mul_assoc]\n  rw [h3, h4]\n  have h5 : a * a = 0 := by simpa [pow_two] using h\n  rw [h5]\n  simp [mul_zero, zero_mul]"
+      },
+      {
+        "seq": 20,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  simp only [mul_add, add_mul, mul_assoc, pow_two]\n  rw [h]\n  simp [mul_zero, zero_mul]"
+      },
+      {
+        "seq": 22,
+        "compiled": true,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem test (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    a * a = 0 := by\n  simpa [pow_two] using h"
+      },
+      {
+        "seq": 24,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h2 : a * a = 0 := by simpa [pow_two] using h\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add, mul_assoc]\n    _ = a * x * a + x * (a * a) := by rw [mul_assoc]\n    _ = a * x * a + x * 0 := by rw [h2]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + (a * a) * x := by rw [h2]\n    _ = a * x * a + a * a * x := by rw [← mul_assoc]\n    _ = a * x * a + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 26,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h2 : a * a = 0 := by simpa [pow_two] using h\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add]\n    _ = a * x * a + x * (a * a) := by rw [mul_assoc]\n    _ = a * x * a + x * 0 := by rw [h2]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + (a * a) * x := by rw [h2]\n    _ = a * x * a + a * a * x := by rw [← mul_assoc]\n    _ = a * x * a + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 28,
+        "compiled": false,
+        "sorry_free": true,
+        "code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h2 : a * a = 0 := by simpa [pow_two] using h\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add]\n    _ = a * x * a + x * (a * a) := by rw [mul_assoc]\n    _ = a * x * a + x * 0 := by rw [h2]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + (a * a) * x := by rw [h2]\n    _ = a * x * a + a * a * x := by rw [← mul_assoc]\n    _ = a * x * a + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      }
+    ],
+    "timeline": [
+      {
+        "seq": 0,
+        "role": "system",
+        "type": "message",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "Prove this Lean 4 theorem (source: FATE-M, difficulty: easy). Informal statement: Let R be a ring. If a squared is zero in R, then a times x plus x times a commutes with a. Formal statement to prove: theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a The reasoner should give a strategy (use search_lemmas to find relevant Mathlib results), the engineer should formalise and verify with check_lean, and the critic should review faithfulness.",
+        "lean_code": null
+      },
+      {
+        "seq": 1,
+        "role": "reasoner",
+        "type": "tool_call",
+        "tool": "search_lemmas",
+        "decision": null,
+        "handoff_target": null,
+        "text": "{\"query\":\"Commute definition and properties\"}",
+        "lean_code": null
+      },
+      {
+        "seq": 2,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "Top matches (name signature -- description): Commute [Mul S] (a b : S) : Prop -- Commuting elements Function.Commute (f g : α → α) : Prop -- Commuting functions Commute.eq {a b : S} (h : Commute a b) : a * b = b * a -- Commuting Elements Have Equal Products commute_iff_eq [Mul S] (a b : S) : Commute a b ↔ a * b = b * a -- Commutativity iff $ab = ba$ Commute.on_refl {f : G → S} : Std.Refl fun a b => Commute (f a) (f b) -- Reflexivity of the Commuting Relation",
+        "lean_code": null
+      },
+      {
+        "seq": 3,
+        "role": "reasoner",
+        "type": "tool_call",
+        "tool": "search_lemmas",
+        "decision": null,
+        "handoff_target": null,
+        "text": "{\"query\":\"add_commute_left or add_commute_right\"}",
+        "lean_code": null
+      },
+      {
+        "seq": 4,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "Top matches (name signature -- description): AddCommute {S : Type u_3} → [Add S] → S → S → Prop -- Additive commutativity of two elements add_left_comm ∀ {G : Type u_3} [inst : AddCommSemigroup G] (a b c : G), a + (b + c) = b + (a + c) -- Left-Commutativity of Addition in Additive Commutative Semigroups AddCommute.function_commute_add_left ∀ {G : Type u_1} [inst : AddSemigroup G] {a b : G}, AddCommute a b → Function.Commute (fun x => a + x) fun x => b + x -- Left Addition Functions Commute if Elements Commute AddCommute.left_comm ∀ {S : Type u_3} [inst : AddSemigroup S] {a b : S}, AddCommute a b → ∀ (c : S), a + (b + c) = b + (a + c) -- Left-commutativity of addition in additive semigroups given commuting elements add_right_comm ∀ {G : Type u_3} [inst : AddCommSemigroup G] (a b c : G), a + b + c = a + c + b -- Right Commutativity of Addition in Additive Commutative Semigroups",
+        "lean_code": null
+      },
+      {
+        "seq": 5,
+        "role": "reasoner",
+        "type": "tool_call",
+        "tool": "search_lemmas",
+        "decision": null,
+        "handoff_target": null,
+        "text": "{\"query\":\"Commute.add_left or Commute.add_right\"}",
+        "lean_code": null
+      },
+      {
+        "seq": 6,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "Top matches (name signature -- description): Commute.add_left [Distrib R] {a b c : R} : Commute a c → Commute b c → Commute (a + b) c -- Addition Preserves Commutativity in Distributive Structures add_left_comm ∀ {G : Type u_3} [inst : AddCommSemigroup G] (a b c : G), a + (b + c) = b + (a + c) -- Left-Commutativity of Addition in Additive Commutative Semigroups AddCommute {S : Type u_3} → [Add S] → S → S → Prop -- Additive commutativity of two elements AddCommute.function_commute_add_left ∀ {G : Type u_1} [inst : AddSemigroup G] {a b : G}, AddCommute a b → Function.Commute (fun x => a + x) fun x => b + x -- Left Addition Functions Commute if Elements Commute AddCommute.add_left ∀ {S : Type u_3} [inst : AddSemigroup S] {a b c : S}, AddCommute a c → AddCommute b c → AddCommute (a + b) c -- Left Addition Preserves Additive Commutativity",
+        "lean_code": null
+      },
+      {
+        "seq": 7,
+        "role": "reasoner",
+        "type": "tool_call",
+        "tool": "search_lemmas",
+        "decision": null,
+        "handoff_target": null,
+        "text": "{\"query\":\"Commute.mul_left or Commute.mul_right\"}",
+        "lean_code": null
+      },
+      {
+        "seq": 8,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "Top matches (name signature -- description): commute_lmul_rmul (a : A) : Commute (L a) (R a) -- Commutation of Left and Right Multiplication Operators LinearMap.commute_mulLeft_right (a b : A) : Commute (mulLeft R a) (mulRight R b) -- Commutativity of Left and Right Multiplication Maps Commute.function_commute_mul_left (h : Commute a b) : Function.Commute (a * ·) (b * ·) -- Left Multiplication Commutes for Commuting Elements mul_left_comm (a b c : G) : a * (b * c) = b * (a * c) -- Left-Commutativity of Multiplication in a Commutative Semigroup commute_mulLeftLinearMap_mulRightLinearMap (a : Matrix l m A) (b : Matrix n o A) : mulLeftLinearMap o R a ∘ₗ mulRightLinearMap m R b = mulRightLinearMap l R b ∘ₗ mulLeftLinearMap n R a -- Commutation of Left and Right Multiplication Linear Maps",
+        "lean_code": null
+      },
+      {
+        "seq": 9,
+        "role": "reasoner",
+        "type": "tool_call",
+        "tool": "search_lemmas",
+        "decision": null,
+        "handoff_target": null,
+        "text": "{\"query\":\"Commute.mul_left\"}",
+        "lean_code": null
+      },
+      {
+        "seq": 10,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "Top matches (name signature -- description): mul_left_comm (a b c : G) : a * (b * c) = b * (a * c) -- Left-Commutativity of Multiplication in a Commutative Semigroup Commute.mul_left (hac : Commute a c) (hbc : Commute b c) : Commute (a * b) c -- Commutativity of Product with Common Element in a Semigroup Commute.function_commute_mul_left (h : Commute a b) : Function.Commute (a * ·) (b * ·) -- Left Multiplication Commutes for Commuting Elements commute_lmul_rmul (a : A) : Commute (L a) (R a) -- Commutation of Left and Right Multiplication Operators LinearMap.commute_mulLeft_right (a b : A) : Commute (mulLeft R a) (mulRight R b) -- Commutativity of Left and Right Multiplication Maps",
+        "lean_code": null
+      },
+      {
+        "seq": 11,
+        "role": "reasoner",
+        "type": "message",
+        "tool": null,
+        "decision": null,
+        "handoff_target": "engineer",
+        "text": "Strategy: 1. **Goal**: Prove that for any $x \\in R$, the element $a * x + x * a$ commutes with $a$, given $a^2 = 0$. 2. **Definition of Commute**: Recall that `Commute u v` is equivalent to `u * v = v * u`. We need to show $(a * x + x * a) * a = a * (a * x + x * a)$. 3. **Expand the expressions**: * LHS: $(a * x + x * a) * a = (a * x) * a + (x * a) * a = a * x * a + x * a^2$. * RHS: $a * (a * x + x * a) = a * (a * x) + a * (x * a) = a^2 * x + a * x * a$. 4. **Use the hypothesis**: We are given $a^2 = 0$. * Substitute $a^2 = 0$ into LHS: $a * x * a + x * 0 = a * x * a + 0 = a * x * a$. * Substitute $a^2 = 0$ into RHS: $0 * x + a * x * a = 0 + a * x * a = a * x * a$. 5. **Conclusion**: LHS = RHS, so they commute. 6. **Library Lemmas**: * Use `commute_iff_eq` to convert the goal to an equality. * Use distributivity of multiplication over addition (standard ring properties) to expand. * Use `mul_zero` and `zero_mul` to simplify terms involving $0$. * Alternatively, use `Commute.add_left` if we can show that both $a * x$ and $x * a$ commute with $a$. * Does $a * x$ commute with $a$? $(a * x) * a = a * (x * a)$? Not necessarily true in general rings. * However, with $a^2=0$, let's check: * $(a * x) * a = a * x * a$. * $a * (a * x) = a^2 * x = 0 * x = 0$. * These are not equal in general. So `Commute.add_left` on the terms $a*x$ and $x*a$ directly might not work unless we prove they commute individually, which they don't necessarily. * Therefore, the direct expansion approach using `commute_iff_eq` and ring arithmetic is the most robust. * We will rely on basic ring lemmas: `mul_add`, `add_mul`, `mul_assoc`, `mul_zero`, `zero_mul`, and `add_zero`. **Plan**: 1. Use `commute_iff_eq` to rewrite the goal as an equality. 2. Expand both sides using distributivity (`mul_add`, `add_mul`) and associativity (`mul_assoc`). 3. Substitute $a^2 = 0$ (using `h`) into the terms $x * a^2$ and $a^2 * x$. 4. Simplify using `mul_zero` and `zero_mul`. 5. Conclude equality. This is a direct proof using ring axioms and the given hypothesis. - HANDOFF: engineer",
+        "lean_code": null
+      },
+      {
+        "seq": 12,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] calc (a * x + x * a) * a = (a * x) * a + (x * a) * a := by rw [mul_add] _ = a * x * a + x * a ^ 2 := by rw [← pow_two] _ = a * x * a + x * 0 := by rw [h] _ = a * x * a := by simp _ = a * x * a + 0 := by rw [add_zero] _ = a * x * a + 0 * x := by rw [zero_mul] _ = a * x * a + a ^ 2 * x := by rw [h] _ = a * x * a + a * (a * x) := by rw [← pow_two] _ = a * (x * a) + a * (a * x) := by rw [mul_assoc] _ = a * (x * a + a * x) := by rw [← mul_add] _ = a * (a * x + x * a) := by rw [add_comm]",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  calc\n    (a * x + x * a) * a = (a * x) * a + (x * a) * a := by rw [mul_add]\n    _ = a * x * a + x * a ^ 2 := by rw [← pow_two]\n    _ = a * x * a + x * 0 := by rw [h]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + a ^ 2 * x := by rw [h]\n    _ = a * x * a + a * (a * x) := by rw [← pow_two]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 13,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: lean failed'}",
+        "lean_code": null
+      },
+      {
+        "seq": 14,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] calc (a * x + x * a) * a = a * x * a + x * a * a := by ring _ = a * x * a + x * 0 := by rw [← pow_two, h] _ = a * x * a := by simp _ = a * x * a + 0 := by rw [add_zero] _ = a * x * a + 0 * x := by rw [zero_mul] _ = a * x * a + a * a * x := by rw [← pow_two, h] _ = a * (x * a) + a * (a * x) := by ring _ = a * (x * a + a * x) := by rw [← mul_add] _ = a * (a * x + x * a) := by rw [add_comm]",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by ring\n    _ = a * x * a + x * 0 := by rw [← pow_two, h]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + a * a * x := by rw [← pow_two, h]\n    _ = a * (x * a) + a * (a * x) := by ring\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 15,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: lean failed'}",
+        "lean_code": null
+      },
+      {
+        "seq": 16,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] simp only [mul_add, add_mul, mul_assoc, pow_two, h, mul_zero, zero_mul, add_zero] <;> ring",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  simp only [mul_add, add_mul, mul_assoc, pow_two, h, mul_zero, zero_mul, add_zero]\n  <;> ring"
+      },
+      {
+        "seq": 17,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '.traj_eval_tmp\\\\check_ec9e9441297e421084dcf2a17c1afee3.lean:8:6: error: `ring_nf` made no progress on the goal\\n.traj_eval_tmp\\\\check_ec9e9441297e421084dcf2a17c1afee3.lean:7:42: warning: This simp argument is unused:\\n pow_two\\n\\nHint: Omit it from the simp argument list.\\n simp only [mul_add, add_mul, mul_assoc, pÌµoÌµwÌµ_ÌµtÌµwÌµoÌµ,Ìµ Ìµh, mul_zero, zero_mul, add_zero]\\n\\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\\n.traj_eval_tmp\\\\check_ec9e9441297e421084dcf2a17c1afee3.lean:7:51: warning: This simp argument is unused:\\n h\\n\\nHint: Omit it from the simp argument list.\\n simp only [mul_add, add_mul, mul_assoc, pow_two, hÌµ,Ìµ Ìµmul_zero, zero_mul, add_zero]\\n\\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\\n.traj_eval_tmp\\\\check_ec9e9441297e421084dcf2a17c1afee3.lean:7:54: warning: This simp argument is unused:\\n mul_zero\\n\\nHint: Omit it from the simp argument list.\\n simp only [mul_add, add_mul, mul_assoc, pow_two, h, mÌµuÌµlÌµ_Ìµzero,Ìµ ÌµzÌµeÌµrÌµoÌµ_mul, add_zero]\\n\\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\\n.traj_eval_tmp\\\\check_ec9e9441297e421084dcf2a17c1afee3.lean:7:64: warning: This simp argument is unused:\\n zero_mul\\n\\nHint: Omit it from the simp argument list.\\n simp only [mul_add, add_mul, mul_assoc, pow_two, h, mul_zero, zÌµeÌµrÌµoÌµ_ÌµmÌµuÌµlÌµ,Ìµ Ìµadd_zero]\\n\\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\\n.traj_eval_tmp\\\\check_ec9e9441297e421084dcf2a17c1afee3.lean:7:74: warning: This simp argument is unused:\\n add_zero\\n\\nHint: Omit it from the simp argument list.\\n simp only [mul_add, add_mul, mul_assoc, pow_two, h, mul_zero, zero_mul,Ìµ ÌµaÌµdÌµdÌµ_ÌµzÌµeÌµrÌµoÌµ]\\n\\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: .traj_eval_tmp\\\\check_ec9e9441297e421084dcf2a17c1afee3.lean:8:6: error: `ring_nf` made no progress on the goal'}",
+        "lean_code": null
+      },
+      {
+        "seq": 18,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] have h1 : (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add, mul_assoc] have h2 : a * (a * x + x * a) = a * a * x + a * x * a := by rw [mul_add, mul_assoc] rw [h1, h2] have h3 : x * a * a = x * (a * a) := by rw [mul_assoc] have h4 : a * a * x = (a * a) * x := by rw [← mul_assoc] rw [h3, h4] have h5 : a * a = 0 := by simpa [pow_two] using h rw [h5] simp [mul_zero, zero_mul]",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h1 : (a * x + x * a) * a = a * x * a + x * a * a := by\n    rw [mul_add, mul_assoc]\n  have h2 : a * (a * x + x * a) = a * a * x + a * x * a := by\n    rw [mul_add, mul_assoc]\n  rw [h1, h2]\n  have h3 : x * a * a = x * (a * a) := by rw [mul_assoc]\n  have h4 : a * a * x = (a * a) * x := by rw [← mul_assoc]\n  rw [h3, h4]\n  have h5 : a * a = 0 := by simpa [pow_two] using h\n  rw [h5]\n  simp [mul_zero, zero_mul]"
+      },
+      {
+        "seq": 19,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: lean failed'}",
+        "lean_code": null
+      },
+      {
+        "seq": 20,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] simp only [mul_add, add_mul, mul_assoc, pow_two] rw [h] simp [mul_zero, zero_mul]",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  simp only [mul_add, add_mul, mul_assoc, pow_two]\n  rw [h]\n  simp [mul_zero, zero_mul]"
+      },
+      {
+        "seq": 21,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: lean failed'}",
+        "lean_code": null
+      },
+      {
+        "seq": 22,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem test (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : a * a = 0 := by simpa [pow_two] using h",
+        "lean_code": "import Mathlib\n\ntheorem test (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    a * a = 0 := by\n  simpa [pow_two] using h"
+      },
+      {
+        "seq": 23,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': True, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 0, 'errors': [], 'sorries': [], 'warnings': [], 'summary': 'compiled: true; sorries: 0; errors: 0'}",
+        "lean_code": null
+      },
+      {
+        "seq": 24,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] have h2 : a * a = 0 := by simpa [pow_two] using h calc (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add, mul_assoc] _ = a * x * a + x * (a * a) := by rw [mul_assoc] _ = a * x * a + x * 0 := by rw [h2] _ = a * x * a := by simp _ = a * x * a + 0 := by rw [add_zero] _ = a * x * a + 0 * x := by rw [zero_mul] _ = a * x * a + (a * a) * x := by rw [h2] _ = a * x * a + a * a * x := by rw [← mul_assoc] _ = a * x * a + a * (a * x) := by rw [mul_assoc] _ = a * (x * a) + a * (a * x) := by rw [mul_assoc] _ = a * (x * a + a * x) := by rw [← mul_add] _ = a * (a * x + x * a) := by rw [add_comm]",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h2 : a * a = 0 := by simpa [pow_two] using h\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add, mul_assoc]\n    _ = a * x * a + x * (a * a) := by rw [mul_assoc]\n    _ = a * x * a + x * 0 := by rw [h2]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + (a * a) * x := by rw [h2]\n    _ = a * x * a + a * a * x := by rw [← mul_assoc]\n    _ = a * x * a + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 25,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: lean failed'}",
+        "lean_code": null
+      },
+      {
+        "seq": 26,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] have h2 : a * a = 0 := by simpa [pow_two] using h calc (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add] _ = a * x * a + x * (a * a) := by rw [mul_assoc] _ = a * x * a + x * 0 := by rw [h2] _ = a * x * a := by simp _ = a * x * a + 0 := by rw [add_zero] _ = a * x * a + 0 * x := by rw [zero_mul] _ = a * x * a + (a * a) * x := by rw [h2] _ = a * x * a + a * a * x := by rw [← mul_assoc] _ = a * x * a + a * (a * x) := by rw [mul_assoc] _ = a * (x * a) + a * (a * x) := by rw [mul_assoc] _ = a * (x * a + a * x) := by rw [← mul_add] _ = a * (a * x + x * a) := by rw [add_comm]",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h2 : a * a = 0 := by simpa [pow_two] using h\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add]\n    _ = a * x * a + x * (a * a) := by rw [mul_assoc]\n    _ = a * x * a + x * 0 := by rw [h2]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + (a * a) * x := by rw [h2]\n    _ = a * x * a + a * a * x := by rw [← mul_assoc]\n    _ = a * x * a + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 27,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: lean failed'}",
+        "lean_code": null
+      },
+      {
+        "seq": 28,
+        "role": "engineer",
+        "type": "tool_call",
+        "tool": "check_lean",
+        "decision": null,
+        "handoff_target": null,
+        "text": "import Mathlib theorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) : ∀ x : R, Commute (a * x + x * a) a := by intro x rw [commute_iff_eq] have h2 : a * a = 0 := by simpa [pow_two] using h calc (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add] _ = a * x * a + x * (a * a) := by rw [mul_assoc] _ = a * x * a + x * 0 := by rw [h2] _ = a * x * a := by simp _ = a * x * a + 0 := by rw [add_zero] _ = a * x * a + 0 * x := by rw [zero_mul] _ = a * x * a + (a * a) * x := by rw [h2] _ = a * x * a + a * a * x := by rw [← mul_assoc] _ = a * x * a + a * (a * x) := by rw [mul_assoc] _ = a * (x * a) + a * (a * x) := by rw [mul_assoc] _ = a * (x * a + a * x) := by rw [← mul_add] _ = a * (a * x + x * a) := by rw [add_comm]",
+        "lean_code": "import Mathlib\n\ntheorem fatem_111_commute_of_pow_two_zero (R : Type) [Ring R] (a : R) (h : a ^ 2 = 0) :\n    ∀ x : R, Commute (a * x + x * a) a := by\n  intro x\n  rw [commute_iff_eq]\n  have h2 : a * a = 0 := by simpa [pow_two] using h\n  calc\n    (a * x + x * a) * a = a * x * a + x * a * a := by rw [mul_add]\n    _ = a * x * a + x * (a * a) := by rw [mul_assoc]\n    _ = a * x * a + x * 0 := by rw [h2]\n    _ = a * x * a := by simp\n    _ = a * x * a + 0 := by rw [add_zero]\n    _ = a * x * a + 0 * x := by rw [zero_mul]\n    _ = a * x * a + (a * a) * x := by rw [h2]\n    _ = a * x * a + a * a * x := by rw [← mul_assoc]\n    _ = a * x * a + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a) + a * (a * x) := by rw [mul_assoc]\n    _ = a * (x * a + a * x) := by rw [← mul_add]\n    _ = a * (a * x + x * a) := by rw [add_comm]"
+      },
+      {
+        "seq": 29,
+        "role": "executor",
+        "type": "execution_result",
+        "tool": null,
+        "decision": null,
+        "handoff_target": null,
+        "text": "{'compiled': False, 'sorry_free': True, 'n_sorries': 0, 'n_errors': 1, 'errors': [{'severity': 'error', 'data': '', 'line': None, 'column': None}], 'sorries': [], 'warnings': [], 'summary': 'compiled: false; errors: 1; first error: lean failed'}",
+        "lean_code": null
+      }
+    ]
+  }
+]</script>
+<script type="module">
+(function(){let e=document.createElement(`link`).relList;if(e&&e.supports&&e.supports(`modulepreload`))return;for(let e of document.querySelectorAll(`link[rel="modulepreload"]`))n(e);new MutationObserver(e=>{for(let t of e)if(t.type===`childList`)for(let e of t.addedNodes)e.tagName===`LINK`&&e.rel===`modulepreload`&&n(e)}).observe(document,{childList:!0,subtree:!0});function t(e){let t={};return e.integrity&&(t.integrity=e.integrity),e.referrerPolicy&&(t.referrerPolicy=e.referrerPolicy),e.crossOrigin===`use-credentials`?t.credentials=`include`:e.crossOrigin===`anonymous`?t.credentials=`omit`:t.credentials=`same-origin`,t}function n(e){if(e.ep)return;e.ep=!0;let n=t(e);fetch(e.href,n)}})();function e(e){let t=[],n=[],r=``,i=!1;for(let a=0;a<e.length;a+=1){let o=e[a],s=e[a+1];if(o===`"`&&i&&s===`"`){r+=`"`,a+=1;continue}if(o===`"`){i=!i;continue}if(o===`,`&&!i){n.push(r),r=``;continue}if((o===`
+`||o===`\r`)&&!i){o===`\r`&&s===`
+`&&(a+=1),n.push(r),n.some(e=>e.length>0)&&t.push(n),n=[],r=``;continue}r+=o}(r.length>0||n.length>0)&&(n.push(r),n.some(e=>e.length>0)&&t.push(n));let[a,...o]=t;return a?o.map(e=>{let t={};return a.forEach((n,r)=>{t[n]=e[r]??``}),t}):[]}function t(e,t){let n=new Map;return e.forEach(e=>{let r=e[t]||`none`;n.set(r,(n.get(r)??0)+1)}),n}function n(e,t){return Array.from(new Set(e.map(e=>e[t]).filter(Boolean))).sort()}function r(e,n){return Array.from(t(e,n).entries()).sort((e,t)=>t[1]===e[1]?e[0].localeCompare(t[0]):t[1]-e[1])[0]?.[0]??`none`}function i(e){let r=t(e,`validator_outcome`),i=t(e,`critic_label`);return{trials:e.length,tasks:n(e,`task_id`).length,solved:r.get(`solved`)??0,traceVerified:r.get(`trace_verified`)??0,silentFailure:r.get(`silent_failure`)??0,validationUnknown:r.get(`validation_unknown`)??0,unsolved:r.get(`unsolved`)??0,criticFalseAccept:i.get(`critic_false_accept`)??0,compilerCalledRows:e.filter(e=>Number(e.n_tool_calls||0)>0).length}}function a(e){return n(e,`task_id`).map(n=>{let i=e.filter(e=>e.task_id===n),a=t(i,`validator_outcome`);return{taskId:n,trials:i.length,solved:a.get(`solved`)??0,traceVerified:a.get(`trace_verified`)??0,silentFailure:a.get(`silent_failure`)??0,validationUnknown:a.get(`validation_unknown`)??0,unsolved:a.get(`unsolved`)??0,dominantEngineerLabel:r(i,`engineer_failure_label`),dominantGlobalPattern:r(i,`global_graph_pattern`)}})}var o=`data/lean_easy_failure_patterns.csv`,s=`data/lean_easy_failure_traces.json`,c=document.querySelector(`#app`),l={rows:[],traces:[],fields:[],search:``,task:``,outcome:``,engineer:``,sortField:`task_id`,sortDir:`asc`,page:1,pageSize:20,selectedTrial:``};function u(e){return String(e).replaceAll(`&`,`&amp;`).replaceAll(`<`,`&lt;`).replaceAll(`>`,`&gt;`).replaceAll(`"`,`&quot;`).replaceAll(`'`,`&#039;`)}function d(e){return e.replaceAll(`_`,`-`).replaceAll(`/`,`-`)}function f(e,t,n){return`<option value="${u(e)}" ${e===n?`selected`:``}>${u(t)}</option>`}function p(){let e=l.search.trim().toLowerCase(),t=new Set([`trial_number`,`n_tool_calls`,`n_failed_compiles`]);return l.rows.filter(t=>l.task&&t.task_id!==l.task||l.outcome&&t.validator_outcome!==l.outcome||l.engineer&&t.engineer_failure_label!==l.engineer?!1:!e||l.fields.some(n=>(t[n]||``).toLowerCase().includes(e))).sort((e,n)=>{let r=e[l.sortField]||``,i=n[l.sortField]||``,a=t.has(l.sortField)?Number(r||0)-Number(i||0):r.localeCompare(i);return l.sortDir===`asc`?a:-a})}function m(e,t,n){return`
+    <div class="stat">
+      <div class="stat-label">${u(e)}</div>
+      <div class="stat-value">${u(t)}</div>
+      <div class="stat-note">${u(n)}</div>
+    </div>
+  `}function h(e){return`
+    <header class="report-header">
+      <div class="header-inner">
+        <div class="header-copy">
+          <p class="eyebrow">Proposal + MD grounded report</p>
+          <h1>Lean Easy Failure Analysis</h1>
+          <p class="header-subtitle">
+            CSV-first analysis over existing Lean JSONL traces. The report follows
+            README/NLP Lab objectives O1/O2/O3 and the local MD guides.
+          </p>
+        </div>
+        <div class="header-panel">
+          <div class="panel-title">Grounding</div>
+          <div class="source-chip">Proposal: O1 localization</div>
+          <div class="source-chip">Proposal: O2 taxonomy</div>
+          <div class="source-chip muted">Proposal: O3 not claimed</div>
+          <div class="source-chip">MD: LEAN_FAILURE_ANALYSIS_GUIDE.md</div>
+          <div class="source-chip">MD: REPO_LAYOUT_RULES.md</div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        ${m(`Trials`,e.trials,`CSV rows`)}
+        ${m(`Tasks`,e.tasks,`10 easy tasks expected`)}
+        ${m(`Trace verified`,e.traceVerified,`in-loop check_lean evidence`)}
+        ${m(`Silent failure`,e.silentFailure,`critic may approve but validator rejects`)}
+        ${m(`Unknown`,e.validationUnknown,`kernel fields are none`)}
+        ${m(`Critic false accept`,e.criticFalseAccept,`approval without validated proof`)}
+      </div>
+    </header>
+  `}function g(){return l.selectedTrial?l.traces.find(e=>e.trial_id===l.selectedTrial)??l.traces[0]:l.traces.find(e=>!l.task||e.task_id===l.task)??l.traces[0]}function _(e){return l.rows.find(t=>t.trial_id===e.trial_id)}function v(e){return e?`<pre class="lean-code"><code>${u(e)}</code></pre>`:`<div class="empty-code">No Lean code captured for this slot.</div>`}function y(e){return e===!0?`<span class="pill pass">true</span>`:e===!1?`<span class="pill fail">false</span>`:`<span class="pill unknown">unknown</span>`}function b(){let e=g();if(!e)return``;let t=_(e),r=n(l.rows,`task_id`).map(t=>f(t,t,l.task||e.task_id)).join(``),i=l.traces.filter(e=>!l.task||e.task_id===l.task).map(t=>f(t.trial_id,t.trial_id,e.trial_id)).join(``),a=e.tool_calls.map((t,n)=>`
+        <details class="tool-card" ${n===e.tool_calls.length-1?`open`:``}>
+          <summary>
+            <span>check_lean seq ${u(t.seq)}</span>
+            ${y(t.compiled)}
+            <span class="muted-inline">sorry_free</span>
+            ${y(t.sorry_free)}
+          </summary>
+          ${v(t.code)}
+        </details>
+      `).join(``),o=e.timeline.map(e=>`
+        <details class="timeline-step ${d(e.role)}" ${e.lean_code?`open`:``}>
+          <summary>
+            <span class="seq">#${u(e.seq)}</span>
+            <strong>${u(e.role)}</strong>
+            <span>${u(e.type)}</span>
+            ${e.tool?`<span class="tool-name">${u(e.tool)}</span>`:``}
+            ${e.decision?`<span class="decision">${u(e.decision)}</span>`:``}
+            ${e.handoff_target?`<span class="handoff">to ${u(e.handoff_target)}</span>`:``}
+          </summary>
+          ${e.lean_code?v(e.lean_code):`<p>${u(e.text)}</p>`}
+        </details>
+      `).join(``);return`
+    <section class="section lean-reader" id="lean-reader">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow dark">Interactive Lean reader</p>
+          <h2>Trajectory, Proof Code, And Validation Evidence</h2>
+        </div>
+        <p class="section-note">
+          Reads the raw JSONL-derived trace bundle, including Lean attempts and compiler outputs.
+        </p>
+      </div>
+      <div class="reader-controls">
+        <label>
+          Task
+          <select id="reader-task">${r}</select>
+        </label>
+        <label>
+          Trial
+          <select id="reader-trial">${i}</select>
+        </label>
+      </div>
+      <div class="reader-layout">
+        <article class="proof-panel">
+          <div class="proof-head">
+            <h3>${u(e.trial_id)}</h3>
+            <span class="outcome-badge">${u(t?.validator_outcome??`unknown`)}</span>
+          </div>
+          <dl class="evidence-grid">
+            <div><dt>Declared success</dt><dd>${y(e.declared_success)}</dd></div>
+            <div><dt>Submitted equals last verified</dt><dd>${y(e.submitted_eq_last_verified)}</dd></div>
+            <div><dt>Tool calls</dt><dd>${u(e.n_tool_calls)}</dd></div>
+            <div><dt>Failed compiles</dt><dd>${u(e.n_failed_compiles)}</dd></div>
+          </dl>
+          <h4>Formal Statement</h4>
+          ${v(e.formal_statement)}
+          <h4>Submitted Code</h4>
+          ${v(e.submitted_code)}
+          <h4>Last Verified Code</h4>
+          ${v(e.last_verified_code)}
+        </article>
+        <article class="proof-panel">
+          <h3>Math Reading</h3>
+          <p>${u(e.informal)}</p>
+          <h4>Trace Label</h4>
+          <p>${u(t?.presentation_takeaway??``)}</p>
+          <h4>check_lean Calls</h4>
+          <div class="tool-list">${a||`<p>No check_lean calls captured.</p>`}</div>
+        </article>
+      </div>
+      <div class="timeline-list">
+        <h3>Role Timeline</h3>
+        ${o}
+      </div>
+    </section>
+  `}function x(e){let t=Math.max(1,Math.ceil(e.length/l.pageSize));l.page>t&&(l.page=t);let r=(l.page-1)*l.pageSize,i=e.slice(r,r+l.pageSize),a=[f(``,`All tasks`,l.task),...n(l.rows,`task_id`).map(e=>f(e,e,l.task))].join(``),o=[f(``,`All outcomes`,l.outcome),...n(l.rows,`validator_outcome`).map(e=>f(e,e,l.outcome))].join(``),s=[f(``,`All engineer labels`,l.engineer),...n(l.rows,`engineer_failure_label`).map(e=>f(e,e,l.engineer))].join(``),c=l.fields.map(e=>{let t=l.sortField===e,n=t?l.sortDir===`asc`?` up`:` down`:``;return`
+        <th>
+          <button class="sort-button${t?` active`:``}" data-sort="${u(e)}">
+            ${u(e)}${u(n)}
+          </button>
+        </th>
+      `}).join(``),d=i.map(e=>`
+        <tr>
+          ${l.fields.map(t=>`<td class="${t===`presentation_takeaway`?`wide-cell`:``}">${u(e[t]||``)}</td>`).join(``)}
+        </tr>
+      `).join(``);return`
+    <section class="section csv-first" id="complete-csv">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow dark">Canonical artifact</p>
+          <h2>Complete CSV Explorer</h2>
+        </div>
+        <p class="section-note">
+          Source: data/analysis/lean_easy_failure_patterns.csv copied into public/data for this report.
+        </p>
+      </div>
+      <div class="controls">
+        <label>
+          Search
+          <input id="search" type="search" value="${u(l.search)}" placeholder="task, label, strategy, takeaway" />
+        </label>
+        <label>
+          Task
+          <select id="task-filter">${a}</select>
+        </label>
+        <label>
+          Outcome
+          <select id="outcome-filter">${o}</select>
+        </label>
+        <label>
+          Engineer
+          <select id="engineer-filter">${s}</select>
+        </label>
+      </div>
+      <div class="table-meta">
+        Showing ${u(r+1)}-${u(Math.min(r+l.pageSize,e.length))}
+        of ${u(e.length)} filtered rows.
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>${c}</tr></thead>
+          <tbody>${d||`<tr><td colspan="${l.fields.length}">No rows match the filters.</td></tr>`}</tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button data-page="prev" ${l.page<=1?`disabled`:``}>Previous</button>
+        <span>Page ${u(l.page)} / ${u(t)}</span>
+        <button data-page="next" ${l.page>=t?`disabled`:``}>Next</button>
+      </div>
+    </section>
+  `}function S(){return`
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow dark">Proposal alignment</p>
+          <h2>Research Question Mapping</h2>
+        </div>
+        <p class="section-note">
+          Main conclusion: Lean kernel checking makes hidden trajectory failures visible.
+        </p>
+      </div>
+      <div class="mapping-grid">
+        <article class="mapping-card">
+          <h3>O1 localization</h3>
+          <p>Supported partially by trace graph construction, role attribution, and first_failure_stage.</p>
+        </article>
+        <article class="mapping-card">
+          <h3>O2 taxonomy</h3>
+          <p>Supported by deterministic labels over reasoner, engineer, critic, and global behavior.</p>
+        </article>
+        <article class="mapping-card warning">
+          <h3>O3 early prediction</h3>
+          <p>Not claimed in this slice. The data has 10 repeated trials per easy task, but no stress or difficulty progression.</p>
+        </article>
+      </div>
+    </section>
+  `}function C(){return`
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow dark">Per-task pattern table</p>
+          <h2>10 Easy Tasks</h2>
+        </div>
+        <p class="section-note">Aggregated directly from the CSV rows.</p>
+      </div>
+      <div class="table-wrap compact">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>task_id</th>
+              <th>trials</th>
+              <th>solved</th>
+              <th>trace_verified</th>
+              <th>silent_failure</th>
+              <th>validation_unknown</th>
+              <th>unsolved</th>
+              <th>dominant_engineer_label</th>
+              <th>dominant_global_pattern</th>
+            </tr>
+          </thead>
+          <tbody>${a(l.rows).map(e=>`
+        <tr>
+          <td>${u(e.taskId)}</td>
+          <td>${u(e.trials)}</td>
+          <td>${u(e.solved)}</td>
+          <td>${u(e.traceVerified)}</td>
+          <td>${u(e.silentFailure)}</td>
+          <td>${u(e.validationUnknown)}</td>
+          <td>${u(e.unsolved)}</td>
+          <td>${u(e.dominantEngineerLabel)}</td>
+          <td>${u(e.dominantGlobalPattern)}</td>
+        </tr>
+      `).join(``)}</tbody>
+        </table>
+      </div>
+    </section>
+  `}function w(e,n){let r=Array.from(t(l.rows,n).entries()).sort((e,t)=>t[1]-e[1]),i=Math.max(...r.map(([,e])=>e),1);return`
+    <article class="count-block">
+      <h3>${u(e)}</h3>
+      <div class="bar-list">
+        ${r.map(([e,t])=>`
+              <div class="bar-row">
+                <span>${u(e)}</span>
+                <strong>${u(t)}</strong>
+                <i style="--bar:${t/i*100}%"></i>
+              </div>
+            `).join(``)}
+      </div>
+    </article>
+  `}function T(){return`
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow dark">MD taxonomy</p>
+          <h2>Role-Level Failure Analysis</h2>
+        </div>
+        <p class="section-note">
+          Labels follow docs/LEAN_FAILURE_ANALYSIS_GUIDE.md; no LLM post-hoc judgment is used.
+        </p>
+      </div>
+      <div class="count-grid">
+        ${w(`Reasoner strategy`,`reasoner_strategy_label`)}
+        ${w(`Engineer failure`,`engineer_failure_label`)}
+        ${w(`Critic behavior`,`critic_label`)}
+        ${w(`Global graph pattern`,`global_graph_pattern`)}
+      </div>
+    </section>
+  `}function E(e){let t=l.rows.filter(t=>t.task_id===e);if(!t.length)return``;let n=t[0];return`
+    <article class="case-card">
+      <h3>${u(e)}</h3>
+      <p>${u(n.math_question)}</p>
+      <dl>
+        <div><dt>Human strategy</dt><dd>${u(n.naive_human_strategy)}</dd></div>
+        <div><dt>Domain LLM strategy</dt><dd>${u(n.domain_specific_LLM_strategy)}</dd></div>
+        <div><dt>Dominant engineer label</dt><dd>${u(r(t,`engineer_failure_label`))}</dd></div>
+        <div><dt>Dominant global pattern</dt><dd>${u(r(t,`global_graph_pattern`))}</dd></div>
+      </dl>
+    </article>
+  `}function D(){return`
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow dark">Case studies</p>
+          <h2>FATEM111, FATEM115, LeanCat001/002</h2>
+        </div>
+        <p class="section-note">These cases keep the math question, strategy, and observed agent path together.</p>
+      </div>
+      <div class="case-grid">
+        ${[`easy_fatem_111`,`easy_fatem_115`,`easy_leancat_001`,`easy_leancat_002`].map(E).join(``)}
+      </div>
+    </section>
+  `}function O(){return`
+    <section class="section repro-section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow dark">Reproducibility</p>
+          <h2>Paths And Commands</h2>
+        </div>
+        <p class="section-note">Layout follows docs/REPO_LAYOUT_RULES.md.</p>
+      </div>
+      <div class="terminal-panel">
+        <p><span>Raw traces</span> data/batch/*.jsonl</p>
+        <p><span>Canonical CSV</span> data/analysis/lean_easy_failure_patterns.csv</p>
+        <p><span>Report CSV copy</span> docs/lean_easy_failure_report/public/data/lean_easy_failure_patterns.csv</p>
+        <p><span>Trace JSON copy</span> docs/lean_easy_failure_report/public/data/lean_easy_failure_traces.json</p>
+        <p><span>Generate</span> python scripts/analyze_lean_easy_failures.py --input-dir data/batch --dataset-root dataset/Lean</p>
+        <p><span>Build report</span> cd docs/lean_easy_failure_report && npm.cmd run build</p>
+      </div>
+    </section>
+  `}function k(){if(!c)return;let e=i(l.rows),t=p();c.innerHTML=`
+    ${h(e)}
+    <main>
+      <div class="source-strip">
+        <span>Data: 100 JSONL traces -> CSV rows</span>
+        <span>Proposal: O1/O2 supported, O3 not claimed</span>
+        <span>MD: failure guide + repo layout rules</span>
+      </div>
+      ${b()}
+      ${x(t)}
+      ${S()}
+      ${C()}
+      ${T()}
+      ${D()}
+      ${O()}
+    </main>
+  `,A()}function A(){document.querySelector(`#search`)?.addEventListener(`input`,e=>{l.search=e.target.value,l.page=1,k()}),document.querySelector(`#task-filter`)?.addEventListener(`change`,e=>{l.task=e.target.value,l.selectedTrial=``,l.page=1,k()}),document.querySelector(`#reader-task`)?.addEventListener(`change`,e=>{l.task=e.target.value,l.selectedTrial=``,l.page=1,k()}),document.querySelector(`#reader-trial`)?.addEventListener(`change`,e=>{l.selectedTrial=e.target.value,k()}),document.querySelector(`#outcome-filter`)?.addEventListener(`change`,e=>{l.outcome=e.target.value,l.page=1,k()}),document.querySelector(`#engineer-filter`)?.addEventListener(`change`,e=>{l.engineer=e.target.value,l.page=1,k()}),document.querySelectorAll(`[data-sort]`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.dataset.sort||`task_id`;l.sortField===t?l.sortDir=l.sortDir===`asc`?`desc`:`asc`:(l.sortField=t,l.sortDir=`asc`),k()})}),document.querySelectorAll(`[data-page]`).forEach(e=>{e.addEventListener(`click`,()=>{e.dataset.page===`prev`&&(l.page=Math.max(1,l.page-1)),e.dataset.page===`next`&&(l.page+=1),k()})})}async function j(){if(c){c.innerHTML=`<div class="loading">Loading CSV report data...</div>`;try{let t=document.querySelector(`#embedded-csv`),n=document.querySelector(`#embedded-traces`),r=t?.textContent??await M(),i=n?.textContent??await N();l.rows=e(r),l.traces=JSON.parse(i),l.fields=Object.keys(l.rows[0]??{}),k()}catch(e){c.innerHTML=`
+      <div class="error-panel">
+        <h1>Report data missing</h1>
+        <p>${u(e instanceof Error?e.message:String(e))}</p>
+        <code>python scripts/analyze_lean_easy_failures.py</code>
+      </div>
+    `}}}async function M(){let e=await fetch(o);if(!e.ok)throw Error(`Failed to load ${o}: ${e.status}`);return e.text()}async function N(){let e=await fetch(s);if(!e.ok)throw Error(`Failed to load ${s}: ${e.status}`);return e.text()}j();
+</script>
+    <style>
+:root{--lightningcss-light:initial;--lightningcss-dark: ;color-scheme:light;color:#16201c;font-synthesis:none;text-rendering:optimizelegibility;-webkit-font-smoothing:antialiased;--ink:#101613;--muted:#5d6963;--paper:#fffdfa;--line:#ddd6cc;--dark:#111816;--accent:#20a874;--warn:#e05b35;--blue:#4b69dd;--gold:#d99f2b;background:#f4f1ea;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;font-weight:400;line-height:1.45}*{box-sizing:border-box}body{min-width:320px;min-height:100vh;margin:0}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}.report-header{background:var(--dark);color:#f8f4ec;border-bottom:1px solid #27312d}.header-inner{grid-template-columns:minmax(0,1.6fr) minmax(280px,.8fr);gap:32px;max-width:1440px;margin:0 auto;padding:42px 28px 28px;display:grid}.eyebrow{color:#91e3bd;letter-spacing:0;text-transform:uppercase;margin:0 0 10px;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px}.eyebrow.dark{color:var(--blue)}h1,h2,h3,p{margin-top:0}h1{letter-spacing:0;margin-bottom:16px;font-size:44px;line-height:1.05}h2{letter-spacing:0;margin-bottom:0;font-size:24px;line-height:1.2}h3{letter-spacing:0;margin-bottom:10px;font-size:16px}.header-subtitle{color:#d8dfd8;max-width:820px;margin-bottom:0;font-size:17px}.header-panel{background:#151f1b;border:1px solid #33403a;border-radius:8px;align-self:start;padding:16px}.panel-title{color:#f7cf77;margin-bottom:10px;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px}.source-chip{color:#edf4ed;background:#101613;border:1px solid #33403a;border-radius:6px;margin-top:8px;padding:8px 10px;font-size:13px;display:block}.source-chip.muted{color:#efc6b9;border-color:#5e382e}.stats-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;max-width:1440px;margin:0 auto;padding:0 28px 28px;display:grid}.stat{background:#18231f;border:1px solid #27312d;min-height:108px;padding:16px}.stat-label,.stat-note,.section-note,.table-meta{color:var(--muted);font-size:13px}.stat-label{color:#aeb8b1;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace}.stat-value{color:#fffdfa;margin-top:8px;font-size:30px;font-weight:700;line-height:1}.stat-note{color:#c2cbc5;margin-top:10px}main{max-width:1440px;margin:0 auto;padding:22px 28px 48px}.source-strip{flex-wrap:wrap;gap:10px;margin-bottom:18px;display:flex}.source-strip span{border:1px solid var(--line);color:#3d463f;background:#fff8ea;border-radius:6px;padding:7px 10px;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px}.section{border:1px solid var(--line);background:var(--paper);border-radius:8px;margin-top:18px;padding:22px}.csv-first{margin-top:0}.section-head{justify-content:space-between;align-items:end;gap:24px;margin-bottom:18px;display:flex}.section-note{text-align:right;max-width:560px;margin:0}.controls{grid-template-columns:minmax(260px,1.2fr) repeat(3,minmax(180px,.8fr));gap:12px;margin-bottom:12px;display:grid}.controls label{color:#38433d;gap:6px;font-size:13px;display:grid}input,select{width:100%;min-height:40px;color:var(--ink);background:#fffefa;border:1px solid #cfc7ba;border-radius:6px;padding:8px 10px}input:focus,select:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}.table-wrap{border:1px solid var(--line);background:#fffefa;border-radius:8px;overflow-x:auto}.table-wrap.compact{max-height:520px}.data-table{border-collapse:collapse;width:100%;min-width:1280px;font-size:13px}.data-table th,.data-table td{text-align:left;vertical-align:top;border-bottom:1px solid #ece5db;border-right:1px solid #f0e9df;padding:9px 10px}.data-table th{z-index:1;color:#2c352f;background:#f6f0e6;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px;position:sticky;top:0}.data-table tr:hover td{background:#fcf6eb}.wide-cell{min-width:440px}.sort-button{width:100%;color:inherit;text-align:left;background:0 0;border:0;padding:0}.sort-button.active{color:var(--blue);font-weight:700}.table-meta{margin-bottom:8px}.pager{color:#48534d;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px;font-size:13px;display:flex}.pager button{min-width:92px;color:var(--ink);background:#fffefa;border:1px solid #c7beb0;border-radius:6px;padding:8px 12px}.lean-reader{border-color:#b8c8bf}.reader-controls{grid-template-columns:minmax(220px,.6fr) minmax(260px,1fr);gap:12px;margin-bottom:16px;display:grid}.reader-controls label{color:#38433d;gap:6px;font-size:13px;display:grid}.reader-layout{grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:14px;display:grid}.proof-panel,.tool-card,.timeline-step{border:1px solid var(--line);background:#fffefa;border-radius:8px}.proof-panel{padding:16px}.proof-head{justify-content:space-between;align-items:start;gap:12px;display:flex}.outcome-badge,.pill{border-radius:999px;align-items:center;min-height:24px;padding:3px 9px;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px;display:inline-flex}.outcome-badge{color:#294bc2;background:#eaf2ff}.pill.pass{color:#12633f;background:#def7e9}.pill.fail{color:#a33518;background:#ffe3dc}.pill.unknown{color:#5d5549;background:#f0ebe1}.evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px;display:grid}.evidence-grid div{border:1px solid #ece5db;border-radius:6px;padding:10px}.evidence-grid dt,.muted-inline{color:var(--muted);font-size:12px}.evidence-grid dd{margin:6px 0 0}.proof-panel h4{color:#26342e;margin:16px 0 8px}.lean-code,.empty-code{color:#edf7ef;background:#101613;border:1px solid #25342e;border-radius:8px;padding:12px}.lean-code{white-space:pre;max-height:420px;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px;line-height:1.5;overflow:auto}.empty-code{color:#d9c8bd}.tool-list,.timeline-list{gap:10px;display:grid}.tool-card,.timeline-step{overflow:hidden}.tool-card summary,.timeline-step summary{cursor:pointer;background:#f7f1e7;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;display:flex}.tool-card .lean-code,.timeline-step .lean-code,.timeline-step p{margin:10px}.timeline-list{margin-top:16px}.seq,.tool-name,.decision,.handoff{color:#3f4a44;background:#ebe4d9;border-radius:999px;padding:2px 7px;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px}.mapping-grid,.count-grid,.case-grid{gap:14px;display:grid}.mapping-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mapping-card,.count-block,.case-card{border:1px solid var(--line);background:#fffefa;border-radius:8px;padding:16px}.mapping-card{border-top:4px solid var(--accent)}.mapping-card.warning{border-top-color:var(--warn)}.mapping-card p,.case-card p{color:#445048;margin-bottom:0}.count-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bar-list{gap:8px;display:grid}.bar-row{border:1px solid #ece5db;border-radius:6px;grid-template-columns:minmax(0,1fr) 42px;align-items:center;gap:8px;min-height:34px;padding:6px 8px;display:grid;position:relative;overflow:hidden}.bar-row span,.bar-row strong{z-index:1;position:relative}.bar-row i{width:var(--bar);background:#dff4e9;position:absolute;inset:0 auto 0 0}.case-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.case-card dl{gap:10px;margin:14px 0 0;display:grid}.case-card div{gap:3px;display:grid}.case-card dt{color:var(--blue);font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:12px}.case-card dd{color:#27312c;margin:0}.terminal-panel{color:#dce8df;background:#111816;border:1px solid #26342e;border-radius:8px;gap:8px;padding:16px;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;font-size:13px;display:grid;overflow-x:auto}.terminal-panel p{white-space:nowrap;margin:0}.terminal-panel span{color:#91e3bd;min-width:170px;display:inline-block}.loading,.error-panel{border:1px solid var(--line);background:var(--paper);border-radius:8px;max-width:760px;margin:64px auto;padding:24px}.error-panel code{color:#fffdfa;background:#111816;border-radius:6px;margin-top:12px;padding:8px 10px;display:inline-block}@media (width<=980px){.header-inner,.section-head{grid-template-columns:1fr;display:grid}.stats-grid,.mapping-grid,.count-grid,.case-grid,.controls,.reader-controls,.reader-layout,.evidence-grid{grid-template-columns:1fr}.section-note{text-align:left}h1{font-size:34px}}
+
+</style>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>

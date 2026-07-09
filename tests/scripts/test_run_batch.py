@@ -8,7 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from traj_eval.agents import make_trial_meta
-from scripts.run_batch import _classify, _looks_like_import_error, _trace_is_valid
+from scripts.run_batch import _trace_is_valid
+from traj_eval.metrics.lean.outcomes import classify_outcome, looks_like_import_error
 from traj_eval.trace_core.storage import TrialLogWriter
 
 
@@ -42,7 +43,7 @@ def test_solved_when_all_group_b_true():
         axiom_clean=True,
         silent_failure=False,
     )
-    assert _classify([], m, None) == "solved"
+    assert classify_outcome([], m) == "solved"
 
 
 def test_silent_failure_classified():
@@ -53,7 +54,7 @@ def test_silent_failure_classified():
         axiom_clean=True,
         silent_failure=True,
     )
-    assert _classify([], m, None) == "silent_failure"
+    assert classify_outcome([], m) == "silent_failure"
 
 
 def test_unsolved_when_incomplete():
@@ -64,7 +65,7 @@ def test_unsolved_when_incomplete():
         axiom_clean=None,
         silent_failure=None,
     )
-    assert _classify([], m, None) == "unsolved"
+    assert classify_outcome([], m) == "unsolved"
 
 
 def test_validation_unknown_when_posthoc_verdict_is_indeterminate():
@@ -76,14 +77,14 @@ def test_validation_unknown_when_posthoc_verdict_is_indeterminate():
         silent_failure=None,
         has_submission=True,
     )
-    assert _classify([], m, None) == "validation_unknown"
+    assert classify_outcome([], m) == "validation_unknown"
 
 
 def test_import_error_takes_precedence():
     # even if metrics would say unsolved, an import error in the trace wins
     ev = _make_result_event("{'compiled': False, 'errors': [{'data': 'unknown constant Foo'}]}")
     m = _FakeMetrics(final_proof_compiles=False)
-    assert _classify([ev], m, None) == "import_error"
+    assert classify_outcome([ev], m) == "import_error"
 
 
 def test_solved_final_proof_takes_precedence_over_earlier_import_error():
@@ -95,23 +96,23 @@ def test_solved_final_proof_takes_precedence_over_earlier_import_error():
         axiom_clean=True,
         silent_failure=False,
     )
-    assert _classify([ev], m, None) == "solved"
+    assert classify_outcome([ev], m) == "solved"
 
 
 def test_import_error_detection_positive():
     ev = _make_result_event("{'compiled': False, 'summary': 'unknown module Mathlib.Foo.Bar'}")
-    assert _looks_like_import_error([ev]) is True
+    assert looks_like_import_error([ev]) is True
 
 
 def test_import_error_detection_ignores_ordinary_failure():
     # a normal proof error (unsolved goals) is NOT an import error
     ev = _make_result_event("{'compiled': False, 'errors': [{'data': 'unsolved goals'}]}")
-    assert _looks_like_import_error([ev]) is False
+    assert looks_like_import_error([ev]) is False
 
 
 def test_import_error_detection_ignores_success():
     ev = _make_result_event("{'compiled': True, 'sorry_free': True}")
-    assert _looks_like_import_error([ev]) is False
+    assert looks_like_import_error([ev]) is False
 
 
 def test_trace_is_valid_accepts_readable_trace(tmp_path):

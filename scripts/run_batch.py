@@ -46,6 +46,7 @@ from traj_eval.agents.lean_team import build_lean_free_team
 from traj_eval.dataset.loader import ProblemRecord, load_dataset, to_lean_task
 from traj_eval.detectors.perseveration import detect_perseveration
 from traj_eval.metrics.lean.artifacts import extract_artifacts
+from traj_eval.metrics.lean.outcomes import classify_outcome
 from traj_eval.metrics.lean.validator import validate
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
@@ -53,19 +54,6 @@ DATASET_ROOT = Path("dataset/Lean")
 PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
 LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
-
-# Substrings in a first compile error that mark an environment (import) problem
-# rather than a proof problem. Kept broad on purpose; these never count against
-# the model.
-_IMPORT_ERROR_MARKERS = (
-    "unknown package",
-    "unknown module",
-    "unknown identifier",
-    "unknown constant",
-    "unknown namespace",
-    "could not find",
-    "file not found",
-)
 
 
 @dataclass
@@ -87,51 +75,6 @@ def _trace_is_valid(path: Path) -> bool:
     except Exception:  # noqa: BLE001 -- invalid traces should be regenerated
         return False
     return True
-
-
-def _looks_like_import_error(events) -> bool:
-    """True if any failed compile in the trace has an import-ish first error.
-
-    We read the tool-call results for failure text. The EXECUTION_RESULT text is
-    a Python-repr dict; a cheap substring scan over it is enough to flag the
-    environment case without full parsing.
-    """
-    from traj_eval.trace_core.schema import EventType
-
-    for e in events:
-        if e.event_type is EventType.EXECUTION_RESULT:
-            text = (e.payload.get("text", "") or "").lower()
-            if "compiled': false" in text or "compiled': false" in text.replace('"', "'"):
-                if any(m in text for m in _IMPORT_ERROR_MARKERS):
-                    return True
-    return False
-
-
-def _classify(events, metrics, run_state) -> str:
-    verdict_fields = (
-        metrics.final_proof_compiles,
-        metrics.final_proof_sorry_free,
-        metrics.statement_preserved,
-        metrics.axiom_clean,
-    )
-    if (
-        metrics.final_proof_compiles
-        and metrics.final_proof_sorry_free
-        and metrics.statement_preserved
-        and metrics.axiom_clean
-    ):
-        return "solved"
-    if metrics.silent_failure:
-        return "silent_failure"
-    # Environment artifact after a solved check: an exploratory failed compile
-    # must not override a final proof that independently validates.
-    if _looks_like_import_error(events):
-        return "import_error"
-    if metrics.has_submission and any(v is None for v in verdict_fields) and not any(
-        v is False for v in verdict_fields
-    ):
-        return "validation_unknown"
-    return "unsolved"
 
 
 def run_one_trial(record: ProblemRecord, trial: int, compiler) -> TrialOutcome:
@@ -190,7 +133,7 @@ def run_one_trial(record: ProblemRecord, trial: int, compiler) -> TrialOutcome:
     metrics = validate(events, task, compiler=compiler)
     art = extract_artifacts(events)
     rep = detect_perseveration(art.tool_calls)
-    outcome = _classify(events, metrics, run_state)
+    outcome = classify_outcome(events, metrics)
 
     return TrialOutcome(
         task_id=record.id,

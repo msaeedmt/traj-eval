@@ -1,0 +1,18 @@
+{
+  "name": "lean-easy-failure-report",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "sync-data": "node scripts/sync-data.mjs",
+    "dev": "npm run sync-data && vite --host 127.0.0.1",
+    "build": "npm run sync-data && vite build",
+    "build:html": "npm run build && node scripts/build-standalone-html.mjs",
+    "build:md": "npm run sync-data && node scripts/build-mobile-markdown.mjs",
+    "build:mobile": "npm run build:html && npm run build:md",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "vite": "^8.1.4"
+  }
+}
