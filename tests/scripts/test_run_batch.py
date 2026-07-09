@@ -7,7 +7,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from scripts.run_batch import _classify, _looks_like_import_error
+from traj_eval.agents import make_trial_meta
+from scripts.run_batch import _classify, _looks_like_import_error, _trace_is_valid
+from traj_eval.trace_core.storage import TrialLogWriter
 
 
 @dataclass
@@ -73,3 +75,24 @@ def test_import_error_detection_ignores_ordinary_failure():
 def test_import_error_detection_ignores_success():
     ev = _make_result_event("{'compiled': True, 'sorry_free': True}")
     assert _looks_like_import_error([ev]) is False
+
+
+def test_trace_is_valid_accepts_readable_trace(tmp_path):
+    path = tmp_path / "trial.jsonl"
+    meta = make_trial_meta(trial_id="trial", task_id="task", backbone="test", testbed="lean")
+    with TrialLogWriter(path, meta):
+        pass
+
+    assert _trace_is_valid(path) is True
+
+
+def test_trace_is_valid_rejects_missing_empty_and_invalid(tmp_path):
+    missing = tmp_path / "missing.jsonl"
+    empty = tmp_path / "empty.jsonl"
+    invalid = tmp_path / "invalid.jsonl"
+    empty.write_text("")
+    invalid.write_text("not json\n")
+
+    assert _trace_is_valid(missing) is False
+    assert _trace_is_valid(empty) is False
+    assert _trace_is_valid(invalid) is False

@@ -20,6 +20,7 @@ Outcome classification (mutually exclusive, checked in order):
 Usage:
     TRAJ_EVAL_MODEL=gpt-4o uv run python scripts/run_batch.py --difficulty easy --trials 3
     TRAJ_EVAL_MODEL=gpt-4o uv run python scripts/run_batch.py --difficulty easy medium --trials 3
+    TRAJ_EVAL_MODEL=gpt-4o uv run python scripts/run_batch.py --difficulty easy --trials 10 --skip-existing
     uv run python scripts/run_batch.py --dry-run          # list what would run
 """
 
@@ -74,6 +75,16 @@ class TrialOutcome:
     termination: str | None
     n_tool_calls: int
     perseverated: bool
+
+
+def _trace_is_valid(path: Path) -> bool:
+    if not path.exists() or path.stat().st_size == 0:
+        return False
+    try:
+        read_trial(path)
+    except Exception:  # noqa: BLE001 -- invalid traces should be regenerated
+        return False
+    return True
 
 
 def _looks_like_import_error(events) -> bool:
@@ -183,6 +194,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--difficulty", nargs="+", default=["easy"], help="tiers to run")
     ap.add_argument("--trials", type=int, default=3, help="trials per problem")
+    ap.add_argument("--skip-existing", action="store_true", help="skip existing valid trace files")
     ap.add_argument("--dry-run", action="store_true", help="list problems and exit")
     args = ap.parse_args()
 
@@ -205,6 +217,10 @@ def main() -> int:
     outcomes: list[TrialOutcome] = []
     for r in records:
         for t in range(args.trials):
+            log_path = LOG_DIR / f"{r.id}_t{t}.jsonl"
+            if args.skip_existing and _trace_is_valid(log_path):
+                print(f"  skipping {r.id} trial {t + 1}/{args.trials} (existing valid trace)")
+                continue
             print(f"  running {r.id} trial {t + 1}/{args.trials} ...", flush=True)
             try:
                 outcomes.append(run_one_trial(r, t, compiler))
