@@ -73,6 +73,7 @@ def test_submission_and_acceptance_require_two_compiler_owners():
     checked = tools["check_lean"](code, "forward", "subgoal")
     evidence_hash = checked["evidence_hash"]
     submitted = tools["submit_subgoal"]("forward", evidence_hash, "direct proof")
+    candidate = tools["read_candidate"]("forward")
     premature = tools["review_subgoal"]("forward", "accept", evidence_hash, "ok")
     reviewed = tools["review_lean"](code, "forward")
     accepted = tools["review_subgoal"](
@@ -80,6 +81,8 @@ def test_submission_and_acceptance_require_two_compiler_owners():
     )
 
     assert submitted["submitted"] is True
+    assert candidate["code"] == code
+    assert candidate["evidence_hash"] == evidence_hash
     assert premature["ok"] is False
     assert accepted["accepted"] is True
     assert ledger.active_id == "reverse"
@@ -170,3 +173,31 @@ def test_active_and_candidate_gates_control_compile_and_routing():
     assert inactive["ok"] is False
     assert premature_critic["ok"] is False
     assert premature_review["ok"] is False
+
+
+def test_finish_run_requires_independent_final_faithfulness_gate():
+    ledger = _planned()
+    for node in ledger.nodes.values():
+        node.status = type(node.status).ACCEPTED
+        node.accepted_hash = f"{node.id}-hash"
+    ledger.verified_code["final-hash"] = "theorem target : True := trivial"
+
+    rejected_tools = make_subgoal_tools(
+        _Compiler(),
+        ledger,
+        final_validator=lambda code: {"passed": False, "statement_preserved": False},
+    )
+    rejected = rejected_tools["finish_run"]("final", "final-hash")
+
+    accepted_tools = make_subgoal_tools(
+        _Compiler(),
+        ledger,
+        final_validator=lambda code: {"passed": True, "statement_preserved": True},
+    )
+    accepted = accepted_tools["finish_run"]("final", "final-hash")
+
+    assert rejected["ok"] is False
+    assert rejected["final_validation"]["statement_preserved"] is False
+    assert "run_complete" not in rejected
+    assert accepted["run_complete"] is True
+    assert accepted["final_validation"]["passed"] is True

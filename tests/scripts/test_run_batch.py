@@ -14,6 +14,7 @@ from scripts.run_batch import (
     _build_run_summary,
     _configure_console,
     _report,
+    _recorded_termination,
     _task_prompt,
     _trace_is_valid,
     _write_summary,
@@ -153,6 +154,19 @@ def test_trace_is_valid_rejects_missing_empty_and_invalid(tmp_path):
     assert _trace_is_valid(missing) is False
     assert _trace_is_valid(empty) is False
     assert _trace_is_valid(invalid) is False
+
+
+def test_recorded_termination_prefers_explicit_terminal_event():
+    events = [
+        _FakeEvent(object(), {"text": "work"}),
+        _FakeEvent(
+            object(),
+            {"phase": "termination", "termination_reason": "framework_stop"},
+        ),
+    ]
+
+    assert _recorded_termination(events) == "framework_stop"
+    assert _recorded_termination(events[:1]) == "offline_rescore"
 
 
 def _communication(
@@ -305,6 +319,34 @@ def test_tool_subgoal_summary_reports_feasibility_not_o3():
 
     assert summary["decision"] == "feasibility_demonstrated_no_o3_claim"
     assert summary["proposal_status"]["O3"] == "not claimed from this feasibility pilot"
+
+
+def test_tool_subgoal_summary_does_not_reward_silent_completion():
+    outcome = TrialOutcome(
+        task_id="task",
+        difficulty="easy",
+        trial=0,
+        outcome="silent_failure",
+        termination="clean",
+        n_tool_calls=12,
+        perseverated=False,
+        communication=_communication(
+            tool_handoffs=4,
+            subgoals_accepted=3,
+            verified_completion=True,
+            approvals=1,
+        ),
+    )
+
+    summary = _build_run_summary(
+        [outcome],
+        expected_trials=1,
+        setup=TOOL_ROUTED_SUBGOALS_V1,
+        model="qwen",
+    )
+
+    assert summary["decision"] == "final_faithfulness_gate_required"
+    assert summary["communication"]["critic_masking_trials"] == 1
 
 
 def test_report_preserves_summary_mapping(capsys):

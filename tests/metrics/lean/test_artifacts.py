@@ -8,6 +8,8 @@ No kernel, no ag2.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from datetime import UTC, datetime
 
 from traj_eval.metrics.lean.artifacts import (
@@ -33,8 +35,6 @@ def _ev(seq, role, etype, payload):
 
 
 def _tool_call(seq, cid, code):
-    import json
-
     return _ev(
         seq,
         AgentRole.ENGINEER,
@@ -48,8 +48,6 @@ def _tool_call(seq, cid, code):
 
 
 def _search_call(seq, cid, query, *, include_name=True):
-    import json
-
     return _ev(
         seq,
         AgentRole.ENGINEER,
@@ -74,6 +72,31 @@ def _tool_result(seq, cid, compiled, sorry_free):
         AgentRole.EXECUTOR,
         EventType.EXECUTION_RESULT,
         {"tool_responses": [{"id": cid, "content": repr(d)}], "text": repr(d)},
+    )
+
+
+def _named_call(seq, role, cid, name, arguments):
+    return _ev(
+        seq,
+        role,
+        EventType.TOOL_CALL,
+        {
+            "tool_calls": [
+                {"id": cid, "name": name, "arguments": json.dumps(arguments)}
+            ]
+        },
+    )
+
+
+def _dict_result(seq, cid, payload):
+    return _ev(
+        seq,
+        AgentRole.EXECUTOR,
+        EventType.EXECUTION_RESULT,
+        {
+            "tool_responses": [{"id": cid, "content": repr(payload)}],
+            "text": repr(payload),
+        },
     )
 
 
@@ -258,6 +281,131 @@ def test_approved_exact_target_can_be_inferred_from_verified_candidate():
     assert art.submission_source == "approved_verified_target"
     assert art.submission_accepted is True
     assert art.submitted_eq_last_verified is True
+
+
+def test_typed_finish_recovers_only_full_hash_verified_submission():
+    proof = "theorem target : True := by trivial"
+    evidence_hash = hashlib.sha256(proof.encode("utf-8")).hexdigest()
+    events = [
+        _tool_call(2, "check", proof),
+        _dict_result(
+            3,
+            "check",
+            {
+                "compiled": True,
+                "sorry_free": True,
+                "verification_status": "accepted",
+                "ok": True,
+                "evidence_hash": evidence_hash,
+                "purpose": "final",
+            },
+        ),
+        _named_call(
+            4,
+            AgentRole.ENGINEER,
+            "submit",
+            "submit_subgoal",
+            {"subgoal_id": "main", "evidence_hash": evidence_hash},
+        ),
+        _dict_result(
+            5,
+            "submit",
+            {"ok": True, "submitted": True, "evidence_hash": evidence_hash},
+        ),
+        _named_call(
+            6,
+            AgentRole.CRITIC,
+            "review",
+            "review_lean",
+            {"subgoal_id": "main", "code": proof},
+        ),
+        _dict_result(
+            7,
+            "review",
+            {
+                "compiled": True,
+                "sorry_free": True,
+                "ok": True,
+                "evidence_hash": evidence_hash,
+                "purpose": "review",
+            },
+        ),
+        _named_call(
+            8,
+            AgentRole.CRITIC,
+            "accept",
+            "review_subgoal",
+            {"subgoal_id": "main", "decision": "accept", "evidence_hash": evidence_hash},
+        ),
+        _dict_result(
+            9,
+            "accept",
+            {
+                "ok": True,
+                "decision": "accept",
+                "accepted": True,
+                "evidence_hash": evidence_hash,
+            },
+        ),
+        _named_call(
+            10,
+            AgentRole.CRITIC,
+            "finish",
+            "finish_run",
+            {"final_subgoal_id": "main", "evidence_hash": evidence_hash},
+        ),
+        _dict_result(
+            11,
+            "finish",
+            {"ok": True, "run_complete": True, "evidence_hash": evidence_hash},
+        ),
+    ]
+
+    art = extract_artifacts(events, target_statement="theorem target : True")
+
+    assert art.submitted == proof
+    assert art.last_verified == proof
+    assert art.submission_source == "verified_subgoal_finish"
+    assert art.declared_success is True
+    assert art.submission_accepted is True
+    assert art.submitted_eq_last_verified is True
+
+
+def test_typed_finish_rejects_incomplete_or_gate_denied_chain():
+    proof = "theorem target : True := by trivial"
+    evidence_hash = hashlib.sha256(proof.encode("utf-8")).hexdigest()
+    events = [
+        _tool_call(2, "check", proof),
+        _dict_result(
+            3,
+            "check",
+            {
+                "compiled": True,
+                "sorry_free": True,
+                "verification_status": "accepted",
+                "ok": False,
+                "evidence_hash": evidence_hash,
+            },
+        ),
+        _named_call(
+            4,
+            AgentRole.CRITIC,
+            "finish",
+            "finish_run",
+            {"final_subgoal_id": "main", "evidence_hash": evidence_hash},
+        ),
+        _dict_result(
+            5,
+            "finish",
+            {"ok": True, "run_complete": True, "evidence_hash": evidence_hash},
+        ),
+    ]
+
+    art = extract_artifacts(events, target_statement="theorem target : True")
+
+    assert art.last_verified is None
+    assert art.submitted is None
+    assert art.submission_accepted is False
 
 
 def test_approval_before_tool_result_does_not_accept_candidate():

@@ -255,11 +255,16 @@ def test_cap_terminates():
     assert state.terminated and state.reason == "cap"
 
 
-def test_finalize_backfills_cap_reason():
-    # A run that ended without our selector setting a reason (i.e. AG2's own
-    # max_round stopped it) must be recorded as 'cap', never left None.
+def test_finalize_distinguishes_early_framework_stop():
     _, state = _build()
     assert state.reason is None
+    finalize_run(state)
+    assert state.terminated and state.reason == "framework_stop"
+
+
+def test_finalize_backfills_cap_after_turn_budget():
+    _, state = _build()
+    state.turns = state.turn_budget
     finalize_run(state)
     assert state.terminated and state.reason == "cap"
 

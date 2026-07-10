@@ -56,7 +56,7 @@ from traj_eval.detectors.perseveration import detect_perseveration
 from traj_eval.metrics.communication import CommunicationSummary, summarize_communication
 from traj_eval.metrics.lean.artifacts import extract_artifacts
 from traj_eval.metrics.lean.outcomes import classify_outcome
-from traj_eval.metrics.lean.validator import validate
+from traj_eval.metrics.lean.validator import validate, validate_candidate
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
 DATASET_ROOT = Path("dataset/Lean")
@@ -85,6 +85,13 @@ def _trace_is_valid(path: Path) -> bool:
     except Exception:  # noqa: BLE001 -- invalid traces should be regenerated
         return False
     return True
+
+
+def _recorded_termination(events) -> str:
+    for event in reversed(events):
+        if event.payload.get("phase") == "termination":
+            return str(event.payload.get("termination_reason") or "framework_stop")
+    return "offline_rescore"
 
 
 def _task_prompt(
@@ -169,11 +176,16 @@ def run_one_trial(
     step_context = StepContext()
     search_lemmas = make_search_lemmas(num_results=5)
     if setup == TOOL_ROUTED_SUBGOALS_V1:
+        task = to_lean_task(record)
         subgoal_ledger = SubgoalLedger(
             max_failures=max_engineer_failures,
             max_forced_replans=max_forced_replans,
         )
-        tools = make_subgoal_tools(compiler, subgoal_ledger)
+        tools = make_subgoal_tools(
+            compiler,
+            subgoal_ledger,
+            final_validator=lambda code: validate_candidate(code, task, compiler),
+        )
         tools["search_lemmas"] = search_lemmas
     else:
         tools = {
@@ -226,8 +238,18 @@ def run_one_trial(
     try:
         user.initiate_chat(manager, message=prompt, clear_history=True)
     finally:
-        writer.close()
         finalize_run(run_state)
+        try:
+            observer.record_termination(
+                run_state.reason or "framework_stop",
+                turns=run_state.turns,
+                invalid_handoffs=run_state.invalid_handoffs,
+                tool_handoffs=run_state.tool_handoffs,
+                forced_recoveries=run_state.forced_recoveries,
+                completion_gate_denials=run_state.completion_gate_denials,
+            )
+        finally:
+            writer.close()
 
     return _score_trace(
         record,
@@ -315,10 +337,16 @@ def main() -> int:
                     continue
                 print(f"  scoring {r.id} trial {t + 1}/{args.trials} ...", flush=True)
                 try:
-                    trace_meta, _ = read_trial(log_path)
+                    trace_meta, trace_events = read_trial(log_path)
                     observed_models.add(trace_meta.backbone)
                     outcomes.append(
-                        _score_trace(r, t, compiler, log_path, termination="offline_rescore")
+                        _score_trace(
+                            r,
+                            t,
+                            compiler,
+                            log_path,
+                            termination=_recorded_termination(trace_events),
+                        )
                     )
                 except Exception as e:  # noqa: BLE001 -- report every invalid trial
                     print(f"    ERROR in {r.id} t{t}: {type(e).__name__}: {str(e)[:200]}")
@@ -413,8 +441,10 @@ def _build_run_summary(
             decision = "tool_routing_not_adopted"
         elif accepted_subgoals == 0:
             decision = "subgoal_gate_not_reached"
-        elif verified_completions > 0:
+        elif verified_completions > 0 and outcome_counts.get("solved", 0) > 0:
             decision = "feasibility_demonstrated_no_o3_claim"
+        elif verified_completions > 0 and outcome_counts.get("silent_failure", 0) > 0:
+            decision = "final_faithfulness_gate_required"
         elif forced_recoveries > 0 and revisions == 0:
             decision = "reasoner_recovery_not_adopted"
         else:

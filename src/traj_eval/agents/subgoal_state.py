@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -55,6 +56,7 @@ class SubgoalLedger:
         self.version = 0
         self.forced_recoveries = 0
         self.strategy_revisions = 0
+        self.verified_code: dict[str, str] = {}
 
     @property
     def active_id(self) -> str | None:
@@ -200,6 +202,7 @@ class SubgoalLedger:
             node.attempts += 1
             if compiled:
                 node.engineer_verified.add(code_hash)
+                self.verified_code[code_hash] = code
                 node.consecutive_failures = 0
             else:
                 node.consecutive_failures += 1
@@ -241,6 +244,24 @@ class SubgoalLedger:
             "subgoal_id": subgoal_id,
             "evidence_hash": evidence_hash,
             "state": self.snapshot(),
+        }
+
+    def read_candidate(self, subgoal_id: str) -> dict[str, Any]:
+        """Return the exact submitted bytes so a critic never retypes them."""
+        node = self.nodes.get(subgoal_id)
+        if node is None:
+            return self._error("unknown subgoal")
+        if node.status is not SubgoalStatus.CANDIDATE or not node.candidate_hash:
+            return self._error("subgoal has no submitted candidate")
+        code = self.verified_code.get(node.candidate_hash)
+        if code is None:
+            return self._error("submitted candidate source is unavailable")
+        return {
+            "ok": True,
+            "subgoal_id": subgoal_id,
+            "objective": node.objective,
+            "evidence_hash": node.candidate_hash,
+            "code": code,
         }
 
     def _invalidate_descendants(self, subgoal_id: str) -> None:
@@ -391,7 +412,12 @@ class SubgoalLedger:
         }
 
 
-def make_subgoal_tools(compiler, ledger: SubgoalLedger) -> dict[str, Any]:
+def make_subgoal_tools(
+    compiler,
+    ledger: SubgoalLedger,
+    *,
+    final_validator: Callable[[str], dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Create role-scoped tools sharing one trial-local ledger."""
 
     def plan_subgoal(subgoal_id: str, objective: str, depends_on: list[str]) -> dict:
@@ -438,6 +464,10 @@ def make_subgoal_tools(compiler, ledger: SubgoalLedger) -> dict[str, Any]:
         """Submit a compiler-verified active subgoal for critic review."""
         return ledger.submit_subgoal(subgoal_id, evidence_hash, summary)
 
+    def read_candidate(subgoal_id: str) -> dict:
+        """Read the exact submitted candidate and hash for independent review."""
+        return ledger.read_candidate(subgoal_id)
+
     def review_lean(code: str, subgoal_id: str) -> dict[str, Any]:
         """Independently compile the critic's exact candidate."""
         result = compiler.check(code)
@@ -468,13 +498,47 @@ def make_subgoal_tools(compiler, ledger: SubgoalLedger) -> dict[str, Any]:
 
     def finish_run(final_subgoal_id: str, evidence_hash: str) -> dict:
         """Finish only when the complete dependency graph is critic-accepted."""
-        return ledger.finish_run(final_subgoal_id, evidence_hash)
+        result = ledger.finish_run(final_subgoal_id, evidence_hash)
+        if not result.get("run_complete") or final_validator is None:
+            return result
+        code = ledger.verified_code.get(evidence_hash)
+        if code is None:
+            return {
+                "ok": False,
+                "error": "final artifact source is unavailable for independent validation",
+                "final_validation": {"passed": None},
+                "state": ledger.snapshot(),
+            }
+        try:
+            validation = final_validator(code)
+        except Exception as exc:  # noqa: BLE001 -- gate outage is unknown, not success
+            return {
+                "ok": False,
+                "error": f"final validation unavailable: {type(exc).__name__}",
+                "final_validation": {"passed": None, "error": str(exc)[:300]},
+                "state": ledger.snapshot(),
+            }
+        if validation.get("passed") is not True:
+            unknown = validation.get("passed") is None
+            return {
+                "ok": False,
+                "error": (
+                    "final validation unavailable"
+                    if unknown
+                    else "final artifact failed independent faithfulness validation"
+                ),
+                "final_validation": validation,
+                "state": ledger.snapshot(),
+            }
+        result["final_validation"] = validation
+        return result
 
     return {
         "plan_subgoal": plan_subgoal,
         "read_subgoals": read_subgoals,
         "check_lean": check_lean,
         "submit_subgoal": submit_subgoal,
+        "read_candidate": read_candidate,
         "review_lean": review_lean,
         "review_subgoal": review_subgoal,
         "route_next_agent": route_next_agent,

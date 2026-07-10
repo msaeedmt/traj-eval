@@ -119,3 +119,22 @@ def test_routing_reason_is_stamped_with_causal_parent(tmp_path):
     _, events = read_trial(path)
     assert events[0].caused_by == ["compile-result"]
     assert events[0].payload["route_reason"] == "failed_compile_recovery"
+
+
+def test_termination_is_a_visible_causal_system_event(tmp_path):
+    from traj_eval.agents.observer import make_trial_meta
+    from traj_eval.trace_core.storage import TrialLogWriter
+
+    path = tmp_path / "t.jsonl"
+    meta = make_trial_meta("t", task_id="x", backbone="dummy", testbed="lean")
+    writer = TrialLogWriter(path, meta)
+    observer = TraceObserver(writer, trial_id="t")
+    observer.record_task("task")
+
+    observer.record_termination("framework_stop", turns=2)
+    writer.close()
+
+    _, events = read_trial(path)
+    assert events[-1].agent_role is AgentRole.SYSTEM
+    assert events[-1].payload["termination_reason"] == "framework_stop"
+    assert events[-1].caused_by == [events[-2].event_id]

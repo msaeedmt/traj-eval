@@ -16,8 +16,9 @@ config lives in lean_team.py, astro's would live alongside. This is the O1
 "framework-agnostic ... domain-adaptable" seam, made explicit.
 
 Termination is always bounded: a run ends with a recorded reason -- ``clean``
-(a marker or verified completion tool), ``cap`` (turn budget exhausted), or
-``stuck`` (invalid routing, exhausted recovery, or repeated no-progress calls).
+(a marker or verified completion tool), ``cap`` (turn budget exhausted),
+``stuck`` (invalid routing, exhausted recovery, or repeated no-progress calls),
+or ``framework_stop`` (AG2 ended before a controller terminal condition).
 A reason-tagged end makes non-termination observable rather than infinite.
 """
 
@@ -79,7 +80,7 @@ class _RunState:
     turns: int = 0
     consecutive_invalid: int = 0
     terminated: bool = False
-    reason: str | None = None  # 'clean' | 'cap' | 'stuck'
+    reason: str | None = None  # clean | cap | stuck | framework_stop
     invalid_handoffs: int = 0  # total coordination errors seen
     # Perseveration bound (4d): the last tool-call code and how many times in a
     # row it has been resubmitted identically. Repeated identical submission is
@@ -97,6 +98,7 @@ class _RunState:
     tool_handoffs: int = 0
     forced_recoveries: int = 0
     completion_gate_denials: int = 0
+    turn_budget: int = 0
 
 
 def _role_of(name: str) -> AgentRole | None:
@@ -232,7 +234,7 @@ def build_free_routing_team(
                 )(fn)
 
     members = [user, executor, *[agents[r] for r in config.roles if r in agents]]
-    state = _RunState()
+    state = _RunState(turn_budget=config.max_turns)
 
     def _route(agent, parent_role: AgentRole, *, reason: str | None = None):
         # Record the causal edge: the NEXT agent's event will be caused by the
@@ -402,13 +404,17 @@ def build_free_routing_team(
 def finalize_run(state: _RunState) -> _RunState:
     """Ensure the run has a recorded termination reason. Call AFTER the chat.
 
-    If our selector set a reason (clean / cap / stuck), keep it. If the chat
-    ended without our selector setting one -- the only remaining way out is
-    AG2's own max_round limit -- record it as 'cap'. Guarantees ``reason`` is
-    never None after a completed run, so 'how did this end' is always answerable.
+    Keep an explicit selector reason. Otherwise distinguish a real turn-budget
+    exhaustion from AG2 ending early without another routed action. The result
+    is never None after a completed run.
     """
     if state.reason is None:
-        state.terminated, state.reason = True, "cap"
+        state.terminated = True
+        state.reason = (
+            "cap"
+            if state.turn_budget > 0 and state.turns >= state.turn_budget
+            else "framework_stop"
+        )
     return state
 
 

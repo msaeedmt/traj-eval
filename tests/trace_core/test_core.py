@@ -55,6 +55,36 @@ def test_storage_roundtrip(tmp_path):
     assert [e.event_id for e in revents] == ["e0", "e1"]
 
 
+def test_writer_flushes_each_event_for_live_observation(tmp_path):
+    meta = TrialMeta(
+        trial_id="live",
+        testbed="toy",
+        task_id="task",
+        architecture="single",
+        backbone="stub",
+        grounding=False,
+        stress_level=0,
+        started_at=datetime.now(UTC),
+    )
+    path = tmp_path / "live.jsonl"
+    writer = TrialLogWriter(path, meta)
+    event = TraceEvent(
+        event_id="e0",
+        trial_id="live",
+        seq=0,
+        timestamp=datetime.now(UTC),
+        event_type=EventType.MESSAGE,
+        agent_role=AgentRole.SYSTEM,
+        payload={"text": "visible now"},
+    )
+
+    writer.append(event)
+    _, events = read_trial(path)
+    writer.close()
+
+    assert events[0].payload["text"] == "visible now"
+
+
 def test_first_violation_follows_causal_order():
     events = [
         _event(0, "e0", []),

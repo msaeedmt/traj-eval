@@ -85,6 +85,7 @@ def lean_routing_config(
                     tools=frozenset(
                         {
                             "review_lean",
+                            "read_candidate",
                             "read_subgoals",
                             "review_subgoal",
                             "route_next_agent",

@@ -178,17 +178,108 @@ the next experiment. This is O1/O2 pilot evidence only; O3 remains unclaimed.
 The local evidence is in
 `data/experiments/qwen_recovery_triangle_v1/summary.json`.
 
-## E1 Focused Pilot
+## E1 Focused Pilot Result
 
-E1 targets only `easy_fatem_115`, which remained unsolved in the A2 pilot. It
-tests whether a concrete state graph and bounded recovery interrupt the nearly
-linear reasoner-to-engineer pattern. The implementation records tool routes,
-forced recoveries, strategy revisions, accepted/rejected subgoals, critic gate
-denials, and verified completion in the existing causal trace and summary.
+E1 ran three live Qwen trials on `easy_fatem_115` with 80 routing decisions,
+three failed proof compiles per forced recovery, and at most two forced
+replans. This analysis is grounded in the NLP Lab proposal, the role/global
+analysis contract in `docs/LEAN_FAILURE_ANALYSIS_GUIDE.md`, and the typed-
+evidence authority model in `docs/HAN_LEAN_ANCHOR_MERGE.md`.
 
-Modern memory management, dynamic skill loading, arXiv/web search, and book
-retrieval are deferred. A single Lean theorem does not yet justify persistent
-memory, and adding retrieval would confound the routing intervention. Any later
-external retrieval must record source provenance; any API-backed change to
-stored history requires explicit user authorization. Only verifier-approved
-facts may enter a future shared proof memory.
+| Trial | Recovery behavior | Critic behavior | Offline outcome |
+| --- | --- | --- | --- |
+| t0 | One forced reasoner return; no strategy revision | Never reached critic | Unsolved |
+| t1 | Two forced returns; two revisions; later compile success | Exact-hash mismatch, rejection, critic-to-engineer repair; turn cap | Unsolved |
+| t2 | One forced return; one revision; three submitted subgoals | Three exact-byte compile approvals and runtime finish | Silent failure |
+
+Across the three trials, Qwen produced 19 tool handoffs, four forced
+recoveries, three recorded strategy revisions, 15 failed compiler results, 14
+successful compiler/reviewer results, one critic rejection, and three accepted
+subgoals. There were zero solved trials. One runtime completion was critic
+masking because offline statement preservation failed. This is O1/O2 evidence;
+it is not an O3 architecture-improvement result.
+
+### Mathematical Diagnosis
+
+The human strategy is short: prove both directions directly and reverse the
+two relation hypotheses before applying transitivity. The imported Mathlib
+`Transitive` uses implicit element arguments, so the key application supplies
+the two proof hypotheses, not explicit `x y z` terms.
+
+Qwen repeatedly treated those implicit arguments as explicit. The first
+reasoner revision described the problem incorrectly, and the engineer kept
+trying forms such as applying the hypothesis to `z y x`. Search exposed the
+right declaration but did not correct the application model. This is a valid
+strategy at the mathematical level but an invalid Lean API strategy.
+
+Trial t2 eventually compiled by declaring a new local `def Transitive` with
+explicit arguments. That shadowed Mathlib's benchmark symbol. The exact file
+compiled and the critic recompiled the same hash, but the proof body failed
+when restated under the original imports and statement. Therefore
+`final_proof_compiles=true` and `statement_preserved=false` are consistent;
+this is not an infrastructure error.
+
+### Graph Diagnosis
+
+The role-transition path became cyclic, but the event causal graphs did not
+branch. Their longest paths covered every event: 23/23 edges for t0, 79/79 for
+t1, and 74/74 for t2. AG2 still executed one speaker/tool at a time, so each
+trace is a serial chain over a branched subgoal-state DAG.
+
+This distinction matters for the proposal. E1 localizes recovery and critic
+failure in a graph (O1) and adds useful coordination labels (O2), but it does
+not test parallel or branching reasoning. A later branching experiment needs
+isolated engineer attempts or explicit multi-parent dependency edges; more
+role revisits alone do not create a branching causal graph.
+
+### Implemented Hardening
+
+The post-pilot implementation adds only mechanisms demanded by observed
+failures:
+
+- Typed `finish_run` artifacts are recognized only through the full matching-
+  hash chain: engineer compile, submission, critic compile, critic accept, and
+  finish.
+- A final faithfulness gate rechecks compilation, sorry freedom, original
+  statement preservation, and axioms before a future runtime may finish.
+- `read_candidate` gives the critic the exact submitted bytes, avoiding t1's
+  retyping/hash loop.
+- JSONL writes flush per event, and future traces end with a causal system
+  event recording `clean`, `cap`, `stuck`, or `framework_stop`.
+
+Historical E1 traces are not rewritten. The local evidence remains in
+`data/experiments/qwen_tool_routed_subgoals_v1/`; the interrupted observability
+audit is preserved separately under its `aborted/` directory.
+
+### Low-Token Specialist Direction
+
+Codex Ultra remains the main engineering/research orchestrator outside the
+measured trial. Future trial roles should use the configured lower-cost model
+with explicit response budgets, recorded in `TrialMeta`:
+
+```text
+reasoner: short strategy/revision budget
+engineer: moderate proof/tool budget
+critic: short evidence-review budget
+executor and gates: deterministic, zero LLM tokens
+```
+
+Do not switch provider models silently. A matched budget experiment should add
+role token caps as its single intervention, retain the same task and runtime,
+and compare completion, useful revision, gate denial, and kernel-valid solve
+rates. Compact state deltas should replace repeated full snapshots before
+persistent memory is considered.
+
+### Growth Gate
+
+Do not scale E1 to 10 x 10 yet. First run a small E1.1 replay with the final
+faithfulness gate and exact-candidate review, then require at least one
+kernel-valid solve without critic masking. Only then compare a low-token role
+budget or a genuinely branching engineer setup. O3 still requires matched
+repeated trials, a single-agent control, paired uncertainty, and effect sizes.
+
+Modern persistent memory, dynamic skill loading, arXiv/web search, and book
+retrieval remain deferred. They are separate interventions with provenance and
+data-governance requirements. Any API-backed change to stored history requires
+explicit user authorization, and only verifier-approved facts may enter future
+shared proof memory.
