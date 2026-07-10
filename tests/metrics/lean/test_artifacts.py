@@ -10,7 +10,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from traj_eval.metrics.lean.artifacts import extract_artifacts
+from traj_eval.metrics.lean.artifacts import (
+    candidate_kind,
+    extract_artifacts,
+    prohibited_placeholders,
+)
 from traj_eval.trace_core.schema import AgentRole, EventType, TraceEvent
 
 _T = datetime.now(UTC)
@@ -38,6 +42,25 @@ def _tool_call(seq, cid, code):
         {
             "tool_calls": [
                 {"id": cid, "name": "check_lean", "arguments": json.dumps({"code": code})}
+            ]
+        },
+    )
+
+
+def _search_call(seq, cid, query, *, include_name=True):
+    import json
+
+    return _ev(
+        seq,
+        AgentRole.ENGINEER,
+        EventType.TOOL_CALL,
+        {
+            "tool_calls": [
+                {
+                    "id": cid,
+                    **({"name": "search_lemmas"} if include_name else {}),
+                    "arguments": json.dumps({"query": query}),
+                }
             ]
         },
     )
@@ -116,6 +139,19 @@ def test_compiler_never_called():
     assert art.submitted_eq_last_verified is None  # undefined, not False
 
 
+def test_search_calls_do_not_inflate_compiler_attempts():
+    events = [
+        _search_call(1, "s1", "Nat addition commutative"),
+        _search_call(2, "s2", "legacy unnamed search", include_name=False),
+        _tool_call(3, "c1", "theorem t : True := trivial"),
+        _tool_result(4, "c1", compiled=True, sorry_free=True),
+    ]
+    art = extract_artifacts(events)
+    assert art.compiler_was_called is True
+    assert art.n_tool_calls == 1
+    assert [record.call_id for record in art.tool_calls] == ["c1"]
+
+
 # --- failed compiles counted ------------------------------------------------
 
 
@@ -182,10 +218,7 @@ def test_trailing_non_final_message_ignored():
     assert art.submitted is not None and "True" in art.submitted
 
 
-def test_submitted_falls_back_to_verified_when_no_final_block():
-    # The real FATE-M run: engineer verifies via check_lean, then hands off with
-    # a bare 'HANDOFF: critic' message carrying NO code block. submitted must
-    # fall back to the last successfully verified code, not be None.
+def test_verified_helper_is_not_inferred_as_submission():
     proof = "example : True := trivial"
     handoff = _ev(
         6,
@@ -199,10 +232,125 @@ def test_submitted_falls_back_to_verified_when_no_final_block():
         handoff,
         _critic(7, "approve"),
     ]
-    art = extract_artifacts(events)
-    assert art.submitted is not None and "trivial" in art.submitted
-    # nothing distinct was pasted, so submitted == last_verified (not a mismatch)
+    art = extract_artifacts(events, target_statement="theorem target : True")
+    assert art.last_verified == proof
+    assert art.last_verified_kind == "helper_or_probe"
+    assert art.submitted is None
+    assert art.submission_source == "none"
+
+
+def test_approved_exact_target_can_be_inferred_from_verified_candidate():
+    proof = "theorem target : True := trivial"
+    events = [
+        _tool_call(2, "c1", proof),
+        _tool_result(3, "c1", True, True),
+        _ev(
+            6,
+            AgentRole.ENGINEER,
+            EventType.MESSAGE,
+            {"text": "HANDOFF: critic", "has_final": True},
+        ),
+        _critic(7, "approve"),
+    ]
+    art = extract_artifacts(events, target_statement="theorem target : True")
+    assert art.submitted == proof
+    assert art.submitted_kind == "exact_target"
+    assert art.submission_source == "approved_verified_target"
+    assert art.submission_accepted is True
     assert art.submitted_eq_last_verified is True
+
+
+def test_approval_before_tool_result_does_not_accept_candidate():
+    proof = "theorem target : True := trivial"
+    events = [
+        _tool_call(2, "c1", proof),
+        _critic(3, "approve"),
+        _tool_result(4, "c1", True, True),
+    ]
+    art = extract_artifacts(events, target_statement="theorem target : True")
+    assert art.last_verified == proof
+    assert art.submitted is None
+
+
+def test_explicit_submission_after_approval_is_not_accepted_by_critic():
+    proof = "theorem target : True := trivial"
+    events = [_critic(2, "approve"), _engineer_final(3, proof)]
+    art = extract_artifacts(events, target_statement="theorem target : True")
+    assert art.declared_success is True
+    assert art.submitted == proof
+    assert art.submission_accepted is False
+
+
+def test_approved_statement_drift_is_exposed_not_hidden():
+    proof = "theorem target : 1 = 1 := rfl"
+    events = [
+        _tool_call(2, "c1", proof),
+        _tool_result(3, "c1", True, True),
+        _critic(7, "approve"),
+    ]
+    art = extract_artifacts(events, target_statement="theorem target : True")
+    assert art.submitted == proof
+    assert art.submitted_kind == "statement_drift"
+
+
+def test_whitespace_around_header_punctuation_is_not_statement_drift():
+    target = "theorem target {R :Type*} (x : R) : x = x"
+    proof = "theorem target {R : Type*} (x : R) : x = x := rfl"
+    assert candidate_kind(proof, target) == "exact_target"
+
+
+def test_approved_renamed_target_is_retained_as_statement_drift():
+    target = "theorem fatem_115_transitive_iff {A : Type} : True"
+    renamed = "theorem fatem_115_transitive {A : Type} : True := trivial"
+    events = [
+        _tool_call(2, "c1", renamed),
+        _tool_result(3, "c1", True, True),
+        _critic(4, "approve"),
+    ]
+    art = extract_artifacts(events, target_statement=target)
+    assert art.last_verified_kind == "statement_drift"
+    assert art.submitted == renamed
+    assert art.submission_accepted is True
+
+
+def test_unrelated_helper_theorem_remains_a_helper():
+    helper = "theorem useful_helper : True := trivial"
+    assert candidate_kind(helper, "theorem target : True") == "helper_or_probe"
+
+
+def test_opaque_lean_failure_is_unknown_not_compile_rejection():
+    result = _ev(
+        3,
+        AgentRole.EXECUTOR,
+        EventType.EXECUTION_RESULT,
+        {
+            "tool_responses": [
+                {
+                    "id": "c1",
+                    "content": repr(
+                        {
+                            "compiled": False,
+                            "sorry_free": False,
+                            "errors": [],
+                            "summary": "lean failed",
+                        }
+                    ),
+                }
+            ],
+            "text": "lean failed",
+        },
+    )
+    art = extract_artifacts([_tool_call(2, "c1", "bad"), result])
+    assert art.tool_calls[0].verification_status == "infrastructure_unknown"
+    assert art.tool_calls[0].compiled is None
+    assert art.n_failed_compiles == 0
+
+
+def test_source_placeholder_detection_ignores_comments_and_strings():
+    safe = '-- sorry\n#check "admit"\ntheorem target : True := trivial'
+    unsafe = "theorem target : True := by admit\n#check sorryAx"
+    assert prohibited_placeholders(safe) == ()
+    assert prohibited_placeholders(unsafe) == ("admit", "sorryAx")
 
 
 def test_explicit_final_block_still_primary():

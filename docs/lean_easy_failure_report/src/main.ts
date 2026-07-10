@@ -12,6 +12,7 @@ import {
 
 const DATA_URL = "data/lean_easy_failure_patterns.csv";
 const TRACE_URL = "data/lean_easy_failure_traces.json";
+const SNAPSHOT_URL = "data/report_snapshot.json";
 const app = document.querySelector<HTMLDivElement>("#app");
 
 type TraceStep = {
@@ -25,12 +26,20 @@ type TraceStep = {
   handoff_target?: string;
   text: string;
   lean_code?: string;
+  anchor?: unknown;
+  incident_labels?: string[];
+  recovered?: boolean | null;
 };
 
 type ToolCall = {
   seq: number;
+  result_seq?: number | null;
+  role?: string;
   compiled: boolean | null;
   sorry_free: boolean | null;
+  candidate_kind?: string | null;
+  statement_match?: string | null;
+  diagnostic?: string | null;
   code: string | null;
 };
 
@@ -42,12 +51,21 @@ type TraceDoc = {
   difficulty: string;
   informal: string;
   formal_statement: string;
-  submitted_code: string | null;
-  last_verified_code: string | null;
-  submitted_eq_last_verified: boolean | null;
-  declared_success: boolean;
+  submitted_code?: string | null;
+  accepted_candidate_code?: string | null;
+  last_verified_code?: string | null;
+  submitted_kind?: string | null;
+  last_verified_kind?: string | null;
+  submission_source?: string | null;
+  submission_accepted?: boolean | null;
+  validation_status?: string | null;
+  validation_error?: string | null;
+  prohibited_placeholders?: string[];
+  submitted_eq_last_verified?: boolean | null;
+  declared_success?: boolean;
   n_tool_calls: number;
   n_failed_compiles: number;
+  n_infrastructure_unknown_checks?: number;
   tool_calls: ToolCall[];
   graph: TraceGraph;
   diagnosis: Diagnosis;
@@ -77,15 +95,53 @@ type GraphEdge = {
 };
 
 type Diagnosis = {
-  headline: string;
-  status: string;
-  reasoner: string;
-  engineer: string;
-  critic: string;
-  global: string;
-  artifact: string;
-  takeaway: string;
-  evidence_seqs: Record<string, number[]>;
+  headline?: string;
+  status?: string;
+  reasoner?: string;
+  engineer?: string;
+  critic?: string;
+  global?: string;
+  artifact?: string;
+  takeaway?: string;
+  evidence_seqs?: Record<string, number[]>;
+  verification?: Record<string, unknown>;
+  candidate?: Record<string, unknown> | string | null;
+  workflow?: Record<string, unknown> | string | null;
+  symptom_codes?: string[];
+  causal_labels?: string[];
+  incidents?: Array<Record<string, unknown>>;
+  critical_failure?: Record<string, unknown> | string | null;
+  recovered_failure_seqs?: number[];
+  downstream_effects?: string[];
+  assessments?: Record<string, unknown>;
+  task_diagnosis?: Record<string, unknown> | string | null;
+  review_status?: string;
+  review_confidence?: string;
+};
+
+type SnapshotDoc = {
+  schema_version: string;
+  trial_count: number;
+  task_count: number;
+  per_task_counts: Record<string, number>;
+  event_count: number;
+  anchor_labeled_event_count: number;
+  anchor_coverage: number;
+  topology: {
+    connectedLinear: number;
+    disconnected: number;
+    branching: number;
+  };
+  confidence: { field: string | null; counts: Record<string, number> };
+  review_status: { field: string | null; counts: Record<string, number> };
+  kernel: { field: string | null; counts: Record<string, number> };
+  kernel_environment: { field: string | null; counts: Record<string, number> };
+  csv_sha256: string;
+  traces_sha256: string;
+  raw_sha256: string;
+  analysis_snapshot_sha256: string | null;
+  trial_ids_sha256: string;
+  snapshot_sha256: string;
 };
 
 type State = {
@@ -102,6 +158,7 @@ type State = {
   pageSize: number;
   selectedTrial: string;
   selectedNodeId: string;
+  snapshot: SnapshotDoc | null;
 };
 
 const state: State = {
@@ -118,12 +175,26 @@ const state: State = {
   pageSize: 20,
   selectedTrial: "",
   selectedNodeId: "",
+  snapshot: null,
 };
 
 const CSV_VISIBLE_FIELDS = [
   "trial_id",
   "task_id",
   "validator_outcome",
+  "verification_level",
+  "kernel_status",
+  "validation_status",
+  "candidate_kind",
+  "statement_match",
+  "submission_accepted",
+  "workflow_outcome",
+  "symptom_codes",
+  "error_labels",
+  "critical_failure_label",
+  "recovered_failure_count",
+  "review_confidence",
+  "review_status",
   "reasoner_strategy_label",
   "engineer_failure_label",
   "critic_label",
@@ -131,6 +202,7 @@ const CSV_VISIBLE_FIELDS = [
   "first_failure_stage",
   "n_tool_calls",
   "n_failed_compiles",
+  "n_infrastructure_unknown_checks",
 ];
 
 function escapeHtml(value: unknown): string {
@@ -150,12 +222,56 @@ function option(value: string, label: string, selected: string): string {
   return `<option value="${escapeHtml(value)}" ${value === selected ? "selected" : ""}>${escapeHtml(label)}</option>`;
 }
 
+function fieldValue(row: CsvRow | undefined, ...fields: string[]): string {
+  for (const field of fields) {
+    const value = row?.[field];
+    if (value) {
+      return value;
+    }
+  }
+  return "not recorded";
+}
+
+function displayValue(value: unknown): string {
+  if (value == null || value === "") {
+    return "not recorded";
+  }
+  if (Array.isArray(value)) {
+    return value.length ? value.map(displayValue).join(", ") : "none observed";
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>);
+    return entries.length
+      ? entries.map(([key, item]) => `${key}=${displayValue(item)}`).join("; ")
+      : "not recorded";
+  }
+  return String(value);
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function countSummary(counts: Record<string, number>): string {
+  const entries = Object.entries(counts);
+  if (!entries.length) {
+    return "not recorded";
+  }
+  return entries
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([label, count]) => `${label}=${count}`)
+    .join(", ");
+}
+
 function filteredRows(): CsvRow[] {
   const query = state.search.trim().toLowerCase();
   const numericFields = new Set([
     "trial_number",
     "n_tool_calls",
     "n_failed_compiles",
+    "n_infrastructure_unknown_checks",
   ]);
   const rows = state.rows
     .filter((row) => {
@@ -194,34 +310,34 @@ function renderStat(label: string, value: string | number, note: string): string
   `;
 }
 
-function renderHeader(summary: ReportSummary): string {
+function renderHeader(summary: ReportSummary, snapshot: SnapshotDoc): string {
   return `
     <header class="report-header">
       <div class="header-inner">
         <div class="header-copy">
-          <p class="eyebrow">Proposal + MD grounded report</p>
+          <p class="eyebrow">Evidence-first trajectory audit</p>
           <h1>Lean Easy Failure Analysis</h1>
           <p class="header-subtitle">
-            CSV-first analysis over existing Lean JSONL traces. The report follows
-            README/NLP Lab objectives O1/O2/O3 and the local MD guides.
+            One synchronized snapshot of 100 Lean trajectories. Final outcomes,
+            recovered incidents, verification evidence, and exploratory diagnoses
+            are kept separate so trace activity is not mistaken for kernel truth.
           </p>
         </div>
         <div class="header-panel">
-          <div class="panel-title">Grounding</div>
-          <div class="source-chip">Proposal: O1 localization</div>
-          <div class="source-chip">Proposal: O2 taxonomy</div>
-          <div class="source-chip muted">Proposal: O3 not claimed</div>
-          <div class="source-chip">MD: LEAN_FAILURE_ANALYSIS_GUIDE.md</div>
-          <div class="source-chip">MD: REPO_LAYOUT_RULES.md</div>
+          <div class="panel-title">Claim gate</div>
+          <div class="source-chip muted">O1: timeline available; anchor localisation unvalidated</div>
+          <div class="source-chip muted">O2: taxonomy exploratory; detector P/R/F1 unmeasured</div>
+          <div class="source-chip muted">O3: not evaluated in this single configuration</div>
+          <div class="source-chip">Snapshot: ${escapeHtml(snapshot.snapshot_sha256.slice(0, 16))}…</div>
         </div>
       </div>
       <div class="stats-grid">
-        ${renderStat("Trials", summary.trials, "CSV rows")}
-        ${renderStat("Tasks", summary.tasks, "10 easy tasks expected")}
-        ${renderStat("Trace verified", summary.traceVerified, "in-loop check_lean evidence")}
-        ${renderStat("Silent failure", summary.silentFailure, "critic may approve but validator rejects")}
-        ${renderStat("Unknown", summary.validationUnknown, "kernel fields are none")}
-        ${renderStat("Critic false accept", summary.criticFalseAccept, "approval without validated proof")}
+        ${renderStat("Trials", summary.trials, "ID-matched raw/CSV/JSON")}
+        ${renderStat("Tasks", summary.tasks, "10 trials each, build-enforced")}
+        ${renderStat("Silent failures", summary.silentFailure, "workflow accepted; strict validator rejected")}
+        ${renderStat("Kernel accepted", summary.kernelAccepted, "independent offline validation")}
+        ${renderStat("Kernel unknown", summary.kernelUnknown, "validation not completed")}
+        ${renderStat("Labelled anchors", snapshot.anchor_labeled_event_count, `of ${snapshot.event_count} raw events`)}
       </div>
     </header>
   `;
@@ -274,6 +390,17 @@ function verdictPill(value: boolean | null | undefined): string {
     return `<span class="pill fail">false</span>`;
   }
   return `<span class="pill unknown">unknown</span>`;
+}
+
+function statementMatchPill(value: unknown): string {
+  const status = displayValue(value);
+  const normalized = status.toLowerCase();
+  const tone = normalized === "exact"
+    ? "pass"
+    : ["changed", "not_target"].includes(normalized)
+      ? "fail"
+      : "unknown";
+  return `<span class="pill ${tone}">${escapeHtml(status)}</span>`;
 }
 
 function renderTraceGraph(trace: TraceDoc): string {
@@ -336,7 +463,7 @@ function renderTraceGraph(trace: TraceDoc): string {
 
   return `
     <div class="graph-scroll">
-      <svg class="trace-graph" viewBox="0 0 ${width} ${height}" role="img" aria-label="Causal trace graph">
+      <svg class="trace-graph" viewBox="0 0 ${width} ${height}" role="img" aria-label="Role-lane event timeline">
         <defs>
           <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
             <path d="M 0 0 L 8 4 L 0 8 z"></path>
@@ -377,26 +504,34 @@ function renderNodeDetail(trace: TraceDoc): string {
 
 function renderDiagnosis(trace: TraceDoc, row: CsvRow | undefined): string {
   const d = trace.diagnosis;
+  const assessments = d.assessments ?? {};
+  const verification = d.verification ?? {};
   return `
     <section class="diagnosis-panel">
       <div class="diagnosis-head">
         <div>
-          <p class="eyebrow dark">Deterministic trace diagnosis</p>
-          <h3>${escapeHtml(d.headline)}</h3>
+          <p class="eyebrow dark">Exploratory trace diagnosis</p>
+          <h3>${escapeHtml(d.headline ?? "Trajectory evidence summary")}</h3>
         </div>
-        <span class="outcome-badge">${escapeHtml(d.status)}</span>
+        <span class="outcome-badge">${escapeHtml(d.status ?? row?.validator_outcome ?? "unknown")}</span>
       </div>
       <div class="diagnosis-grid">
         <article><h4>Math question</h4><p>${escapeHtml(trace.informal)}</p></article>
         <article><h4>Human strategy</h4><p>${escapeHtml(row?.naive_human_strategy ?? "")}</p></article>
         <article><h4>Domain LLM strategy</h4><p>${escapeHtml(row?.domain_specific_LLM_strategy ?? "")}</p></article>
-        <article><h4>Reasoner</h4><p>${escapeHtml(d.reasoner)}</p></article>
-        <article><h4>Engineer</h4><p>${escapeHtml(d.engineer)}</p></article>
-        <article><h4>Critic</h4><p>${escapeHtml(d.critic)}</p></article>
-        <article><h4>Global</h4><p>${escapeHtml(d.global)}</p></article>
-        <article><h4>Final artifact</h4><p>${escapeHtml(d.artifact)}</p></article>
+        <article><h4>Reasoner assessment</h4><p>${escapeHtml(displayValue(assessments.reasoner ?? d.reasoner))}</p></article>
+        <article><h4>Engineer assessment</h4><p>${escapeHtml(displayValue(assessments.engineer ?? d.engineer))}</p></article>
+        <article><h4>Critic assessment</h4><p>${escapeHtml(displayValue(assessments.critic ?? d.critic))}</p></article>
+        <article><h4>Verification</h4><p>${escapeHtml(displayValue(Object.keys(verification).length ? verification : d.artifact))}</p></article>
+        <article><h4>Observed symptoms</h4><p>${escapeHtml(displayValue(d.symptom_codes ?? row?.symptom_codes))}</p></article>
+        <article><h4>Causal labels</h4><p>${escapeHtml(displayValue(d.causal_labels ?? row?.error_labels))}</p></article>
+        <article><h4>Critical unrecovered event</h4><p>${escapeHtml(displayValue(d.critical_failure ?? fieldValue(row, "critical_failure_label", "critical_failure_seq")))}</p></article>
+        <article><h4>Recovered incidents</h4><p>${escapeHtml(displayValue(d.recovered_failure_seqs ?? fieldValue(row, "recovered_failure_count")))}</p></article>
+        <article><h4>Downstream effects</h4><p>${escapeHtml(displayValue(d.downstream_effects))}</p></article>
+        <article><h4>Review confidence</h4><p>${escapeHtml(d.review_confidence ?? fieldValue(row, "review_confidence"))}</p></article>
+        <article><h4>Review status</h4><p>${escapeHtml(d.review_status ?? fieldValue(row, "review_status"))}</p></article>
       </div>
-      <p class="diagnosis-takeaway">${escapeHtml(d.takeaway)}</p>
+      <p class="diagnosis-takeaway">Legacy role/global labels can describe recovered incidents. Treat the terminal outcome and independent verification fields as separate evidence; causal attribution remains provisional until reviewed evidence and confidence are recorded.</p>
     </section>
   `;
 }
@@ -407,6 +542,9 @@ function renderLeanReader(): string {
     return "";
   }
   const row = traceOutcome(trace);
+  const verification = asRecord(trace.diagnosis.verification);
+  const candidate = asRecord(trace.diagnosis.candidate);
+  const workflow = asRecord(trace.diagnosis.workflow);
   const taskOptions = uniqueValues(state.rows, "task_id")
     .map((taskId) => option(taskId, taskId, state.task || trace.task_id))
     .join("");
@@ -423,8 +561,12 @@ function renderLeanReader(): string {
             ${verdictPill(call.compiled)}
             <span class="muted-inline">sorry_free</span>
             ${verdictPill(call.sorry_free)}
+            ${call.candidate_kind ? `<span class="tool-name">${escapeHtml(call.candidate_kind)}</span>` : ""}
+            <span class="muted-inline">statement_match</span>
+            ${statementMatchPill(call.statement_match)}
           </summary>
           ${codeBlock(call.code)}
+          ${call.diagnostic ? `<p class="tool-diagnostic">${escapeHtml(call.diagnostic)}</p>` : ""}
         </details>
       `,
     )
@@ -452,10 +594,11 @@ function renderLeanReader(): string {
       <div class="section-head">
         <div>
           <p class="eyebrow dark">Trace-first JSON reader</p>
-          <h2>Causal Graph, Diagnosis, And Proof Evidence</h2>
+          <h2>Event Timeline, Diagnosis, And Proof Evidence</h2>
         </div>
         <p class="section-note">
-          Reads all 100 raw JSONL-derived traces. The graph is exported from build_graph.
+          Nodes follow recorded event order and role lanes. Edges preserve logged
+          predecessor/dependency links; this mostly linear topology is not proof of causality.
         </p>
       </div>
       <div class="trace-shell">
@@ -471,10 +614,18 @@ function renderLeanReader(): string {
           <dl class="trace-facts">
             <div><dt>Trial</dt><dd>${escapeHtml(trace.trial_id)}</dd></div>
             <div><dt>Outcome</dt><dd>${escapeHtml(row?.validator_outcome ?? "unknown")}</dd></div>
+            <div><dt>Verification level</dt><dd>${escapeHtml(fieldValue(row, "verification_level"))}</dd></div>
+            <div><dt>Kernel environment</dt><dd>${escapeHtml(fieldValue(row, "kernel_status"))}</dd></div>
+            <div><dt>Validation status</dt><dd>${escapeHtml(fieldValue(row, "validation_status"))}</dd></div>
+            <div><dt>Proof compiles</dt><dd>${escapeHtml(fieldValue(row, "final_proof_compiles"))}</dd></div>
+            <div><dt>Critical event</dt><dd>${escapeHtml(fieldValue(row, "critical_failure_seq", "critical_failure_label"))}</dd></div>
+            <div><dt>Recovered incidents</dt><dd>${escapeHtml(fieldValue(row, "recovered_failure_count"))}</dd></div>
+            <div><dt>Confidence</dt><dd>${escapeHtml(fieldValue(row, "review_confidence"))}</dd></div>
             <div><dt>Nodes</dt><dd>${escapeHtml(trace.graph.nodes.length)}</dd></div>
             <div><dt>Edges</dt><dd>${escapeHtml(trace.graph.edges.length)}</dd></div>
             <div><dt>Tool calls</dt><dd>${escapeHtml(trace.n_tool_calls)}</dd></div>
             <div><dt>Failed compiles</dt><dd>${escapeHtml(trace.n_failed_compiles)}</dd></div>
+            <div><dt>Opaque check results</dt><dd>${escapeHtml(trace.n_infrastructure_unknown_checks ?? fieldValue(row, "n_infrastructure_unknown_checks"))}</dd></div>
           </dl>
         </aside>
         <div class="graph-panel">
@@ -487,15 +638,21 @@ function renderLeanReader(): string {
         <article class="proof-panel">
           <h3>Proof Artifacts</h3>
           <dl class="evidence-grid">
-            <div><dt>Declared success</dt><dd>${verdictPill(trace.declared_success)}</dd></div>
+            <div><dt>Submission accepted</dt><dd>${verdictPill(trace.submission_accepted ?? candidate.workflow_approved as boolean | null | undefined ?? workflow.declared_success as boolean | null | undefined ?? trace.declared_success)}</dd></div>
+            <div><dt>Validation status</dt><dd>${escapeHtml(displayValue(trace.validation_status ?? verification.validation_status))}</dd></div>
+            <div><dt>Selected candidate kind</dt><dd>${escapeHtml(displayValue(trace.submitted_kind ?? candidate.candidate_kind ?? candidate.kind))}</dd></div>
+            <div><dt>Submission source</dt><dd>${escapeHtml(displayValue(trace.submission_source ?? candidate.submission_source))}</dd></div>
+            <div><dt>Statement match</dt><dd>${statementMatchPill(candidate.statement_match)}</dd></div>
+            <div><dt>Prohibited placeholders</dt><dd>${escapeHtml(displayValue(trace.prohibited_placeholders ?? verification.prohibited_placeholders))}</dd></div>
             <div><dt>Submitted equals last verified</dt><dd>${verdictPill(trace.submitted_eq_last_verified)}</dd></div>
           </dl>
+          ${trace.validation_error ?? verification.validation_error ? `<p class="validation-error"><strong>Validation diagnostic:</strong> ${escapeHtml(displayValue(trace.validation_error ?? verification.validation_error))}</p>` : ""}
           <h4>Formal Statement</h4>
           ${codeBlock(trace.formal_statement)}
-          <h4>Submitted Code</h4>
+          <h4>Workflow-submitted Code</h4>
           ${codeBlock(trace.submitted_code)}
-          <h4>Last Verified Code</h4>
-          ${codeBlock(trace.last_verified_code)}
+          <h4>Selected Candidate Code</h4>
+          ${codeBlock(trace.accepted_candidate_code ?? trace.last_verified_code)}
         </article>
         <article class="proof-panel">
           <h3>check_lean Calls</h3>
@@ -526,7 +683,7 @@ function renderCsvExplorer(rows: CsvRow[]): string {
     ...uniqueValues(state.rows, "validator_outcome").map((value) => option(value, value, state.outcome)),
   ].join("");
   const engineerOptions = [
-    option("", "All engineer labels", state.engineer),
+    option("", "All engineer signals", state.engineer),
     ...uniqueValues(state.rows, "engineer_failure_label").map((value) =>
       option(value, value, state.engineer),
     ),
@@ -584,7 +741,7 @@ function renderCsvExplorer(rows: CsvRow[]): string {
           <select id="outcome-filter">${outcomeOptions}</select>
         </label>
         <label>
-          Engineer
+          Engineer signal
           <select id="engineer-filter">${engineerOptions}</select>
         </label>
       </div>
@@ -607,31 +764,41 @@ function renderCsvExplorer(rows: CsvRow[]): string {
   `;
 }
 
-function renderProposalMapping(): string {
+function renderProposalMapping(snapshot: SnapshotDoc): string {
   return `
     <section class="section">
       <div class="section-head">
         <div>
-          <p class="eyebrow dark">Proposal alignment</p>
-          <h2>Research Question Mapping</h2>
+          <p class="eyebrow dark">Evidence and claim ledger</p>
+          <h2>What This Snapshot Can Support</h2>
         </div>
         <p class="section-note">
-          Main conclusion: Lean kernel checking makes hidden trajectory failures visible.
+          Status is based on evidence present in this export, not on intended pipeline capability.
         </p>
       </div>
       <div class="mapping-grid">
-        <article class="mapping-card">
-          <h3>O1 localization</h3>
-          <p>Supported partially by trace graph construction, role attribution, and first_failure_stage.</p>
-        </article>
-        <article class="mapping-card">
-          <h3>O2 taxonomy</h3>
-          <p>Supported by deterministic labels over reasoner, engineer, critic, and global behavior.</p>
+        <article class="mapping-card warning">
+          <h3>O1 localisation · not validated</h3>
+          <p>${escapeHtml(snapshot.event_count)} events and role/order timelines are available, but only ${escapeHtml(snapshot.anchor_labeled_event_count)} events carry anchors. The heuristic first_failure_stage is not a validated first-anchor localisation.</p>
         </article>
         <article class="mapping-card warning">
-          <h3>O3 early prediction</h3>
-          <p>Not claimed in this slice. The data has 10 repeated trials per easy task, but no stress or difficulty progression.</p>
+          <h3>O2 taxonomy · exploratory</h3>
+          <p>Detector outputs are inspectable, but independent gold labels and precision/recall/F1 are absent. Labels are signals to review, not confirmed diagnoses.</p>
         </article>
+        <article class="mapping-card warning">
+          <h3>O3 comparison · not evaluated</h3>
+          <p>The slice contains one model, architecture, grounding setting, and stress level. It cannot support early-warning or configuration-superiority claims.</p>
+        </article>
+      </div>
+      <div class="evidence-ledger">
+        <div><span>Snapshot</span><strong>${escapeHtml(snapshot.snapshot_sha256)}</strong></div>
+        <div><span>Analyzer snapshot</span><strong>${escapeHtml(snapshot.analysis_snapshot_sha256 ?? "not recorded")}</strong></div>
+        <div><span>Anchor coverage</span><strong>${escapeHtml(snapshot.anchor_labeled_event_count)} / ${escapeHtml(snapshot.event_count)}</strong></div>
+        <div><span>Kernel field</span><strong>${escapeHtml(snapshot.kernel.field ?? "not recorded")}: ${escapeHtml(countSummary(snapshot.kernel.counts))}</strong></div>
+        <div><span>Kernel environment</span><strong>${escapeHtml(countSummary(snapshot.kernel_environment.counts))}</strong></div>
+        <div><span>Review confidence</span><strong>${escapeHtml(countSummary(snapshot.confidence.counts))}</strong></div>
+        <div><span>Timeline topology</span><strong>${escapeHtml(snapshot.topology.connectedLinear)} connected linear; ${escapeHtml(snapshot.topology.disconnected)} disconnected; ${escapeHtml(snapshot.topology.branching)} branching</strong></div>
+        <div><span>Warehouse evidence used</span><strong>No matched Lean control. STARGAZER history is excluded from these counts; no architecture comparison is claimed.</strong></div>
       </div>
     </section>
   `;
@@ -639,17 +806,15 @@ function renderProposalMapping(): string {
 
 function renderTaskTable(): string {
   const rows = taskSummaries(state.rows);
+  const outcomeFields = uniqueValues(state.rows, "validator_outcome");
   const body = rows
     .map(
       (row) => `
         <tr>
           <td>${escapeHtml(row.taskId)}</td>
           <td>${escapeHtml(row.trials)}</td>
-          <td>${escapeHtml(row.solved)}</td>
-          <td>${escapeHtml(row.traceVerified)}</td>
-          <td>${escapeHtml(row.silentFailure)}</td>
-          <td>${escapeHtml(row.validationUnknown)}</td>
-          <td>${escapeHtml(row.unsolved)}</td>
+          ${outcomeFields.map((field) => `<td>${escapeHtml(row.outcomes[field] ?? 0)}</td>`).join("")}
+          <td><span class="total-check ${row.outcomeTotal === row.trials ? "pass" : "fail"}">${escapeHtml(row.outcomeTotal)} / ${escapeHtml(row.trials)}</span></td>
           <td>${escapeHtml(row.dominantEngineerLabel)}</td>
           <td>${escapeHtml(row.dominantGlobalPattern)}</td>
         </tr>
@@ -663,7 +828,7 @@ function renderTaskTable(): string {
           <p class="eyebrow dark">Per-task pattern table</p>
           <h2>10 Easy Tasks</h2>
         </div>
-        <p class="section-note">Aggregated directly from the CSV rows.</p>
+        <p class="section-note">Every outcome column is terminal and mutually exclusive. The total check must equal 10 for every task.</p>
       </div>
       <div class="table-wrap compact">
         <table class="data-table">
@@ -671,13 +836,10 @@ function renderTaskTable(): string {
             <tr>
               <th>task_id</th>
               <th>trials</th>
-              <th>solved</th>
-              <th>trace_verified</th>
-              <th>silent_failure</th>
-              <th>validation_unknown</th>
-              <th>unsolved</th>
-              <th>dominant_engineer_label</th>
-              <th>dominant_global_pattern</th>
+              ${outcomeFields.map((field) => `<th>${escapeHtml(field)}</th>`).join("")}
+              <th>outcome total</th>
+              <th>provisional engineer signal</th>
+              <th>provisional trace pattern</th>
             </tr>
           </thead>
           <tbody>${body}</tbody>
@@ -715,18 +877,20 @@ function renderTaxonomy(): string {
     <section class="section">
       <div class="section-head">
         <div>
-          <p class="eyebrow dark">MD taxonomy</p>
-          <h2>Role-Level Failure Analysis</h2>
+          <p class="eyebrow dark">Outcome versus incident signals</p>
+          <h2>Terminal State And Exploratory Labels</h2>
         </div>
         <p class="section-note">
-          Labels follow docs/LEAN_FAILURE_ANALYSIS_GUIDE.md; no LLM post-hoc judgment is used.
+          Final outcomes describe where a run ended. Legacy role/global labels may describe
+          recovered incidents and are provisional until evidence review and detector validation.
         </p>
       </div>
       <div class="count-grid">
-        ${renderCountBlock("Reasoner strategy", "reasoner_strategy_label")}
-        ${renderCountBlock("Engineer failure", "engineer_failure_label")}
-        ${renderCountBlock("Critic behavior", "critic_label")}
-        ${renderCountBlock("Global graph pattern", "global_graph_pattern")}
+        ${renderCountBlock("Final validation outcome", "validator_outcome")}
+        ${renderCountBlock("Reasoner signal", "reasoner_strategy_label")}
+        ${renderCountBlock("Engineer incident signal", "engineer_failure_label")}
+        ${renderCountBlock("Critic detector signal", "critic_label")}
+        ${renderCountBlock("Global trace-pattern signal", "global_graph_pattern")}
       </div>
     </section>
   `;
@@ -745,8 +909,8 @@ function renderCase(taskId: string): string {
       <dl>
         <div><dt>Human strategy</dt><dd>${escapeHtml(sample.naive_human_strategy)}</dd></div>
         <div><dt>Domain LLM strategy</dt><dd>${escapeHtml(sample.domain_specific_LLM_strategy)}</dd></div>
-        <div><dt>Dominant engineer label</dt><dd>${escapeHtml(topLabel(rows, "engineer_failure_label"))}</dd></div>
-        <div><dt>Dominant global pattern</dt><dd>${escapeHtml(topLabel(rows, "global_graph_pattern"))}</dd></div>
+        <div><dt>Provisional engineer signal</dt><dd>${escapeHtml(topLabel(rows, "engineer_failure_label"))}</dd></div>
+        <div><dt>Provisional trace-pattern signal</dt><dd>${escapeHtml(topLabel(rows, "global_graph_pattern"))}</dd></div>
       </dl>
     </article>
   `;
@@ -771,7 +935,7 @@ function renderCaseStudies(): string {
   `;
 }
 
-function renderReproducibility(): string {
+function renderReproducibility(snapshot: SnapshotDoc): string {
   return `
     <section class="section repro-section">
       <div class="section-head">
@@ -786,34 +950,36 @@ function renderReproducibility(): string {
         <p><span>Canonical CSV</span> data/analysis/lean_easy_failure_patterns.csv</p>
         <p><span>Report CSV copy</span> docs/lean_easy_failure_report/public/data/lean_easy_failure_patterns.csv</p>
         <p><span>Trace JSON copy</span> docs/lean_easy_failure_report/public/data/lean_easy_failure_traces.json</p>
+        <p><span>Snapshot manifest</span> docs/lean_easy_failure_report/public/data/report_snapshot.json</p>
+        <p><span>Snapshot SHA-256</span> ${escapeHtml(snapshot.snapshot_sha256)}</p>
         <p><span>Generate</span> python scripts/analyze_lean_easy_failures.py --input-dir data/batch --dataset-root dataset/Lean</p>
-        <p><span>Build report</span> cd docs/lean_easy_failure_report && npm.cmd run build</p>
+        <p><span>Build both exports</span> cd docs/lean_easy_failure_report && npm.cmd run build:mobile</p>
       </div>
     </section>
   `;
 }
 
 function render(): void {
-  if (!app) {
+  if (!app || !state.snapshot) {
     return;
   }
   const summary = summarize(state.rows);
   const rows = filteredRows();
   app.innerHTML = `
-    ${renderHeader(summary)}
+    ${renderHeader(summary, state.snapshot)}
     <main>
       <div class="source-strip">
-        <span>Data: 100 JSONL traces -> CSV rows</span>
-        <span>Proposal: O1/O2 supported, O3 not claimed</span>
-        <span>MD: failure guide + repo layout rules</span>
+        <span>Data: 100 raw JSONL = 100 CSV = 100 trace documents</span>
+        <span>O1/O2: exploratory evidence, validation pending</span>
+        <span>Outcome ≠ incident ≠ inferred cause</span>
       </div>
       ${renderLeanReader()}
       ${renderCsvExplorer(rows)}
-      ${renderProposalMapping()}
+      ${renderProposalMapping(state.snapshot)}
       ${renderTaskTable()}
       ${renderTaxonomy()}
       ${renderCaseStudies()}
-      ${renderReproducibility()}
+      ${renderReproducibility(state.snapshot)}
     </main>
   `;
   bindEvents();
@@ -910,10 +1076,13 @@ async function boot(): Promise<void> {
   try {
     const embeddedCsv = document.querySelector<HTMLScriptElement>("#embedded-csv");
     const embeddedTraces = document.querySelector<HTMLScriptElement>("#embedded-traces");
+    const embeddedSnapshot = document.querySelector<HTMLScriptElement>("#embedded-snapshot");
     const text = embeddedCsv?.textContent ?? await fetchCsv();
     const traceText = embeddedTraces?.textContent ?? await fetchTraces();
+    const snapshotText = embeddedSnapshot?.textContent ?? await fetchSnapshot();
     state.rows = parseCsv(text);
     state.traces = JSON.parse(traceText) as TraceDoc[];
+    state.snapshot = JSON.parse(snapshotText) as SnapshotDoc;
     state.fields = Object.keys(state.rows[0] ?? {});
     const csvIds = new Set(state.rows.map((row) => row.trial_id));
     const traceIds = new Set(state.traces.map((trace) => trace.trial_id));
@@ -921,6 +1090,21 @@ async function boot(): Promise<void> {
       throw new Error(
         `CSV/trace mismatch: ${csvIds.size} CSV rows vs ${traceIds.size} trace documents`,
       );
+    }
+    if (
+      state.rows.length !== 100 ||
+      state.traces.length !== 100 ||
+      state.snapshot.trial_count !== 100 ||
+      state.snapshot.task_count !== 10
+    ) {
+      throw new Error(
+        `Expected one 100-trial / 10-task snapshot; found CSV=${state.rows.length}, traces=${state.traces.length}, manifest=${state.snapshot.trial_count}/${state.snapshot.task_count}`,
+      );
+    }
+    for (const [taskId, count] of Object.entries(state.snapshot.per_task_counts)) {
+      if (count !== 10) {
+        throw new Error(`Task ${taskId} has ${count} trials; expected 10`);
+      }
     }
     render();
   } catch (error) {
@@ -946,6 +1130,14 @@ async function fetchTraces(): Promise<string> {
   const response = await fetch(TRACE_URL);
   if (!response.ok) {
     throw new Error(`Failed to load ${TRACE_URL}: ${response.status}`);
+  }
+  return response.text();
+}
+
+async function fetchSnapshot(): Promise<string> {
+  const response = await fetch(SNAPSHOT_URL);
+  if (!response.ok) {
+    throw new Error(`Failed to load ${SNAPSHOT_URL}: ${response.status}`);
   }
   return response.text();
 }

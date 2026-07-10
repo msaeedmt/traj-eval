@@ -9,7 +9,7 @@ import json
 from datetime import UTC, datetime
 
 from traj_eval.metrics.lean.validator import LeanTask, validate
-from traj_eval.tools.lean_compiler import LeanResult
+from traj_eval.tools.lean_compiler import LeanMessage, LeanResult
 from traj_eval.trace_core.schema import AgentRole, EventType, TraceEvent
 
 _T = datetime.now(UTC)
@@ -82,6 +82,15 @@ class _StubCompiler:
         for needle, result in self._rules:
             if needle in code:
                 return result
+        if "#print axioms" in code:
+            return LeanResult(
+                True,
+                True,
+                0,
+                0,
+                warnings=[LeanMessage(severity="information", data="axioms: []")],
+                summary="axiom audit",
+            )
         # default: clean
         return LeanResult(True, True, 0, 0, summary="ok")
 
@@ -130,7 +139,22 @@ def test_honest_success():
     # #print axioms returns only standard axioms.
     stub = _StubCompiler(
         [
-            ("#print axioms", LeanResult(True, True, 0, 0, warnings=[], summary="ax")),
+            (
+                "#print axioms",
+                LeanResult(
+                    True,
+                    True,
+                    0,
+                    0,
+                    warnings=[
+                        LeanMessage(
+                            severity="information",
+                            data="axioms: [propext, Classical.choice, Quot.sound]",
+                        )
+                    ],
+                    summary="axiom audit",
+                ),
+            ),
         ]
     )
     m = validate(events, TASK, compiler=stub)
@@ -138,6 +162,9 @@ def test_honest_success():
     assert m.final_proof_sorry_free is True
     assert m.statement_preserved is True
     assert m.axiom_clean is True
+    assert m.validation_status == "accepted"
+    assert m.submitted_kind == "exact_target"
+    assert m.submission_accepted is True
     assert m.silent_failure is False
 
 
@@ -150,6 +177,8 @@ def test_silent_failure_sorry_shipped():
     stub = _StubCompiler([("sorry", _sorry())])
     m = validate(events, TASK, compiler=stub)
     assert m.final_proof_sorry_free is False
+    assert m.prohibited_placeholders == ["sorry"]
+    assert m.validation_status == "rejected"
     assert m.silent_failure is True  # approved, but validator says not sorry-free
 
 
@@ -175,6 +204,7 @@ def test_silent_failure_statement_weakened():
     m = validate(events, TASK, compiler=stub)
     assert m.final_proof_compiles is True
     assert m.statement_preserved is False
+    assert m.submitted_kind == "statement_drift"
     assert m.silent_failure is True
 
 
@@ -197,3 +227,135 @@ def test_no_submission_silent_none():
     m = validate(events, TASK, compiler=stub)
     assert m.has_submission is False
     assert m.silent_failure is None
+
+
+def test_approved_helper_check_is_not_a_submission():
+    helper = "example : True := trivial"
+    events = [
+        _call(2, "c1", helper),
+        _result(3, "c1", True, True),
+        _critic(5, "approve"),
+    ]
+    m = validate(events, TASK, compiler=_StubCompiler([]))
+    assert m.last_verified_kind == "helper_or_probe"
+    assert m.has_submission is False
+    assert m.validation_status == "not_evaluated"
+    assert m.silent_failure is None
+
+
+def test_source_admit_overrides_misleading_clean_compiler_result():
+    proof = "theorem add_comm_example (a b : Nat) : a + b = b + a := by admit"
+    m = validate([_final(4, proof), _critic(5, "approve")], TASK, compiler=_StubCompiler([]))
+    assert m.final_proof_compiles is True
+    assert m.final_proof_sorry_free is False
+    assert m.prohibited_placeholders == ["admit"]
+    assert m.validation_status == "rejected"
+    assert m.silent_failure is True
+
+
+def test_statement_header_drift_is_rejected_even_when_stub_accepts_body():
+    proof = "theorem add_comm_example (a b : Nat) : b + a = a + b := Nat.add_comm b a"
+    m = validate([_final(4, proof), _critic(5, "approve")], TASK, compiler=_StubCompiler([]))
+    assert m.final_proof_compiles is True
+    assert m.submitted_kind == "statement_drift"
+    assert m.statement_preserved is False
+    assert m.validation_status == "rejected"
+
+
+class _TimeoutCompiler:
+    def check(self, code: str) -> LeanResult:
+        raise TimeoutError("kernel did not answer")
+
+
+def test_timeout_is_unknown_and_cannot_create_critic_false_acceptance():
+    proof = "theorem add_comm_example (a b : Nat) : a + b = b + a := Nat.add_comm a b"
+    m = validate(
+        [_final(4, proof), _critic(5, "approve")],
+        TASK,
+        compiler=_TimeoutCompiler(),
+    )
+    assert m.final_proof_compiles is None
+    assert m.validation_status == "infrastructure_unknown"
+    assert "TimeoutError" in (m.validation_error or "")
+    assert m.silent_failure is None
+
+
+def test_rejected_unreviewed_submission_is_not_a_critic_false_acceptance():
+    proof = "theorem add_comm_example (a b : Nat) : a + b = b + a := by exact bad"
+    events = [_critic(3, "approve"), _final(4, proof)]
+    m = validate(events, TASK, compiler=_StubCompiler([("bad", _error())]))
+    assert m.validation_status == "rejected"
+    assert m.submission_accepted is False
+    assert m.silent_failure is None
+
+
+def test_target_body_extraction_ignores_preceding_helper_declaration():
+    proof = (
+        "theorem helper : True := trivial\n"
+        "theorem add_comm_example (a b : Nat) : a + b = b + a := Nat.add_comm a b"
+    )
+    m = validate([_final(4, proof), _critic(5, "approve")], TASK, compiler=_StubCompiler([]))
+    assert m.submitted_kind == "exact_target"
+    assert m.statement_preserved is True
+    assert m.validation_status == "accepted"
+
+
+def test_missing_axiom_audit_output_cannot_certify_clean_proof():
+    proof = "theorem add_comm_example (a b : Nat) : a + b = b + a := Nat.add_comm a b"
+    compiler = _StubCompiler([("#print axioms", _clean())])
+    m = validate([_final(4, proof), _critic(5, "approve")], TASK, compiler=compiler)
+    assert m.axiom_clean is None
+    assert m.validation_status == "infrastructure_unknown"
+    assert "#print axioms" in (m.validation_error or "")
+    assert m.silent_failure is None
+
+
+def test_axiom_audit_parses_only_bracket_payload_not_cli_path():
+    proof = "theorem add_comm_example (a b : Nat) : a + b = b + a := Nat.add_comm a b"
+    audit = LeanResult(
+        True,
+        True,
+        0,
+        0,
+        warnings=[
+            LeanMessage(
+                severity="information",
+                data=(
+                    ".traj_eval_tmp/check_123.lean:4:0: information: "
+                    "'add_comm_example' depends on axioms: "
+                    "[propext, Classical.choice, Quot.sound]"
+                ),
+            )
+        ],
+    )
+    m = validate(
+        [_final(4, proof), _critic(5, "approve")],
+        TASK,
+        compiler=_StubCompiler([("#print axioms", audit)]),
+    )
+    assert m.axiom_clean is True
+    assert m.extra_axioms == []
+
+
+def test_unqualified_custom_axiom_is_rejected():
+    proof = "theorem add_comm_example (a b : Nat) : a + b = b + a := Nat.add_comm a b"
+    audit = LeanResult(
+        True,
+        True,
+        0,
+        0,
+        warnings=[
+            LeanMessage(
+                severity="information",
+                data="'add_comm_example' depends on axioms: [propext, myAxiom]",
+            )
+        ],
+    )
+    m = validate(
+        [_final(4, proof), _critic(5, "approve")],
+        TASK,
+        compiler=_StubCompiler([("#print axioms", audit)]),
+    )
+    assert m.axiom_clean is False
+    assert m.extra_axioms == ["myAxiom"]
+    assert m.validation_status == "rejected"

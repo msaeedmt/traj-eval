@@ -9,12 +9,37 @@ offline validator.
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from traj_eval.metrics.lean.artifacts import prohibited_placeholders
 from traj_eval.tools.lean_compiler import LeanMessage, LeanResult
+
+
+@dataclass
+class LeanCliResult(LeanResult):
+    """LeanResult plus a tri-state process verdict for offline validation."""
+
+    verification_status: str = "accepted"
+    infrastructure_error: str | None = None
+
+
+def _infrastructure_result(message: str) -> LeanCliResult:
+    diagnostic = LeanMessage(severity="warning", data=message)
+    return LeanCliResult(
+        compiled=False,
+        sorry_free=False,
+        n_sorries=0,
+        n_errors=0,
+        warnings=[diagnostic],
+        summary=message,
+        verification_status="infrastructure_unknown",
+        infrastructure_error=message,
+    )
 
 
 class LeanCliCompiler:
@@ -87,24 +112,28 @@ class LeanCliCompiler:
                 env=env,
             )
         except subprocess.TimeoutExpired as exc:
-            msg = LeanMessage(
-                severity="error",
-                data=f"lean timed out after {self.timeout}s: {exc}",
-            )
-            return LeanResult(
-                compiled=False,
-                sorry_free=False,
-                n_sorries=0,
-                n_errors=1,
-                errors=[msg],
-                summary=msg.data,
-            )
+            return _infrastructure_result(f"lean timed out after {self.timeout}s: {exc}")
+        except OSError as exc:
+            return _infrastructure_result(f"lean process failed: {type(exc).__name__}: {exc}")
         finally:
             path.unlink(missing_ok=True)
 
         output = "\n".join(part for part in (proc.stdout, proc.stderr) if part)
+        opaque_output = output.strip().lower() in {"", "lean failed"}
+        if proc.returncode < 0 or (proc.returncode != 0 and opaque_output):
+            return _infrastructure_result(
+                f"lean process exited with code {proc.returncode} without a diagnostic"
+            )
         compiled = proc.returncode == 0
-        sorry_count = output.lower().count("declaration uses 'sorry'")
+        diagnostic_sorries = len(
+            re.findall(
+                r"declaration\s+uses\s+[`'\"](?:sorry|admit)[`'\"]|\bsorryAx\b",
+                output,
+                flags=re.IGNORECASE,
+            )
+        )
+        source_sorries = len(prohibited_placeholders(code))
+        sorry_count = max(diagnostic_sorries, source_sorries)
         sorry_free = sorry_count == 0
         errors = [] if compiled else [LeanMessage(severity="error", data=output.strip())]
         warnings = []
@@ -119,7 +148,7 @@ class LeanCliCompiler:
         else:
             summary = "compiled: true; sorries: 0; errors: 0"
 
-        return LeanResult(
+        return LeanCliResult(
             compiled=compiled,
             sorry_free=sorry_free,
             n_sorries=sorry_count,
@@ -127,6 +156,7 @@ class LeanCliCompiler:
             errors=errors,
             warnings=warnings,
             summary=summary,
+            verification_status="accepted" if compiled else "rejected",
         )
 
     def as_tool(self):

@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadAndValidateSnapshot, writeManifest } from "./report-data.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const reportRoot = resolve(here, "..");
@@ -17,3 +18,10 @@ if (!existsSync(source)) {
 mkdirSync(dirname(target), { recursive: true });
 copyFileSync(source, target);
 console.log(`synced ${source} -> ${target}`);
+
+const snapshot = loadAndValidateSnapshot({ reportRoot, repoRoot });
+const manifestPath = writeManifest(reportRoot, snapshot.manifest);
+console.log(
+  `validated ${snapshot.manifest.trial_count} trials / ${snapshot.manifest.task_count} tasks; snapshot ${snapshot.manifest.snapshot_sha256}`,
+);
+console.log(`wrote ${manifestPath}`);

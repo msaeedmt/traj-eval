@@ -35,6 +35,9 @@ When your strategy is ready, end your message with exactly this marker line:
 Rules:
 - Keep the strategy concise and concrete. Name the approach and the lemmas.
 - Do NOT write Lean. Do NOT compute a final answer. Strategy only.
+- If the engineer sends compiler or reviewer evidence back to you, explicitly
+  say whether you are keeping or revising the strategy and use that evidence to
+  improve the next attempt. Do not repeat the same strategy unchanged.
 - When you are NOT calling a tool, end your message with `HANDOFF: engineer`, or
   the team cannot proceed.
 """
@@ -160,6 +163,8 @@ Rules:
   error is a local Lean syntax/API issue, continue repairing. If the theorem
   strategy, lemma choice, or statement interpretation seems wrong, summarize the
   compiler error and end with `HANDOFF: reasoner`.
+- When handing back to the reasoner, include the concrete compiler evidence and
+  name the strategic decision that needs revision.
 - When you are NOT calling a tool, you MUST end the message with a HANDOFF line,
   or the team cannot proceed.
 """

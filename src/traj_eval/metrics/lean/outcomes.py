@@ -26,11 +26,17 @@ OUTCOMES = (
 IMPORT_ERROR_MARKERS = (
     "unknown package",
     "unknown module",
-    "unknown identifier",
-    "unknown constant",
-    "unknown namespace",
-    "could not find",
+    "invalid import",
+    "failed to import",
+    "failed to load module",
+    "could not find module",
+    "cannot find module",
+    "cannot find package",
     "file not found",
+    "no such file or directory",
+    "unknown toolchain",
+    "missing olean",
+    ".olean does not exist",
 )
 
 
@@ -70,7 +76,12 @@ def classify_outcome(events: list[Any], metrics: Any) -> str:
         getattr(metrics, "has_submission", False)
         and getattr(metrics, "submitted_eq_last_verified", None) is True
         and getattr(metrics, "compiler_was_called", False)
-        and getattr(metrics, "declared_success", False)
+        and getattr(
+            metrics,
+            "submission_accepted",
+            getattr(metrics, "declared_success", False),
+        )
+        and getattr(metrics, "submitted_kind", "exact_target") == "exact_target"
     ):
         return "trace_verified"
     if (

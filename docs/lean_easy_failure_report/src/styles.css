@@ -642,6 +642,14 @@ button:focus-visible {
   margin: 6px 0 0;
 }
 
+.validation-error {
+  border-left: 4px solid var(--warn);
+  background: #fff1ec;
+  padding: 10px 12px;
+  color: #67301f;
+  overflow-wrap: anywhere;
+}
+
 .proof-panel h4 {
   margin: 16px 0 8px;
   color: #26342e;
@@ -695,6 +703,14 @@ button:focus-visible {
 .timeline-step .lean-code,
 .timeline-step p {
   margin: 10px;
+}
+
+.tool-diagnostic {
+  margin: 10px;
+  border-left: 3px solid var(--warn);
+  padding-left: 10px;
+  color: #67301f;
+  white-space: pre-wrap;
 }
 
 .timeline-list {
@@ -762,6 +778,55 @@ button:focus-visible {
 .case-card p {
   margin-bottom: 0;
   color: #445048;
+}
+
+.evidence-ledger {
+  display: grid;
+  gap: 1px;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.evidence-ledger div {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.35fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+  background: #fffefa;
+}
+
+.evidence-ledger span {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.evidence-ledger strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #26342e;
+  font-size: 13px;
+}
+
+.total-check {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.total-check.pass {
+  background: #def7e9;
+  color: #12633f;
+}
+
+.total-check.fail {
+  background: #ffe3dc;
+  color: #a33518;
 }
 
 .count-grid {
@@ -885,6 +950,10 @@ button:focus-visible {
   .reader-controls,
   .reader-layout,
   .evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence-ledger div {
     grid-template-columns: 1fr;
   }
 

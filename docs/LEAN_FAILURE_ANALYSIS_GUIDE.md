@@ -1,306 +1,243 @@
-# Lean Failure Analysis Guide
-
-This guide defines how to analyze the existing Lean-agent JSONL traces. It is
-an analysis guide, not a new runtime design.
-
-Keep the workflow small:
-
-```text
-math question -> global causal trace -> reasoner strategy -> engineer code path -> critic review -> validator result
-```
-
-Do not add a dashboard, database, new trace schema, graph visualization, or new
-runtime before this analysis is useful on the current easy traces.
-
-## 1. Per-Question Math Analysis
-
-Start with the theorem itself before reading the agent trace. This prevents
-mixing up theorem difficulty, Lean API friction, and agent behavior.
-
-For each task, write:
-
-```text
-math_question
-naive_human_strategy
-domain_specific_LLM_strategy
-key_Lean_objects_or_lemmas
-expected_difficulty_for_human
-expected_difficulty_for_LLM_Lean_agent
-```
-
-The naive human strategy should be written for mathematical understanding, not
-for showing off automation. Prefer plain proof structure.
-
-Also write a domain-specific LLM strategy. This is the scalable reference:
-instead of hand-designing every proof as a human, define the operational proof
-plan a strong Lean-specialized model should infer from the theorem domain. The
-human strategy explains the math; the domain-specific LLM strategy explains how
-that math should become a Lean action plan.
-
-The domain-specific LLM strategy should include:
-
-```text
-domain_family
-target_shape
-canonical_unfolds
-likely_lemmas_or_APIs
-proof_skeleton
-known_API_traps
-validation_checklist
-```
-
-Example:
-
-```text
-FATEM111
-Question: if a^2 = 0, prove a*x + x*a commutes with a.
-Naive strategy: unfold Commute, expand both sides, use associativity,
-distributivity, and a*a = 0.
-Domain-specific LLM strategy: classify as noncommutative ring plus Commute.
-Unfold Commute, rewrite a^2 = 0 to a*a = 0, expand with add_mul, mul_add,
-mul_assoc, and pow_two, and avoid proving only a helper theorem.
-Risk: noncommutative ring manipulation plus the Commute API.
-```
-
-Example:
-
-```text
-FATEM115
-Question: prove transitivity is preserved by reversing a relation.
-Naive strategy: unfold Transitive. In each direction, reverse the order of the
-two relation hypotheses.
-Domain-specific LLM strategy: classify as relation/transitivity. Unfold
-Transitive, solve each direction by swapping hypothesis order, preserve the
-exact target statement, and watch Transitive versus IsTrans API confusion.
-Risk: Transitive vs IsTrans API confusion.
-```
-
-## 2. Global Graph / Coordination Analysis
-
-After the math framing, follow the JSONL causal graph and event sequence. This
-is the global guide for reading the run before blaming any single role.
-
-Use the existing trace tools:
-
-```text
-read_trial(path) -> events
-build_graph(events)
-causal_order(events)
-extract_artifacts(events)
-detect_perseveration(tool_calls)
-```
-
-Ask:
-
-```text
-How many agent turns happened?
-How many tool calls happened?
-Which role dominates the trace?
-Where is the first meaningful divergence?
-Does the agent stick to one strategy or revise it?
-Are revisions productive, or just drift?
-Is there a dead loop or perseveration?
-Does control return to the right agent after a failure?
-Does reasoner-engineer-critic communication help, or add noise?
-```
-
-Use simple global labels:
-
-```text
-productive_revision
-strategy_drift
-dead_loop
-perseveration
-critic_masking
-tool_overuse
-tool_underuse
-reasoner_engineer_mismatch
-engineer_critic_mismatch
-free_routing_failure
-```
-
-The graph-level question is:
-
-```text
-What did the system do as a substrate, not only what answer did it produce?
-```
-
-## 3. Reasoner Strategy Analysis
-
-Inspect reasoner messages and search/tool calls.
-
-Ask:
-
-```text
-Did the reasoner identify the theorem shape?
-Did it propose a mathematically valid proof strategy?
-Did it choose the right Lean objects or API?
-Did it use search_lemmas appropriately?
-Did it revise after compiler evidence?
-Did revision improve the proof, or drift to a different theorem/API?
-```
-
-Use simple reasoner labels:
-
-```text
-valid_strategy
-partially_valid_strategy
-wrong_api_strategy
-wrong_statement_strategy
-strategy_drift
-no_real_strategy
-```
-
-Compare the reasoner strategy against the naive human strategy. A strategy can
-be mathematically valid but still too vague for Lean. Record that distinction.
-
-## 4. Engineer Failure Analysis
-
-Inspect engineer tool calls, submitted proof, compile results, and handoffs.
-
-Ask:
-
-```text
-Did the engineer implement the reasoner strategy?
-Did the engineer call check_lean before handoff?
-Did the engineer prove the original statement or a changed statement?
-Was the failure an import, API, application, typeclass, or type mismatch?
-Did the engineer hallucinate a lemma, class, theorem, or notation?
-Did the engineer ask the reasoner for more guidance?
-Did the engineer ask the critic for confidence even when compiling failed?
-Did the engineer repeatedly submit similar failing code?
-```
-
-Use simple engineer labels:
-
-```text
-import_failure
-application_type_mismatch
-typeclass_failure
-hallucinated_lemma
-wrong_statement
-api_confusion
-no_submission
-compile_loop
-verified_then_changed
-```
-
-The engineer-level question is:
-
-```text
-Did the code path faithfully implement the intended strategy and original theorem?
-```
-
-## 5. Critic Review Analysis
-
-Inspect critic messages, decisions, and tool calls.
-
-Ask:
-
-```text
-Did the critic call check_lean?
-Did the critic approve without compiling?
-Did the critic check statement match, not only compile success?
-Did the critic approve a false proof?
-Did the critic send the task back to the engineer?
-Did the critic notice wrong API or changed theorem?
-Did the critic's confidence match validator evidence?
-```
-
-Use simple critic labels:
-
-```text
-critic_compile_checked
-critic_no_compile_check
-critic_statement_checked
-critic_shallow_approval
-critic_false_accept
-critic_sent_back
-critic_missing
-```
-
-The critic-level question is:
-
-```text
-Was the critic an independent verifier, or only a conversational approver?
-```
-
-## Minimal Evidence Table
-
-The first implementation should produce one human-readable row per trial:
-
-```text
-task_id
-trial_id
-math_question
-naive_human_strategy
-domain_specific_LLM_strategy
-global_graph_pattern
-reasoner_strategy_summary
-reasoner_strategy_label
-engineer_behavior_summary
-engineer_failure_label
-critic_behavior_summary
-critic_label
-validator_outcome
-first_failure_stage
-math_diagnosis
-dataset_label_diagnosis
-```
-
-This table is not a new trace schema. It is a report artifact derived from the
-existing JSONL traces.
-
-## YAGNI Boundary
-
-Do not build:
-
-```text
-dashboard
-database
-new trace schema
-new runtime
-graph visualization first
-general multi-benchmark framework
-```
-
-Use the current data first:
-
-```text
-data/batch/*_t*.jsonl
-```
-
-The first implementation after this guide should only create:
-
-```text
-data/analysis/lean_easy_failure_patterns.csv
-docs/LEAN_EASY_FAILURE_PATTERN_ANALYSIS.md
-```
-
-## Acceptance Criteria
-
-One trial is well analyzed only when the report answers:
-
-```text
-What was the math question?
-What was the expected human strategy?
-What does the causal graph show globally?
-What did the reasoner try?
-Did the engineer follow it?
-What failed in Lean coding?
-Did the critic review correctly?
-What did the validator say?
-```
-
-Advisor-facing conclusions should be supported by trace evidence, for example:
-
-```text
-FATEM111 is valid but agent-hard because the expected strategy requires
-noncommutative algebra and Commute expansion.
-
-FATEM115 is valid and human-easy, but failures come from Transitive/IsTrans API
-confusion and critic statement-match weakness.
-
-Some failures are coordination or review failures visible only in the trajectory
-graph, not theorem difficulty.
-```
+# Lean Trajectory Failure Analysis Guide
+
+This guide defines the evidence contract for diagnosing the 100 existing Lean
+agent traces in **data/batch/**. It is an analysis of immutable runs, not a
+claim that every possible agent failure has been enumerated.
+
+No published taxonomy is exhaustive. The report therefore uses a layered,
+multi-label model: an observed compiler symptom, its supported causal
+interpretation, the verification layer that detected it, and its effect on the
+rest of the trajectory are stored separately.
+
+## Scientific status
+
+This dataset is the fully step-verifiable Lean comparison in the trajectory
+proposal, but only the kernel can supply final proof truth.
+
+- **O1 — localisation: partial evidence.** Event IDs and causal edges exist, but
+  all raw event anchors are null. The report may localise reviewed incidents to
+  an event; it cannot report validated first-anchor precision/recall.
+- **O2 — classification: exploratory evidence.** All 100 traces have
+  agent-reviewed labels, but there is no independent expert gold set. Do not
+  claim the proposal's precision/recall target of 0.8.
+- **O3 — comparison/early warning: not tested.** These traces use one
+  architecture, backbone, grounding setting, and stress level.
+- **Warehouse evidence used:** the private warehouse has no matched Lean control
+  for this slice. STARGAZER rankings are excluded from Lean counts.
+
+The reviewed trace-only partition is 55 approved exact-target candidates, four
+approved statement drifts, one exact target without critic approval, and 40
+incomplete workflows. Across 341 check_lean attempts, 123 were accepted, 132
+were real Lean rejections, and 86 returned an opaque infrastructure-unknown
+result. These are process facts, not final kernel revalidation results.
+
+## Literature clarification
+
+The operational labels combine complementary sources:
+
+- [FATE](https://arxiv.org/abs/2511.02872): natural-language gaps,
+  hallucination/no progression/reasoning problems, Mathlib hallucination, Lean
+  proficiency, general-capability failures, and informal-to-formal
+  misalignment.
+- [LeanCat](https://arxiv.org/abs/2512.24796): mathematical failures,
+  grammar/elaboration errors, library hallucination, missing bridges, and
+  specification alteration.
+- [MAST](https://arxiv.org/abs/2503.13657): system-design, inter-agent
+  misalignment, stopping, repetition, information sharing, and incomplete or
+  incorrect verification failures.
+- [Faults in Our Formal Benchmarking](https://arxiv.org/abs/2606.29493):
+  specification/fidelity defects, evaluation loopholes, and version drift. A
+  kernel proves the supplied formal proposition; it does not prove that a
+  benchmark faithfully expresses an informal problem.
+- [AgentRx](https://arxiv.org/abs/2602.02475): retain every incident, but define
+  the critical failure as the first event after which the unsuccessful
+  trajectory never recovers.
+
+These sources clarify the search space; they do not license a universal
+"all agent errors" claim.
+
+## Evidence layers
+
+Keep these layers independent:
+
+1. **Raw trace fact:** message, tool call, tool result, compiler diagnostic,
+   handoff, or critic decision.
+2. **Observed symptom:** what is directly visible, such as
+   application_type_mismatch or opaque_compiler_failure.
+3. **Causal label:** a bounded interpretation supported by the evidence, such
+   as lean_type_failure or missing_critic_review.
+4. **Recovery:** whether a later sorry-free target check repaired the incident.
+5. **Critical failure:** the first unrecovered incident, or null for a
+   successful/recovered trajectory.
+6. **Verification:** trace-only, kernel accepted/rejected, or infrastructure
+   unknown.
+7. **Downstream effect:** missing target, changed statement, incomplete review,
+   or critic masking.
+
+A successful trial can contain recovered failures. An unsuccessful trial can
+contain successful helper/probe checks. Neither fact is contradictory.
+
+## Operational taxonomy
+
+### Benchmark and harness
+
+Use only with benchmark-level evidence:
+
+- specification defect
+- informal/formal fidelity mismatch
+- evaluation loophole
+- dependency or version drift
+
+An unknown constant written by an agent is not an import/environment failure.
+invalid_import_path is an agent API/library error unless the required module is
+demonstrably missing from the pinned environment.
+
+### Retrieval and reasoning
+
+- no_actionable_plan
+- mathematical gap or false reasoning
+- query drift or perseveration
+- API/library hallucination
+- reasoning/action mismatch
+
+Do not infer a mathematical error from a compiler message alone. When the trace
+only shows an opaque failed tool response, use tooling_diagnostic_unknown with
+confidence not_observable.
+
+### Lean formalisation symptoms
+
+- unknown_symbol
+- parser_or_syntax_error
+- application_type_mismatch
+- type_mismatch
+- typeclass_resolution
+- invalid_field_projection
+- tactic_failure
+- unsolved_goals
+- invalid_import_path
+- opaque_compiler_failure
+- other_lean_diagnostic
+- sorry_pseudo_pass
+- statement_drift
+- regression_after_success
+
+The corresponding causal labels are deliberately broader:
+lean_elaboration_failure, lean_type_failure, lean_tactic_failure,
+api_or_library_hallucination, helper_substitution, and statement_drift.
+
+### Coordination and stopping
+
+- premature_termination
+- missing_critic_review
+- perseveration
+- missing handoff or context loss
+- incomplete workflow
+
+The current runner does not log an explicit event-budget termination reason.
+Therefore premature_termination is tentative when inferred only from the trace
+ending.
+
+### Critic and verification
+
+- incomplete_verification
+- incorrect_verification
+- missed_statement_drift
+- critic_masking
+
+critic_false_accept applies when the workflow approves an artifact that either
+contradicts the critic's own relevant failed recheck or is independently
+rejected by the strict kernel gate. The narrower critic_masking label requires
+the trace-internal contradiction; therefore all four approved statement drifts
+are false accepts, but only the approval after a failed recheck is critic
+masking. Kernel-off trace_verified is never, by itself, a false accept.
+
+## Exact target contract
+
+For this analysis, the dataset theorem type is the contract.
+
+- Ignore comments and whitespace when comparing the declaration, but preserve
+  the supplied theorem name as part of the header contract.
+- Preserve parameters, typeclass assumptions, and proposition exactly.
+- A compiled helper theorem, example, or #check is not the target.
+- Transitive to IsTrans is statement drift even if mathematically equivalent.
+- sorry and admit are prohibited placeholders, not proof success.
+- A candidate is submitted only when the workflow explicitly accepts the
+  verified target. A previous successful probe cannot be silently promoted to a
+  submission.
+
+Kernel validation must independently check:
+
+1. candidate compilation;
+2. absence of sorry/admit;
+3. the proof body under the original dataset statement;
+4. absence of non-standard axioms.
+
+The canonical analyzer defaults to **--kernel required** and writes no report
+when the pinned Lean environment is unavailable. **--kernel auto** and
+**--kernel off** are explicit provisional modes.
+
+## Review record
+
+**data/analysis/lean_easy_failure_reviews.jsonl** contains exactly one
+hash-bound record per trial:
+
+~~~
+trial_id, task_id, source_file, source_sha256
+review_status, review_confidence
+candidate { kind, event_seq, statement_match, workflow_approved,
+            submission_accepted, kernel_status }
+workflow { outcome, approval_event_seq, critic_check_count }
+symptom_codes[], causal_labels[], incidents[]
+critical_failure | null
+recovered_failure_seqs[], downstream_effects[]
+assessments, trace_evidence, task_diagnosis
+~~~
+
+Each incident includes an evidence event, role, symptom, supported causal
+labels, recovery status, confidence, and a short evidence excerpt. Allowed
+confidence values are:
+
+- confirmed: directly visible statement/decision/diagnostic;
+- strong: well-supported interpretation with no known contradiction;
+- tentative: plausible but the trace omits a decisive event;
+- not_observable: the tool result has no usable diagnostic.
+
+The analyzer refuses a review when the raw SHA-256, event references, taxonomy
+codes, candidate classification, or workflow classification no longer match the
+trace.
+
+## Per-task reading sequence
+
+For every trial:
+
+1. Read the supplied theorem and write the plain mathematical proof strategy.
+2. State the Lean-specific strategy and likely API traps.
+3. Pair each check_lean call with its result; count search_lemmas separately.
+4. Classify every failed result without discarding recovered errors.
+5. Distinguish exact target, changed statement, helper/probe, and no candidate.
+6. Inspect reasoner-to-engineer handoff and whether revisions use compiler
+   evidence.
+7. Inspect critic rechecks and the final accepted candidate.
+8. Select the first unrecovered incident, not the first error in the file.
+9. Apply independent kernel validation before making correctness claims.
+
+The graph view is an event timeline with declared causal edges. In this slice,
+97 traces are connected linear chains and three are two-component timelines.
+There is no branching or merging evidence that would justify a stronger graph-
+causal claim.
+
+## Acceptance criteria
+
+The 100-trial analysis is ready only when:
+
+- raw JSONL SHA-256 hashes are unchanged;
+- review and trace IDs match exactly;
+- all event references and taxonomy codes validate;
+- exact-target, statement-drift, helper/probe, and missing candidates are
+  separate;
+- recovered incidents never become terminal labels;
+- every unsuccessful workflow has a critical incident or an explicit
+  not_observable explanation;
+- CSV and report JSON share one snapshot hash and the same 100 trial IDs;
+- kernel-unavailable reports say provisional and make no O1/O2 detector-quality
+  or O3 comparison claim.

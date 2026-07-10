@@ -28,7 +28,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from autogen import GroupChat, GroupChatManager, LLMConfig, UserProxyAgent, register_function
+from autogen import GroupChat, GroupChatManager, LLMConfig, UserProxyAgent
 
 from traj_eval.agents.markers import VERDICT_APPROVE, parse_handoff
 from traj_eval.agents.observer import StepContext
@@ -207,15 +207,13 @@ def build_free_routing_team(
 
     # Register each tool with the roles allowed to call it.
     for tool_name, fn in tools.items():
+        executor.register_for_execution(name=tool_name)(fn)
         for role, spec in config.roles.items():
             if tool_name in spec.tools and role in agents:
-                register_function(
-                    fn,
-                    caller=agents[role],
-                    executor=executor,
+                agents[role].register_for_llm(
                     name=tool_name,
                     description=fn.__doc__ or tool_name,
-                )
+                )(fn)
 
     members = [user, executor, *[agents[r] for r in config.roles if r in agents]]
     state = _RunState()

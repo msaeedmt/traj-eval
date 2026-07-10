@@ -29,6 +29,9 @@ from traj_eval.agents.roles import make_critic_free, make_engineer_free, make_re
 from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import AgentRole
 
+RECOVERY_TRIANGLE_V1 = "recovery_triangle_v1"
+SUPPORTED_LEAN_SETUPS = (RECOVERY_TRIANGLE_V1,)
+
 
 def lean_routing_config(*, max_turns: int = 40) -> RoutingConfig:
     """The reasoner -> engineer <-> critic coordination graph for Lean."""
@@ -60,6 +63,7 @@ def build_lean_free_team(
     llm_config: LLMConfig,
     *,
     tools: dict[str, Callable[..., Any]],
+    setup: str = RECOVERY_TRIANGLE_V1,
     max_turns: int = 40,
     ledger: RoutingLedger | None = None,
     step_context: StepContext | None = None,
@@ -72,6 +76,9 @@ def build_lean_free_team(
     requests for it will be (correctly) unroutable -- itself an observable
     coordination outcome.
     """
+    if setup not in SUPPORTED_LEAN_SETUPS:
+        raise ValueError(f"Unsupported Lean team setup: {setup}")
+
     config = lean_routing_config(max_turns=max_turns)
     agents = {
         AgentRole.REASONER: make_reasoner(llm_config),

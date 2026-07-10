@@ -15,6 +15,7 @@ uv.lock.bak
 *.olean
 /lake-packages/
 /.lake/
+/dataset/Lean/.traj_eval_tmp/
 build/
 
 # Trial logs & datasets are large / regenerable: track structure, not contents
@@ -22,6 +23,8 @@ build/
 !/data/.gitkeep
 /runs/
 *.jsonl
+!/data/analysis/
+!/data/analysis/lean_easy_failure_reviews.jsonl
 
 # Secrets — never commit API keys
 .env
