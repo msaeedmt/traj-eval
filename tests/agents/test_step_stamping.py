@@ -94,3 +94,28 @@ def test_no_context_means_no_stamp(tmp_path):
 
     _, events = read_trial(path)
     assert "step_idx" not in events[0].payload
+
+
+def test_routing_reason_is_stamped_with_causal_parent(tmp_path):
+    from traj_eval.agents.observer import make_trial_meta
+    from traj_eval.agents.routing import RoutingLedger
+    from traj_eval.trace_core.storage import TrialLogWriter
+
+    path = tmp_path / "t.jsonl"
+    meta = make_trial_meta("t", task_id="x", backbone="dummy", testbed="lean")
+    ledger = RoutingLedger()
+    ledger.record_emit(AgentRole.EXECUTOR, "compile-result")
+    ledger.record_routing(
+        AgentRole.REASONER,
+        ["compile-result"],
+        reason="failed_compile_recovery",
+    )
+    writer = TrialLogWriter(path, meta)
+    obs = TraceObserver(writer, trial_id="t", ledger=ledger)
+
+    _emit(obs, AgentRole.REASONER, "revise the blocked strategy")
+    writer.close()
+
+    _, events = read_trial(path)
+    assert events[0].caused_by == ["compile-result"]
+    assert events[0].payload["route_reason"] == "failed_compile_recovery"

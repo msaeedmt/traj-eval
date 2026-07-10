@@ -44,9 +44,11 @@ explicit critic rejection sent to the engineer. A productive recovery requires
 that revision to reach a later successful compile and a kernel-valid final
 proof. Runtime fallback routes are reported separately.
 
-The runtime may validate an expressed target, execute a tool, return its result
-to the caller, and stop a stuck run. It must not choose a semantic next agent
-because a compile failed; that decision remains with Qwen.
+In the A2 marker setup, the runtime validates an expressed target, executes a
+tool, returns its result, and stops a stuck run; Qwen owns every semantic route.
+The focused E1 setup tests one stronger mechanism: after three failed proof
+compiles on one subgoal, the runtime visibly routes back to the reasoner. The
+runtime chooses only the recovery role, not the revised mathematical strategy.
 
 ## Agent Setup Ladder
 
@@ -58,8 +60,9 @@ because a compile failed; that decision remains with Qwen.
 | A3 | On-demand strategy critic | Fresh-context critique helps when A2 never reroutes | Only if eligible A2 failures have zero evidence-backed revisions |
 | A4 | Dual isolated engineers | Independent proof attempts improve diversity | Only with equal total token/tool budget |
 | A5 | Verified fact memory | Compiler-approved lemmas help compound tasks | Multi-theorem work only |
+| E1 | `tool_routed_subgoals_v1` | Bounded forced replanning and per-subgoal critic gates can produce observable non-linear recovery | Three FATEM115 feasibility trials only |
 
-The pilot routing surface is deliberately small:
+The completed A2 routing surface is deliberately small:
 
 ```text
 reasoner -> engineer
@@ -69,13 +72,29 @@ critic -> check_lean -> critic
 critic -> engineer | APPROVE
 ```
 
+E1 uses registered tools rather than text markers:
+
+```text
+reasoner -> plan_subgoal/read_subgoals/route_next_agent
+engineer -> check_lean/submit_subgoal/route_next_agent
+critic -> review_lean/review_subgoal/finish_run/route_next_agent
+third failed proof compile -> reasoner (runtime-enforced and trace-labelled)
+```
+
+The subgoal state is a trial-local DAG with at most six nodes. A valid plan has
+at least two independent leaf nodes and one integration node. A critic can
+accept a subgoal only after independently compiling the exact submitted hash;
+the run finishes only when every node is accepted and the final dependency
+cone covers every other node.
+
 ## FrenzyMath Adoption
 
 FrenzyMath projects are adapters and external baselines, not code to merge into
 the current runtime.
 
-- [Archon](https://github.com/frenzymath/Archon): later project-scale Lean
-  baseline for DAG planning, protected declarations, and specialist subagents.
+- [Archon](https://github.com/frenzymath/Archon): source of design principles
+  for bounded DAG planning and visible state updates. E1 adapts those principles
+  locally; it copies no Archon code and adds no Archon dependency.
 - [Danus](https://github.com/frenzymath/Danus): source for the later rule that
   only verifier-approved facts enter shared memory.
 - [Rethlas](https://github.com/frenzymath/Rethlas): generator-verifier reference,
@@ -92,6 +111,11 @@ the current runtime.
 Do not change roles and tools in the same comparison. After A2, test a role
 change or a tool change, never both at once.
 
+E1 intentionally changes routing, state, and review gates together. It is
+therefore a mechanism-feasibility study, not a causal architecture comparison.
+Its traces can support O1 localization and O2 taxonomy refinement, but cannot
+support O3 improvement claims.
+
 ## Pilot Output
 
 The ignored output directory is:
@@ -106,6 +130,21 @@ data/experiments/qwen_recovery_triangle_v1/
 `TrialMeta` records setup, prompt revision, routing policy, tools, model, and
 turn cap. The raw trace schema remains `0.2.0` and old traces remain readable.
 
+The E1 ignored output directory is:
+
+```text
+data/experiments/qwen_tool_routed_subgoals_v1/
+  easy_fatem_115_t0.jsonl
+  easy_fatem_115_t1.jsonl
+  easy_fatem_115_t2.jsonl
+  summary.json
+  summary.md
+```
+
+E1 is bounded to 80 routing decisions, three consecutive failed proof compiles
+before forced reasoner recovery, and two forced replans per trial. Existing
+`data/batch` and A2 traces are read-only experiment history.
+
 ## Decision Rule
 
 - No failed-compile opportunities: pilot is inconclusive.
@@ -115,6 +154,11 @@ turn cap. The raw trace schema remains `0.2.0` and old traces remain readable.
 - At least one productive recovery: scale A2 to 10 trials per task.
 - Claim architecture improvement only after a matched 10 x 10 comparison,
   single-agent control, paired bootstrap, and effect-size reporting.
+
+For E1, first ask whether Qwen adopts the routing tools, defines and reviews
+subgoals, revises after forced recovery, and reaches a verifier-backed finish.
+Solve rate is descriptive because the three trials are unmatched and target a
+single previously unsolved task.
 
 ## A2 Pilot Result
 
@@ -133,3 +177,18 @@ The deterministic gate therefore selects A3, `on_demand_strategy_critic`, as
 the next experiment. This is O1/O2 pilot evidence only; O3 remains unclaimed.
 The local evidence is in
 `data/experiments/qwen_recovery_triangle_v1/summary.json`.
+
+## E1 Focused Pilot
+
+E1 targets only `easy_fatem_115`, which remained unsolved in the A2 pilot. It
+tests whether a concrete state graph and bounded recovery interrupt the nearly
+linear reasoner-to-engineer pattern. The implementation records tool routes,
+forced recoveries, strategy revisions, accepted/rejected subgoals, critic gate
+denials, and verified completion in the existing causal trace and summary.
+
+Modern memory management, dynamic skill loading, arXiv/web search, and book
+retrieval are deferred. A single Lean theorem does not yet justify persistent
+memory, and adding retrieval would confound the routing intervention. Any later
+external retrieval must record source provenance; any API-backed change to
+stored history requires explicit user authorization. Only verifier-approved
+facts may enter a future shared proof memory.

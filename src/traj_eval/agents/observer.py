@@ -220,12 +220,15 @@ class TraceObserver:
         # Routing-derived parents, if a ledger is wired. Empty otherwise (the
         # pure 2a behaviour). take_pending consumes the decision exactly once.
         caused_by = self._ledger.take_pending(role) if self._ledger else []
+        route_reason = self._ledger.take_pending_reason(role) if self._ledger else None
 
         # Common payload: who/whom, plus the type-specific body below.
         payload: dict[str, Any] = {
             "sender": sender.name,
             "recipient": getattr(recipient, "name", str(recipient)),
         }
+        if route_reason:
+            payload["route_reason"] = route_reason
 
         # Type-specific body (Step 4c). Tool messages travel the same path as
         # plain messages and are told apart only by shape, so the payload shape

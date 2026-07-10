@@ -47,8 +47,10 @@ from traj_eval.agents.free_routing import finalize_run
 from traj_eval.agents.lean_team import (
     RECOVERY_TRIANGLE_V1,
     SUPPORTED_LEAN_SETUPS,
+    TOOL_ROUTED_SUBGOALS_V1,
     build_lean_free_team,
 )
+from traj_eval.agents.subgoal_state import SubgoalLedger, make_subgoal_tools
 from traj_eval.dataset.loader import ProblemRecord, load_dataset, to_lean_task
 from traj_eval.detectors.perseveration import detect_perseveration
 from traj_eval.metrics.communication import CommunicationSummary, summarize_communication
@@ -85,18 +87,27 @@ def _trace_is_valid(path: Path) -> bool:
     return True
 
 
-def _task_prompt(record: ProblemRecord) -> str:
+def _task_prompt(
+    record: ProblemRecord, *, setup: str = RECOVERY_TRIANGLE_V1
+) -> str:
     context_note = (
         f"\n\nThe theorem is stated in this context (already in scope; do not restate it, "
         f"and keep these when you write the proof):\n{record.context}"
         if record.context
         else ""
     )
+    coordination = (
+        "Use the typed subgoal tools to decompose, verify, review, and route. "
+        "Build at least two leaf subgoals plus one final integration subgoal. "
+        "Do not use HANDOFF or VERDICT text markers."
+        if setup == TOOL_ROUTED_SUBGOALS_V1
+        else "Each role chooses its next allowed action."
+    )
     return (
         f"Prove this Lean 4 theorem (source: {record.source}, difficulty: {record.difficulty}).\n\n"
         f"Informal statement:\n{record.informal}\n\n"
         f"Formal statement to prove:\n{record.statement}{context_note}\n\n"
-        "Each role chooses its next allowed action. Use search_lemmas and check_lean "
+        f"{coordination} Use search_lemmas and compiler tools "
         "when they resolve real uncertainty. Hand off only when the receiving role can "
         "act on concrete mathematical, compiler, or review evidence. A non-linear route "
         "is allowed, but extra communication is not itself success. The final proof must "
@@ -145,23 +156,36 @@ def run_one_trial(
     *,
     output_dir: Path = LOG_DIR,
     setup: str = RECOVERY_TRIANGLE_V1,
+    max_turns: int = 30,
+    max_engineer_failures: int = 3,
+    max_forced_replans: int = 2,
 ) -> TrialOutcome:
     from traj_eval.tools.lean_search import make_search_lemmas
 
-    prompt = _task_prompt(record)
+    prompt = _task_prompt(record, setup=setup)
 
     llm_config = build_llm_config()
-    ledger = RoutingLedger()
+    routing_ledger = RoutingLedger()
     step_context = StepContext()
+    search_lemmas = make_search_lemmas(num_results=5)
+    if setup == TOOL_ROUTED_SUBGOALS_V1:
+        subgoal_ledger = SubgoalLedger(
+            max_failures=max_engineer_failures,
+            max_forced_replans=max_forced_replans,
+        )
+        tools = make_subgoal_tools(compiler, subgoal_ledger)
+        tools["search_lemmas"] = search_lemmas
+    else:
+        tools = {
+            "check_lean": compiler.as_tool(),
+            "search_lemmas": search_lemmas,
+        }
     manager, user, groupchat, run_state = build_lean_free_team(
         llm_config,
-        tools={
-            "check_lean": compiler.as_tool(),
-            "search_lemmas": make_search_lemmas(num_results=5),
-        },
+        tools=tools,
         setup=setup,
-        max_turns=30,
-        ledger=ledger,
+        max_turns=max_turns,
+        ledger=routing_ledger,
         step_context=step_context,
     )
 
@@ -176,16 +200,25 @@ def run_one_trial(
         grounding=True,
         config={
             "setup": setup,
-            "prompt_revision": RECOVERY_TRIANGLE_V1,
-            "routing_policy": "agent_chosen_handoffs",
+            "prompt_revision": setup,
+            "routing_policy": (
+                "tool_routed_subgoal_dag"
+                if setup == TOOL_ROUTED_SUBGOALS_V1
+                else "agent_chosen_handoffs"
+            ),
             "provider_route": "openai_compatible",
-            "tools": ["check_lean", "search_lemmas"],
-            "max_turns": 30,
+            "tools": sorted(tools),
+            "max_turns": max_turns,
+            "max_engineer_failures": max_engineer_failures,
+            "max_forced_replans": max_forced_replans,
         },
     )
     writer = TrialLogWriter(log_path, meta)
     observer = TraceObserver(
-        writer, trial_id=f"{record.id}_t{trial}", ledger=ledger, step_context=step_context
+        writer,
+        trial_id=f"{record.id}_t{trial}",
+        ledger=routing_ledger,
+        step_context=step_context,
     )
     observer.attach([a for a in groupchat.agents if a.name != "user"])
     observer.record_task(prompt)
@@ -210,6 +243,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--difficulty", nargs="+", default=["easy"], help="tiers to run")
     ap.add_argument("--trials", type=int, default=3, help="trials per problem")
+    ap.add_argument("--task-id", help="run one exact dataset task id")
     ap.add_argument(
         "--setup",
         choices=SUPPORTED_LEAN_SETUPS,
@@ -217,6 +251,19 @@ def main() -> int:
         help="named Lean agent setup recorded in TrialMeta",
     )
     ap.add_argument("--output-dir", type=Path, default=LOG_DIR, help="isolated trace directory")
+    ap.add_argument("--max-turns", type=int, default=30, help="routing decision budget")
+    ap.add_argument(
+        "--max-engineer-failures",
+        type=int,
+        default=3,
+        help="failed proof compiles before tool-directed reasoner recovery",
+    )
+    ap.add_argument(
+        "--max-forced-replans",
+        type=int,
+        default=2,
+        help="maximum forced reasoner recoveries per trial",
+    )
     ap.add_argument("--skip-existing", action="store_true", help="skip existing valid trace files")
     ap.add_argument(
         "--summarize-existing",
@@ -229,6 +276,10 @@ def main() -> int:
     records: list[ProblemRecord] = []
     for diff in args.difficulty:
         records.extend(load_dataset(DATASET_ROOT, difficulty=diff))
+    if args.task_id:
+        records = [record for record in records if record.id == args.task_id]
+        if not records:
+            ap.error(f"task id not found in selected difficulties: {args.task_id}")
 
     if args.dry_run:
         print(
@@ -286,7 +337,16 @@ def main() -> int:
             print(f"  running {r.id} trial {t + 1}/{args.trials} ...", flush=True)
             try:
                 outcomes.append(
-                    run_one_trial(r, t, compiler, output_dir=args.output_dir, setup=args.setup)
+                    run_one_trial(
+                        r,
+                        t,
+                        compiler,
+                        output_dir=args.output_dir,
+                        setup=args.setup,
+                        max_turns=args.max_turns,
+                        max_engineer_failures=args.max_engineer_failures,
+                        max_forced_replans=args.max_forced_replans,
+                    )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch
                 print(f"    ERROR in {r.id} t{t}: {type(e).__name__}: {str(e)[:200]}")
@@ -336,8 +396,30 @@ def _build_run_summary(
         and outcome.communication.revision_followed_by_compile_success
         for outcome in outcomes
     )
+    verified_completions = sum(
+        outcome.communication.verified_completion for outcome in outcomes
+    )
 
-    if eligible == 0:
+    if setup == TOOL_ROUTED_SUBGOALS_V1:
+        tool_handoffs = sum(outcome.communication.tool_handoffs for outcome in outcomes)
+        accepted_subgoals = sum(
+            outcome.communication.subgoals_accepted for outcome in outcomes
+        )
+        forced_recoveries = sum(
+            outcome.communication.forced_recoveries for outcome in outcomes
+        )
+        revisions = sum(outcome.communication.strategy_revisions for outcome in outcomes)
+        if tool_handoffs == 0:
+            decision = "tool_routing_not_adopted"
+        elif accepted_subgoals == 0:
+            decision = "subgoal_gate_not_reached"
+        elif verified_completions > 0:
+            decision = "feasibility_demonstrated_no_o3_claim"
+        elif forced_recoveries > 0 and revisions == 0:
+            decision = "reasoner_recovery_not_adopted"
+        else:
+            decision = "revise_subgoal_strategy"
+    elif eligible == 0:
         decision = "inconclusive_no_recovery_opportunity"
     elif evidence_backed == 0:
         decision = "advance_to_strategy_critic"
@@ -359,6 +441,13 @@ def _build_run_summary(
         "critic_approvals",
         "critic_rejections",
         "evidence_backed_revisions",
+        "tool_handoffs",
+        "forced_recoveries",
+        "strategy_revisions",
+        "subgoals_defined",
+        "subgoals_accepted",
+        "subgoals_rejected",
+        "critic_gate_denials",
     )
     communication = {
         field: sum(getattr(outcome.communication, field) for outcome in outcomes)
@@ -369,6 +458,7 @@ def _build_run_summary(
             "eligible_recovery_trials": eligible,
             "evidence_backed_revision_trials": evidence_backed,
             "productive_recovery_trials": productive,
+            "verified_completion_trials": verified_completions,
             "engineer_local_repair_trials": sum(
                 outcome.communication.failed_compile_results > 0
                 and outcome.communication.successful_compile_results > 0
@@ -393,7 +483,7 @@ def _build_run_summary(
     )
 
     return {
-        "schema_version": "lean_recovery_triangle_summary_v1",
+        "schema_version": "lean_agent_setup_summary_v1",
         "setup": setup,
         "model": model,
         "expected_trials": expected_trials,
@@ -406,7 +496,7 @@ def _build_run_summary(
         "proposal_status": {
             "O1": "pilot evidence for explicit handoff localisation",
             "O2": "pilot evidence for coordination and recovery labels",
-            "O3": "not claimed from one trial per task",
+            "O3": "not claimed from this feasibility pilot",
         },
         "errors": errors,
         "trials": [
@@ -430,7 +520,7 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
     )
     communication = summary["communication"]
     lines = [
-        "# Qwen Recovery Triangle Pilot",
+        "# Qwen Lean Agent Pilot",
         "",
         f"- Setup: `{summary['setup']}`",
         f"- Model: `{summary['model']}`",
@@ -459,10 +549,17 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
             f"- Engineer-local repair trials: {communication['engineer_local_repair_trials']}",
             f"- Reasoner stall trials: {communication['reasoner_stall_trials']}",
             f"- Critic masking trials: {communication['critic_masking_trials']}",
+            f"- Tool handoffs: {communication['tool_handoffs']}",
+            f"- Forced recoveries: {communication['forced_recoveries']}",
+            f"- Strategy revisions: {communication['strategy_revisions']}",
+            f"- Subgoals accepted: {communication['subgoals_accepted']}",
+            f"- Critic gate denials: {communication['critic_gate_denials']}",
+            "- Verified completion trials: "
+            f"{communication['verified_completion_trials']}",
             "",
             "## Proposal Interpretation",
             "",
-            "This 10-task pilot tests O1/O2 observability of agent-chosen recovery routes.",
+            "This pilot tests O1/O2 observability of tool-routed recovery and review.",
             "It does not support an O3 architecture-improvement claim.",
         ]
     )

@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from traj_eval.agents import make_trial_meta
+from traj_eval.agents.lean_team import TOOL_ROUTED_SUBGOALS_V1
 from scripts.run_batch import (
     TrialOutcome,
     _build_run_summary,
@@ -154,7 +155,19 @@ def test_trace_is_valid_rejects_missing_empty_and_invalid(tmp_path):
     assert _trace_is_valid(invalid) is False
 
 
-def _communication(*, failed=0, revisions=0, recovered=False, approvals=0, handed_off=True):
+def _communication(
+    *,
+    failed=0,
+    revisions=0,
+    recovered=False,
+    approvals=0,
+    handed_off=True,
+    tool_handoffs=0,
+    forced_recoveries=0,
+    strategy_revisions=0,
+    subgoals_accepted=0,
+    verified_completion=False,
+):
     return CommunicationSummary(
         explicit_handoffs=2 if handed_off else 0,
         reasoner_to_engineer=1 if handed_off else 0,
@@ -171,6 +184,11 @@ def _communication(*, failed=0, revisions=0, recovered=False, approvals=0, hande
         revision_followed_by_compile_success=recovered,
         graph_longest_path=4,
         graph_dead_end_fraction=0.2,
+        tool_handoffs=tool_handoffs,
+        forced_recoveries=forced_recoveries,
+        strategy_revisions=strategy_revisions,
+        subgoals_accepted=subgoals_accepted,
+        verified_completion=verified_completion,
     )
 
 
@@ -243,6 +261,50 @@ def test_task_prompt_allows_evidence_backed_free_routing():
 
     assert "Each role chooses its next allowed action" in prompt
     assert "extra communication is not itself success" in prompt
+
+
+def test_tool_subgoal_prompt_requires_typed_routing():
+    record = ProblemRecord(
+        id="task",
+        source="FATE-M",
+        difficulty="easy",
+        informal="An informal theorem.",
+        statement="theorem task : True := by trivial",
+        context="",
+    )
+
+    prompt = _task_prompt(record, setup=TOOL_ROUTED_SUBGOALS_V1)
+
+    assert "typed subgoal tools" in prompt
+    assert "two leaf subgoals plus one final integration subgoal" in prompt
+    assert "Do not use HANDOFF or VERDICT" in prompt
+
+
+def test_tool_subgoal_summary_reports_feasibility_not_o3():
+    outcome = TrialOutcome(
+        task_id="task",
+        difficulty="easy",
+        trial=0,
+        outcome="solved",
+        termination="clean",
+        n_tool_calls=12,
+        perseverated=False,
+        communication=_communication(
+            tool_handoffs=4,
+            subgoals_accepted=3,
+            verified_completion=True,
+        ),
+    )
+
+    summary = _build_run_summary(
+        [outcome],
+        expected_trials=1,
+        setup=TOOL_ROUTED_SUBGOALS_V1,
+        model="qwen",
+    )
+
+    assert summary["decision"] == "feasibility_demonstrated_no_o3_claim"
+    assert summary["proposal_status"]["O3"] == "not claimed from this feasibility pilot"
 
 
 def test_report_preserves_summary_mapping(capsys):
