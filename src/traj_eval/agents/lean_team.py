@@ -133,6 +133,9 @@ def build_lean_free_team(
     max_turns: int = 40,
     ledger: RoutingLedger | None = None,
     step_context: StepContext | None = None,
+    role_llm_configs: dict[AgentRole, LLMConfig] | None = None,
+    post_tool_route: Callable[[AgentRole, frozenset[str]], tuple[AgentRole, str] | None]
+    | None = None,
 ) -> tuple[GroupChatManager, UserProxyAgent, Any, Any]:
     """Build the Lean reasoner/engineer/critic free-routing team.
 
@@ -146,17 +149,22 @@ def build_lean_free_team(
         raise ValueError(f"Unsupported Lean team setup: {setup}")
 
     config = lean_routing_config(max_turns=max_turns, setup=setup)
+    role_llm_configs = role_llm_configs or {}
+
+    def role_config(role: AgentRole) -> LLMConfig:
+        return role_llm_configs.get(role, llm_config)
+
     if setup == TOOL_ROUTED_SUBGOALS_V1:
         agents = {
-            AgentRole.REASONER: make_reasoner_subgoals(llm_config),
-            AgentRole.ENGINEER: make_engineer_subgoals(llm_config),
-            AgentRole.CRITIC: make_critic_subgoals(llm_config),
+            AgentRole.REASONER: make_reasoner_subgoals(role_config(AgentRole.REASONER)),
+            AgentRole.ENGINEER: make_engineer_subgoals(role_config(AgentRole.ENGINEER)),
+            AgentRole.CRITIC: make_critic_subgoals(role_config(AgentRole.CRITIC)),
         }
     else:
         agents = {
-            AgentRole.REASONER: make_reasoner(llm_config),
-            AgentRole.ENGINEER: make_engineer_free(llm_config),
-            AgentRole.CRITIC: make_critic_free(llm_config),
+            AgentRole.REASONER: make_reasoner(role_config(AgentRole.REASONER)),
+            AgentRole.ENGINEER: make_engineer_free(role_config(AgentRole.ENGINEER)),
+            AgentRole.CRITIC: make_critic_free(role_config(AgentRole.CRITIC)),
         }
     return build_free_routing_team(
         llm_config,
@@ -165,4 +173,5 @@ def build_lean_free_team(
         tools=tools,
         ledger=ledger,
         step_context=step_context,
+        post_tool_route=post_tool_route,
     )

@@ -311,6 +311,48 @@ class TraceObserver:
             self._ledger.record_emit(AgentRole.SYSTEM, event_id)
         return event_id
 
+    def record_controller_plan(self, plan: dict[str, Any]) -> str:
+        """Persist the controller's final plan view as a causal trace event."""
+        event_id = str(uuid.uuid4())
+        event = TraceEvent(
+            event_id=event_id,
+            trial_id=self._trial_id,
+            seq=self._next_seq(),
+            timestamp=datetime.now(UTC),
+            event_type=EventType.MESSAGE,
+            agent_role=AgentRole.SYSTEM,
+            caused_by=[self._last_event_id] if self._last_event_id else [],
+            payload={"phase": "controller_plan", "plan": plan},
+        )
+        self._writer.append(event)
+        self._last_event_id = event_id
+        if self._ledger is not None:
+            self._ledger.record_emit(AgentRole.SYSTEM, event_id)
+        return event_id
+
+    def record_infrastructure_error(self, error: BaseException) -> str:
+        """Persist a provider/runtime failure separately from agent behavior."""
+        event_id = str(uuid.uuid4())
+        event = TraceEvent(
+            event_id=event_id,
+            trial_id=self._trial_id,
+            seq=self._next_seq(),
+            timestamp=datetime.now(UTC),
+            event_type=EventType.EXECUTION_RESULT,
+            agent_role=AgentRole.SYSTEM,
+            caused_by=[self._last_event_id] if self._last_event_id else [],
+            payload={
+                "phase": "infrastructure_error",
+                "error_type": type(error).__name__,
+                "message": str(error)[:1000],
+            },
+        )
+        self._writer.append(event)
+        self._last_event_id = event_id
+        if self._ledger is not None:
+            self._ledger.record_emit(AgentRole.SYSTEM, event_id)
+        return event_id
+
     def attach(self, agents: list[ConversableAgent]) -> None:
         """Register the message hook on every agent."""
         for agent in agents:

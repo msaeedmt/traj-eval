@@ -13,8 +13,10 @@ from scripts.run_batch import (
     TrialOutcome,
     _build_run_summary,
     _configure_console,
+    _explore_trace,
     _report,
     _recorded_termination,
+    _resolve_worker_thinking,
     _task_prompt,
     _trace_is_valid,
     _write_summary,
@@ -95,6 +97,7 @@ def test_validation_unknown_when_posthoc_verdict_is_indeterminate():
 def test_import_error_takes_precedence():
     # even if metrics would say unsolved, an import error in the trace wins
     ev = _make_result_event("{'compiled': False, 'errors': [{'data': 'unknown module Foo'}]}")
+    ev.payload["phase"] = "infrastructure_error"
     m = _FakeMetrics(final_proof_compiles=False)
     assert classify_outcome([ev], m) == "import_error"
 
@@ -113,7 +116,14 @@ def test_solved_final_proof_takes_precedence_over_earlier_import_error():
 
 def test_import_error_detection_positive():
     ev = _make_result_event("{'compiled': False, 'summary': 'unknown module Mathlib.Foo.Bar'}")
+    ev.payload["phase"] = "infrastructure_error"
     assert looks_like_import_error([ev]) is True
+
+
+def test_hallucinated_import_is_engineer_failure_not_infrastructure():
+    ev = _make_result_event("{'compiled': False, 'summary': 'unknown module Imaginary.Foo'}")
+    assert looks_like_import_error([ev]) is False
+    assert classify_outcome([ev], _FakeMetrics(final_proof_compiles=False)) == "unsolved"
 
 
 def test_import_error_detection_ignores_ordinary_failure():
@@ -167,6 +177,51 @@ def test_recorded_termination_prefers_explicit_terminal_event():
 
     assert _recorded_termination(events) == "framework_stop"
     assert _recorded_termination(events[:1]) == "offline_rescore"
+
+
+def test_worker_thinking_auto_disables_qwen_only():
+    assert _resolve_worker_thinking("openai/Qwen3.5-27B.gguf", "auto") is False
+    assert _resolve_worker_thinking("gpt-4o-mini", "auto") is None
+    assert _resolve_worker_thinking("anything", "enabled") is True
+    assert _resolve_worker_thinking("anything", "disabled") is False
+
+
+def test_trace_exploration_reads_controller_plan_and_graph(tmp_path):
+    path = tmp_path / "task_t0.jsonl"
+    meta = make_trial_meta(trial_id="task_t0", task_id="task", backbone="qwen", testbed="lean")
+    with TrialLogWriter(path, meta) as writer:
+        from datetime import UTC, datetime
+
+        from traj_eval.trace_core.schema import AgentRole, EventType, TraceEvent
+
+        writer.append(
+            TraceEvent(
+                event_id="plan",
+                trial_id="task_t0",
+                seq=0,
+                timestamp=datetime.now(UTC),
+                event_type=EventType.MESSAGE,
+                agent_role=AgentRole.SYSTEM,
+                payload={
+                    "phase": "controller_plan",
+                    "plan": {
+                        "owner_role": "reasoner",
+                        "history": [{"version": 1}],
+                        "final_state": {
+                            "version": 1,
+                            "plan_ready": True,
+                            "nodes": [{"id": "goal", "status": "active"}],
+                        },
+                    },
+                },
+            )
+        )
+
+    explored = _explore_trace(path)
+
+    assert explored["graph"] == {"nodes": 1, "edges": 0, "roots": 1, "leaves": 1}
+    assert explored["controller_plan"]["present"] is True
+    assert explored["controller_plan"]["history_length"] == 1
 
 
 def _communication(
@@ -290,7 +345,8 @@ def test_tool_subgoal_prompt_requires_typed_routing():
     prompt = _task_prompt(record, setup=TOOL_ROUTED_SUBGOALS_V1)
 
     assert "typed subgoal tools" in prompt
-    assert "two leaf subgoals plus one final integration subgoal" in prompt
+    assert "two work subgoals plus one final integration subgoal" in prompt
+    assert "sequential dependencies" in prompt
     assert "Do not use HANDOFF or VERDICT" in prompt
 
 

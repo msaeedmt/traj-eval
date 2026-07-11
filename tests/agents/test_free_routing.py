@@ -72,7 +72,7 @@ def _build():
     return gc, state
 
 
-def _build_tool_routing():
+def _build_tool_routing(post_tool_route=None):
     from traj_eval.agents.roles import make_critic, make_engineer, make_reasoner
 
     cfg = RoutingConfig(
@@ -122,6 +122,7 @@ def _build_tool_routing():
             "route_next_agent": route_next_agent,
             "finish_run": finish_run,
         },
+        post_tool_route=post_tool_route,
     )
     return gc, state
 
@@ -378,6 +379,63 @@ def test_json_tool_result_routes_to_requested_agent():
     nxt = sel(_Speaker(AgentRole.EXECUTOR.value), gc)
 
     assert nxt.name == AgentRole.ENGINEER.value
+    assert state.tool_handoffs == 1
+
+
+def test_malformed_tool_json_stops_without_replaying_broken_assistant_prefill():
+    gc, state = _build_tool_routing()
+    sel = gc.speaker_selection_method
+    gc.messages = gc.messages + [
+        _tool_msg(AgentRole.REASONER.value, "broken call"),
+        {
+            "name": AgentRole.EXECUTOR.value,
+            "content": "Error: Unterminated string. The argument must be in JSON format.",
+            "tool_responses": [
+                {
+                    "id": "c",
+                    "content": "Error: Unterminated string. The argument must be in JSON format.",
+                }
+            ],
+        },
+    ]
+
+    nxt = sel(_Speaker(AgentRole.EXECUTOR.value), gc)
+
+    assert nxt is None
+    assert state.terminated and state.reason == "stuck"
+    assert state.tool_protocol_errors == 1
+
+
+def test_post_tool_fallback_routes_visibly_after_tool_result():
+    def fallback(role, called):
+        if role is AgentRole.REASONER and "route_next_agent" in called:
+            return AgentRole.ENGINEER, "controller_plan_ready_fallback"
+        return None
+
+    gc, state = _build_tool_routing(post_tool_route=fallback)
+    sel = gc.speaker_selection_method
+    call = {
+        "name": AgentRole.REASONER.value,
+        "content": None,
+        "tool_calls": [
+            {
+                "id": "route",
+                "type": "function",
+                "function": {
+                    "name": "route_next_agent",
+                    "arguments": '{"target":"engineer","reason":"ready"}',
+                },
+            }
+        ],
+    }
+    gc.messages = gc.messages + [call]
+    assert sel(_Speaker(AgentRole.REASONER.value), gc).name == AgentRole.EXECUTOR.value
+    gc.messages = gc.messages + [_dict_result({"ok": True})]
+
+    nxt = sel(_Speaker(AgentRole.EXECUTOR.value), gc)
+
+    assert nxt.name == AgentRole.ENGINEER.value
+    assert state.controller_fallback_routes == 1
     assert state.tool_handoffs == 1
 
 

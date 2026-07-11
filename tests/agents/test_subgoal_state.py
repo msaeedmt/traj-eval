@@ -19,7 +19,11 @@ class _Result:
 
 
 class _Compiler:
+    def __init__(self):
+        self.last_code = ""
+
     def check(self, code: str):
+        self.last_code = code
         return _Result("bad" not in code, "compiled" if "bad" not in code else "failed")
 
 
@@ -46,6 +50,35 @@ def test_plan_requires_existing_dependencies_and_integration_node():
     assert not_ready["ok"] is False
     assert ledger.plan_ready is True
     assert ledger.active_id == "forward"
+
+
+def test_natural_sequential_plan_is_ready_without_artificial_parallel_leaves():
+    ledger = SubgoalLedger()
+    ledger.plan_subgoal("construction", "Construct the universal object", [])
+    ledger.plan_subgoal("uniqueness", "Apply uniqueness", ["construction"])
+    final = ledger.plan_subgoal("final", "Integrate the exact theorem", ["uniqueness"])
+
+    assert ledger.plan_ready is True
+    assert ledger.route_next_agent("engineer", "start")["ok"] is True
+    assert final["required_next_action"]["tool"] == "route_next_agent"
+
+
+def test_plan_record_preserves_controller_owned_revision_history():
+    ledger = _planned()
+    ledger.nodes["forward"].status = type(ledger.nodes["forward"].status).BLOCKED
+    ledger.plan_subgoal("forward", "Use a revised forward argument", [])
+
+    record = ledger.plan_record()
+
+    assert record["owner_role"] == "reasoner"
+    assert record["persistence_authority"] == "deterministic_controller"
+    assert [item["action"] for item in record["history"]] == [
+        "created",
+        "created",
+        "created",
+        "revised",
+    ]
+    assert record["final_state"]["strategy_revisions"] == 1
 
 
 def test_probe_does_not_hide_failed_proof_recovery():
@@ -86,6 +119,31 @@ def test_submission_and_acceptance_require_two_compiler_owners():
     assert premature["ok"] is False
     assert accepted["accepted"] is True
     assert ledger.active_id == "reverse"
+
+
+def test_compiler_uses_canonical_prelude_and_hashes_normalized_candidate():
+    ledger = _planned()
+    compiler = _Compiler()
+    tools = make_subgoal_tools(
+        compiler,
+        ledger,
+        prelude="import Mathlib\nopen CategoryTheory\nvariable {G : Type}",
+    )
+    raw = """import Imaginary.Module
+open CategoryTheory
+variable {G : Type}
+example : True := by trivial
+"""
+
+    checked = tools["check_lean"](raw, "forward", "subgoal")
+    tools["submit_subgoal"]("forward", checked["evidence_hash"], "normalized")
+    candidate = tools["read_candidate"]("forward")
+
+    assert compiler.last_code.startswith("import Mathlib\nopen CategoryTheory")
+    assert "Imaginary.Module" not in compiler.last_code
+    assert compiler.last_code.count("open CategoryTheory") == 1
+    assert candidate["code"] == "example : True := by trivial"
+    assert checked["canonical_prelude_applied"] is True
 
 
 def test_rejecting_accepted_dependency_invalidates_descendants():

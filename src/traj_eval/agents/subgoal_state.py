@@ -57,6 +57,7 @@ class SubgoalLedger:
         self.forced_recoveries = 0
         self.strategy_revisions = 0
         self.verified_code: dict[str, str] = {}
+        self.plan_history: list[dict[str, Any]] = []
 
     @property
     def active_id(self) -> str | None:
@@ -67,9 +68,21 @@ class SubgoalLedger:
 
     @property
     def plan_ready(self) -> bool:
-        leaves = [node for node in self.nodes.values() if not node.depends_on]
-        integrations = [node for node in self.nodes.values() if node.depends_on]
-        return len(self.nodes) >= 3 and len(leaves) >= 2 and bool(integrations)
+        if len(self.nodes) < 3:
+            return False
+        expected = set(self.nodes)
+        for candidate in self.nodes.values():
+            ancestors: set[str] = set()
+            frontier = list(candidate.depends_on)
+            while frontier:
+                item = frontier.pop()
+                if item in ancestors:
+                    continue
+                ancestors.add(item)
+                frontier.extend(self.nodes[item].depends_on)
+            if ancestors == expected - {candidate.id}:
+                return True
+        return False
 
     def _error(self, message: str) -> dict[str, Any]:
         return {"ok": False, "error": message, "state": self.snapshot()}
@@ -155,11 +168,30 @@ class SubgoalLedger:
 
         self.version += 1
         self._activate_ready()
+        self.plan_history.append(
+            {
+                "version": self.version,
+                "action": "created" if created else "revised",
+                "subgoal_id": subgoal_id,
+                "objective": objective,
+                "depends_on": list(dependencies),
+                "state": self.snapshot(),
+            }
+        )
         return {
             "ok": True,
             "created": created,
             "revised": revised,
             "subgoal_id": subgoal_id,
+            "required_next_action": (
+                {
+                    "tool": "route_next_agent",
+                    "target": "engineer",
+                    "reason": "plan is ready; begin the active subgoal",
+                }
+                if self.plan_ready
+                else None
+            ),
             "state": self.snapshot(),
         }
 
@@ -361,7 +393,10 @@ class SubgoalLedger:
             return self._error("target must be reasoner, engineer, or critic")
         if target == "engineer":
             if not self.plan_ready:
-                return self._error("define two leaf subgoals and one integration subgoal first")
+                return self._error(
+                    "define at least two work subgoals and one integration subgoal "
+                    "whose dependency cone covers the plan"
+                )
             blocked = [
                 node.id for node in self.nodes.values() if node.status is SubgoalStatus.BLOCKED
             ]
@@ -411,14 +446,38 @@ class SubgoalLedger:
             ],
         }
 
+    def plan_record(self) -> dict[str, Any]:
+        """Return the controller-persisted plan and its complete revision history."""
+        return {
+            "owner_role": "reasoner",
+            "persistence_authority": "deterministic_controller",
+            "history": list(self.plan_history),
+            "final_state": self.snapshot(),
+        }
+
 
 def make_subgoal_tools(
     compiler,
     ledger: SubgoalLedger,
     *,
     final_validator: Callable[[str], dict[str, Any]] | None = None,
+    prelude: str = "",
 ) -> dict[str, Any]:
     """Create role-scoped tools sharing one trial-local ledger."""
+
+    prelude_lines = {line.strip() for line in prelude.splitlines() if line.strip()}
+
+    def prepare_code(code: str) -> tuple[str, str]:
+        """Normalize a candidate and compile it only under the task's canonical context."""
+        candidate_lines = []
+        for line in code.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("import ") or stripped in prelude_lines:
+                continue
+            candidate_lines.append(line)
+        candidate = "\n".join(candidate_lines).strip()
+        effective = f"{prelude.rstrip()}\n\n{candidate}" if prelude.strip() else candidate
+        return candidate, effective
 
     def plan_subgoal(subgoal_id: str, objective: str, depends_on: list[str]) -> dict:
         """Create or revise one dependency-aware subgoal."""
@@ -434,10 +493,11 @@ def make_subgoal_tools(
         """Compile engineer Lean code as a probe, subgoal, or final attempt."""
         if purpose not in {"probe", "subgoal", "final"}:
             return {"ok": False, "error": "purpose must be probe, subgoal, or final"}
-        result = compiler.check(code)
+        candidate, effective_code = prepare_code(code)
+        result = compiler.check(effective_code)
         payload = result.to_dict()
         evidence = ledger.record_compile(
-            code=code,
+            code=candidate,
             subgoal_id=subgoal_id,
             purpose=purpose,
             compiled=result.compiled,
@@ -447,6 +507,7 @@ def make_subgoal_tools(
         payload.update(evidence)
         payload["subgoal_id"] = subgoal_id
         payload["purpose"] = purpose
+        payload["canonical_prelude_applied"] = bool(prelude.strip())
         if evidence.get("recovery_required"):
             payload.update(
                 {
@@ -470,11 +531,12 @@ def make_subgoal_tools(
 
     def review_lean(code: str, subgoal_id: str) -> dict[str, Any]:
         """Independently compile the critic's exact candidate."""
-        result = compiler.check(code)
+        candidate, effective_code = prepare_code(code)
+        result = compiler.check(effective_code)
         payload = result.to_dict()
         payload.update(
             ledger.record_compile(
-                code=code,
+                code=candidate,
                 subgoal_id=subgoal_id,
                 purpose="review",
                 compiled=result.compiled,
@@ -484,6 +546,7 @@ def make_subgoal_tools(
         )
         payload["subgoal_id"] = subgoal_id
         payload["purpose"] = "review"
+        payload["canonical_prelude_applied"] = bool(prelude.strip())
         return payload
 
     def review_subgoal(

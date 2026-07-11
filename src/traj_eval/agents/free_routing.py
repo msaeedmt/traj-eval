@@ -98,6 +98,10 @@ class _RunState:
     tool_handoffs: int = 0
     forced_recoveries: int = 0
     completion_gate_denials: int = 0
+    tool_protocol_errors: int = 0
+    controller_fallback_routes: int = 0
+    pending_post_tool_target: AgentRole | None = None
+    pending_post_tool_reason: str | None = None
     turn_budget: int = 0
 
 
@@ -164,6 +168,23 @@ def _compile_verdict(message: dict[str, Any]) -> bool | None:
     return None
 
 
+def _is_tool_protocol_error(message: dict[str, Any]) -> bool:
+    """Detect executor failures caused by malformed model-emitted tool JSON."""
+    text = str(message.get("content") or "")
+    text += " " + " ".join(
+        str(item.get("content") or "") for item in message.get("tool_responses") or []
+    )
+    lowered = text.casefold()
+    return any(
+        marker in lowered
+        for marker in (
+            "argument must be in json format",
+            "failed to parse tool call arguments as json",
+            "unterminated string",
+        )
+    )
+
+
 def _normalise_call_code(message: dict[str, Any]) -> str | None:
     """Whitespace-normalised concatenation of the tool call(s) arguments.
 
@@ -198,6 +219,8 @@ def build_free_routing_team(
     tools: dict[str, Callable[..., Any]] | None = None,
     ledger: RoutingLedger | None = None,
     step_context: StepContext | None = None,
+    post_tool_route: Callable[[AgentRole, frozenset[str]], tuple[AgentRole, str] | None]
+    | None = None,
 ) -> tuple[GroupChatManager, UserProxyAgent, GroupChat, _RunState]:
     """Build a group chat whose next-speaker is chosen by the agents' markers.
 
@@ -265,7 +288,15 @@ def build_free_routing_team(
         # if present, else from the message before the tool result.
         if name == AgentRole.EXECUTOR.value:
             caller = _last_caller_before_executor(groupchat)
+            if _is_tool_protocol_error(_last_message(groupchat)):
+                state.tool_protocol_errors += 1
+                state.terminated, state.reason = True, "stuck"
+                return None
             result = _tool_result_dict(_last_message(groupchat))
+            pending_target = state.pending_post_tool_target
+            pending_reason = state.pending_post_tool_reason
+            state.pending_post_tool_target = None
+            state.pending_post_tool_reason = None
             if config.tool_result_routing and result is not None:
                 terminate_reason = result.get("terminate_reason")
                 if terminate_reason:
@@ -294,6 +325,21 @@ def build_free_routing_team(
                     return _invalid(state, config, agents)
                 if result.get("ok") is False:
                     state.completion_gate_denials += 1
+
+            if pending_target is not None and caller is not None:
+                caller_spec = config.spec(caller)
+                if (
+                    caller_spec is not None
+                    and pending_target in caller_spec.handoff_targets
+                    and pending_target in agents
+                ):
+                    state.tool_handoffs += 1
+                    state.controller_fallback_routes += 1
+                    return _route(
+                        agents[pending_target],
+                        AgentRole.EXECUTOR,
+                        reason=pending_reason or "controller_post_tool_fallback",
+                    )
 
             # Track compile progress: a check_lean result updates the
             # consecutive-failure counter (a success resets it). search_lemmas
@@ -343,6 +389,10 @@ def build_free_routing_team(
             called = {tc.get("function", {}).get("name") for tc in last_msg.get("tool_calls") or []}
             if called and called <= spec.tools:
                 state.consecutive_invalid = 0
+                if post_tool_route is not None:
+                    fallback = post_tool_route(role, frozenset(called))
+                    if fallback is not None:
+                        state.pending_post_tool_target, state.pending_post_tool_reason = fallback
                 # Perseveration bound: if this submission is byte-identical
                 # (after whitespace normalisation) to the previous one, count
                 # it; past the threshold the agent is stuck resubmitting the

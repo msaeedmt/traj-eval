@@ -283,3 +283,13 @@ retrieval remain deferred. They are separate interventions with provenance and
 data-governance requirements. Any API-backed change to stored history requires
 explicit user authorization, and only verifier-approved facts may enter future
 shared proof memory.
+
+## E1.1 Medium Slice
+
+The next authorized run is specified in
+`docs/QWEN_MEDIUM_SUBGOAL_EXPERIMENT.md`: two pre-registered medium tasks, ten
+trials each, with Codex Ultra outside the measured trial and low-token Qwen
+specialists inside it. Each new trace persists the controller's reasoner-owned
+plan and revision history, while `summary.json` exposes compact graph and plan
+facts for deterministic exploration. This remains an O1/O2 feasibility slice;
+O3 is not claimed.

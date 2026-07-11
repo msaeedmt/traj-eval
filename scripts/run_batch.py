@@ -57,6 +57,8 @@ from traj_eval.metrics.communication import CommunicationSummary, summarize_comm
 from traj_eval.metrics.lean.artifacts import extract_artifacts
 from traj_eval.metrics.lean.outcomes import classify_outcome
 from traj_eval.metrics.lean.validator import validate, validate_candidate
+from traj_eval.trace_core.graph import build_graph
+from traj_eval.trace_core.schema import AgentRole
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
 DATASET_ROOT = Path("dataset/Lean")
@@ -94,6 +96,56 @@ def _recorded_termination(events) -> str:
     return "offline_rescore"
 
 
+def _explore_trace(path: Path) -> dict:
+    """Return compact deterministic plan and causal-graph facts for one JSONL trace."""
+    meta, events = read_trial(path)
+    graph = build_graph(events)
+    plan_event = next(
+        (event for event in reversed(events) if event.payload.get("phase") == "controller_plan"),
+        None,
+    )
+    plan = plan_event.payload.get("plan", {}) if plan_event else {}
+    final_state = plan.get("final_state", {})
+    role_path = [event.agent_role.value for event in events]
+    transitions = Counter(
+        f"{left}->{right}" for left, right in zip(role_path, role_path[1:], strict=False)
+    )
+    return {
+        "trial_id": meta.trial_id,
+        "task_id": meta.task_id,
+        "path": path.name,
+        "n_events": len(events),
+        "graph": {
+            "nodes": graph.number_of_nodes(),
+            "edges": graph.number_of_edges(),
+            "roots": sum(graph.in_degree(node) == 0 for node in graph.nodes),
+            "leaves": sum(graph.out_degree(node) == 0 for node in graph.nodes),
+        },
+        "role_transitions": dict(sorted(transitions.items())),
+        "controller_plan": {
+            "present": plan_event is not None,
+            "owner_role": plan.get("owner_role"),
+            "history_length": len(plan.get("history", [])),
+            "version": final_state.get("version"),
+            "plan_ready": final_state.get("plan_ready"),
+            "active_subgoal": final_state.get("active_subgoal"),
+            "forced_recoveries": final_state.get("forced_recoveries"),
+            "strategy_revisions": final_state.get("strategy_revisions"),
+            "nodes": final_state.get("nodes", []),
+        },
+    }
+
+
+def _explore_traces(output_dir: Path, records: list[ProblemRecord], trials: int) -> list[dict]:
+    explored = []
+    for record in records:
+        for trial in range(trials):
+            path = output_dir / f"{record.id}_t{trial}.jsonl"
+            if _trace_is_valid(path):
+                explored.append(_explore_trace(path))
+    return explored
+
+
 def _task_prompt(
     record: ProblemRecord, *, setup: str = RECOVERY_TRIANGLE_V1
 ) -> str:
@@ -103,9 +155,17 @@ def _task_prompt(
         if record.context
         else ""
     )
+    medium_detail = (
+        "For this medium task, define four to six concrete compile-verifiable artifacts; "
+        "do not use vague understand/find/investigate subgoals. "
+        if record.difficulty == "medium"
+        else ""
+    )
     coordination = (
         "Use the typed subgoal tools to decompose, verify, review, and route. "
-        "Build at least two leaf subgoals plus one final integration subgoal. "
+        f"{medium_detail}"
+        "Build at least two work subgoals plus one final integration subgoal; "
+        "use sequential dependencies when the mathematics is sequential. "
         "Do not use HANDOFF or VERDICT text markers."
         if setup == TOOL_ROUTED_SUBGOALS_V1
         else "Each role chooses its next allowed action."
@@ -120,6 +180,17 @@ def _task_prompt(
         "is allowed, but extra communication is not itself success. The final proof must "
         "compile, preserve the exact statement, and contain no sorry, admit, or added axiom."
     )
+
+
+def _resolve_worker_thinking(model: str, mode: str) -> bool | None:
+    """Map the CLI mode to the provider request; Qwen defaults to non-thinking."""
+    if mode == "enabled":
+        return True
+    if mode == "disabled":
+        return False
+    if mode != "auto":
+        raise ValueError(f"unsupported worker thinking mode: {mode}")
+    return False if "qwen" in model.casefold() else None
 
 
 def _configure_console() -> None:
@@ -166,12 +237,39 @@ def run_one_trial(
     max_turns: int = 30,
     max_engineer_failures: int = 3,
     max_forced_replans: int = 2,
+    worker_model: str | None = None,
+    reasoner_max_tokens: int = 2048,
+    engineer_max_tokens: int = 4096,
+    critic_max_tokens: int = 2048,
+    outer_orchestrator: str = "external_controller",
+    worker_thinking: str = "auto",
 ) -> TrialOutcome:
     from traj_eval.tools.lean_search import make_search_lemmas
 
     prompt = _task_prompt(record, setup=setup)
 
-    llm_config = build_llm_config()
+    worker_model = worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
+    enable_thinking = _resolve_worker_thinking(worker_model, worker_thinking)
+    role_budgets = {
+        AgentRole.REASONER: reasoner_max_tokens,
+        AgentRole.ENGINEER: engineer_max_tokens,
+        AgentRole.CRITIC: critic_max_tokens,
+    }
+    role_llm_configs = {
+        role: build_llm_config(
+            model=worker_model,
+            max_tokens=budget,
+            enable_thinking=enable_thinking,
+        )
+        for role, budget in role_budgets.items()
+    }
+    # Speaker selection is deterministic, so the manager model is only an AG2
+    # construction requirement and receives the smallest worker budget.
+    llm_config = build_llm_config(
+        model=worker_model,
+        max_tokens=min(role_budgets.values()),
+        enable_thinking=enable_thinking,
+    )
     routing_ledger = RoutingLedger()
     step_context = StepContext()
     search_lemmas = make_search_lemmas(num_results=5)
@@ -185,13 +283,26 @@ def run_one_trial(
             compiler,
             subgoal_ledger,
             final_validator=lambda code: validate_candidate(code, task, compiler),
+            prelude=record.import_block,
         )
         tools["search_lemmas"] = search_lemmas
+
+        def post_tool_route(
+            caller: AgentRole, called: frozenset[str]
+        ) -> tuple[AgentRole, str] | None:
+            if (
+                caller is AgentRole.REASONER
+                and subgoal_ledger.plan_ready
+                and "route_next_agent" not in called
+            ):
+                return AgentRole.ENGINEER, "controller_plan_ready_fallback"
+            return None
     else:
         tools = {
             "check_lean": compiler.as_tool(),
             "search_lemmas": search_lemmas,
         }
+        post_tool_route = None
     manager, user, groupchat, run_state = build_lean_free_team(
         llm_config,
         tools=tools,
@@ -199,6 +310,8 @@ def run_one_trial(
         max_turns=max_turns,
         ledger=routing_ledger,
         step_context=step_context,
+        role_llm_configs=role_llm_configs,
+        post_tool_route=post_tool_route,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -206,7 +319,7 @@ def run_one_trial(
     meta = make_trial_meta(
         trial_id=f"{record.id}_t{trial}",
         task_id=record.id,
-        backbone=os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini"),
+        backbone=worker_model,
         testbed="lean",
         architecture=f"lean_{setup}",
         grounding=True,
@@ -223,6 +336,16 @@ def run_one_trial(
             "max_turns": max_turns,
             "max_engineer_failures": max_engineer_failures,
             "max_forced_replans": max_forced_replans,
+            "outer_orchestrator": outer_orchestrator,
+            "worker_models": {
+                role.value: worker_model for role in role_budgets
+            },
+            "role_max_tokens": {
+                role.value: budget for role, budget in role_budgets.items()
+            },
+            "controller_uses_llm": False,
+            "worker_enable_thinking": enable_thinking,
+            "compiler_context": "canonical_task_prelude",
         },
     )
     writer = TrialLogWriter(log_path, meta)
@@ -237,9 +360,14 @@ def run_one_trial(
 
     try:
         user.initiate_chat(manager, message=prompt, clear_history=True)
+    except Exception as exc:
+        observer.record_infrastructure_error(exc)
+        raise
     finally:
         finalize_run(run_state)
         try:
+            if setup == TOOL_ROUTED_SUBGOALS_V1:
+                observer.record_controller_plan(subgoal_ledger.plan_record())
             observer.record_termination(
                 run_state.reason or "framework_stop",
                 turns=run_state.turns,
@@ -247,6 +375,8 @@ def run_one_trial(
                 tool_handoffs=run_state.tool_handoffs,
                 forced_recoveries=run_state.forced_recoveries,
                 completion_gate_denials=run_state.completion_gate_denials,
+                tool_protocol_errors=run_state.tool_protocol_errors,
+                controller_fallback_routes=run_state.controller_fallback_routes,
             )
         finally:
             writer.close()
@@ -265,7 +395,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--difficulty", nargs="+", default=["easy"], help="tiers to run")
     ap.add_argument("--trials", type=int, default=3, help="trials per problem")
-    ap.add_argument("--task-id", help="run one exact dataset task id")
+    ap.add_argument(
+        "--task-id",
+        nargs="+",
+        help="run one or more exact dataset task ids",
+    )
     ap.add_argument(
         "--setup",
         choices=SUPPORTED_LEAN_SETUPS,
@@ -274,6 +408,24 @@ def main() -> int:
     )
     ap.add_argument("--output-dir", type=Path, default=LOG_DIR, help="isolated trace directory")
     ap.add_argument("--max-turns", type=int, default=30, help="routing decision budget")
+    ap.add_argument(
+        "--worker-model",
+        help="low-cost model used by reasoner, engineer, and critic",
+    )
+    ap.add_argument("--reasoner-max-tokens", type=int, default=2048)
+    ap.add_argument("--engineer-max-tokens", type=int, default=4096)
+    ap.add_argument("--critic-max-tokens", type=int, default=2048)
+    ap.add_argument(
+        "--worker-thinking",
+        choices=("auto", "disabled", "enabled"),
+        default="auto",
+        help="Qwen thinking mode; auto disables it for Qwen models",
+    )
+    ap.add_argument(
+        "--outer-orchestrator",
+        default="external_controller",
+        help="research orchestrator identity recorded in TrialMeta only",
+    )
     ap.add_argument(
         "--max-engineer-failures",
         type=int,
@@ -299,9 +451,11 @@ def main() -> int:
     for diff in args.difficulty:
         records.extend(load_dataset(DATASET_ROOT, difficulty=diff))
     if args.task_id:
-        records = [record for record in records if record.id == args.task_id]
-        if not records:
-            ap.error(f"task id not found in selected difficulties: {args.task_id}")
+        requested = set(args.task_id)
+        records = [record for record in records if record.id in requested]
+        missing = requested - {record.id for record in records}
+        if missing:
+            ap.error(f"task ids not found in selected difficulties: {sorted(missing)}")
 
     if args.dry_run:
         print(
@@ -374,6 +528,12 @@ def main() -> int:
                         max_turns=args.max_turns,
                         max_engineer_failures=args.max_engineer_failures,
                         max_forced_replans=args.max_forced_replans,
+                        worker_model=args.worker_model,
+                        reasoner_max_tokens=args.reasoner_max_tokens,
+                        engineer_max_tokens=args.engineer_max_tokens,
+                        critic_max_tokens=args.critic_max_tokens,
+                        outer_orchestrator=args.outer_orchestrator,
+                        worker_thinking=args.worker_thinking,
                     )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch
@@ -390,7 +550,7 @@ def main() -> int:
     summary_model = (
         ", ".join(sorted(observed_models))
         if observed_models
-        else os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
+        else (args.worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini"))
     )
     summary = _build_run_summary(
         outcomes,
@@ -399,6 +559,7 @@ def main() -> int:
         model=summary_model,
         errors=errors,
     )
+    summary["trace_exploration"] = _explore_traces(args.output_dir, records, args.trials)
     _report(outcomes, summary)
     _write_summary(args.output_dir, summary)
     return 0
