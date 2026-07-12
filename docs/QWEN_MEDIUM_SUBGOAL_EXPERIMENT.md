@@ -63,6 +63,9 @@ No database, API-generated diagnosis, or raw trace schema migration is added.
 For medium tasks, the reasoner should use four to six concrete, independently
 compilable artifacts. The compiler tool normalizes away agent-supplied imports
 and checks every candidate under the dataset task's canonical imports/context.
+A successful `purpose="subgoal"` or `purpose="final"` compile atomically submits
+that candidate and routes it to the critic, preventing verified work from being
+lost to further probes.
 
 ## Command
 
@@ -73,7 +76,7 @@ python scripts\run_batch.py `
   --trials 10 `
   --setup tool_routed_subgoals_v1 `
   --output-dir data\experiments\qwen_medium_subgoals_v1 `
-  --max-turns 100 `
+  --max-turns 160 `
   --max-engineer-failures 3 `
   --max-forced-replans 3 `
   --worker-model <provider-qwen-model> `
@@ -100,3 +103,35 @@ causal events. Compare:
 The main success criterion is a kernel-valid solve with an observable,
 evidence-backed plan/review chain. More messages or role revisits alone are not
 success.
+
+## Completed Run
+
+The committed cohort contains 20 terminal JSONL traces: ten trials each for
+`medium_leancat_008` and `medium_fateh_001`. An offline rescore of all 20 traces
+produced:
+
+| Measure | Result |
+| --- | ---: |
+| Solved / unsolved | 0 / 20 |
+| Explicit handoffs | 102 |
+| Reasoner to engineer | 26 |
+| Engineer to reasoner | 19 |
+| Critic to engineer | 26 |
+| Failed / successful compiler results | 323 / 266 |
+| Subgoals accepted | 15 |
+| Critic approvals | 0 |
+| Verified completions | 0 |
+
+This supports proposal objective O1 only as observable event- and subgoal-level
+localization, and O2 only as an exploratory coordination/failure taxonomy. O3
+is not tested: there is no matched baseline, stress progression, or early
+prediction model. Following `docs/LEAN_FAILURE_ANALYSIS_GUIDE.md`, successful
+probes and accepted subgoals are not treated as final theorem proofs. The main
+result is therefore behavioral: typed routing created substantial return
+communication and strict critic rejection, but did not produce a kernel-valid
+medium-task solution.
+
+`summary.json` and `summary.md` are deterministic offline summaries of the raw
+traces. Infrastructure interruption is represented by a missing terminal event
+and is not reclassified as a proof failure; the resume guard now skips only
+traces containing an explicit terminal event.
