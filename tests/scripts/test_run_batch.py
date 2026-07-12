@@ -145,13 +145,25 @@ def test_import_error_detection_ignores_success():
     assert looks_like_import_error([ev]) is False
 
 
-def test_trace_is_valid_accepts_readable_trace(tmp_path):
+def test_trace_is_valid_accepts_terminal_trace(tmp_path):
+    from traj_eval.agents.observer import TraceObserver
+
+    path = tmp_path / "trial.jsonl"
+    meta = make_trial_meta(trial_id="trial", task_id="task", backbone="test", testbed="lean")
+    with TrialLogWriter(path, meta) as writer:
+        observer = TraceObserver(writer, trial_id="trial")
+        observer.record_termination("framework_stop", turns=0)
+
+    assert _trace_is_valid(path) is True
+
+
+def test_trace_is_valid_rejects_parseable_interrupted_trace(tmp_path):
     path = tmp_path / "trial.jsonl"
     meta = make_trial_meta(trial_id="trial", task_id="task", backbone="test", testbed="lean")
     with TrialLogWriter(path, meta):
         pass
 
-    assert _trace_is_valid(path) is True
+    assert _trace_is_valid(path) is False
 
 
 def test_trace_is_valid_rejects_missing_empty_and_invalid(tmp_path):

@@ -83,10 +83,10 @@ def _trace_is_valid(path: Path) -> bool:
     if not path.exists() or path.stat().st_size == 0:
         return False
     try:
-        read_trial(path)
+        _, events = read_trial(path)
     except Exception:  # noqa: BLE001 -- invalid traces should be regenerated
         return False
-    return True
+    return any(event.payload.get("phase") == "termination" for event in events)
 
 
 def _recorded_termination(events) -> str:
