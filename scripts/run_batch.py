@@ -276,6 +276,7 @@ def run_one_trial(
     if setup == TOOL_ROUTED_SUBGOALS_V1:
         task = to_lean_task(record)
         subgoal_ledger = SubgoalLedger(
+            min_nodes=4 if record.difficulty == "medium" else 3,
             max_failures=max_engineer_failures,
             max_forced_replans=max_forced_replans,
         )
@@ -284,6 +285,7 @@ def run_one_trial(
             subgoal_ledger,
             final_validator=lambda code: validate_candidate(code, task, compiler),
             prelude=record.import_block,
+            auto_submit_verified=True,
         )
         tools["search_lemmas"] = search_lemmas
 
@@ -336,6 +338,9 @@ def run_one_trial(
             "max_turns": max_turns,
             "max_engineer_failures": max_engineer_failures,
             "max_forced_replans": max_forced_replans,
+            "min_subgoals": (
+                subgoal_ledger.min_nodes if setup == TOOL_ROUTED_SUBGOALS_V1 else None
+            ),
             "outer_orchestrator": outer_orchestrator,
             "worker_models": {
                 role.value: worker_model for role in role_budgets

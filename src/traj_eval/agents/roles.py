@@ -324,6 +324,8 @@ proof attempts the runtime routes to the reasoner automatically.
 check_lean supplies the benchmark's canonical imports and context. Do not emit
 or guess import lines. Probe with short #check/example declarations, then write
 actual Lean code; comments and searches are not subgoal progress.
+Calling check_lean with purpose="subgoal" or "final" declares that code as a
+candidate. On success, the runtime submits it and routes to the critic.
 
 Never claim success without submit_subgoal. Use route_next_agent for every
 handoff. Never emit HANDOFF or VERDICT text. No sorry, admit, or new axioms.

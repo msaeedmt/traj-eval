@@ -43,11 +43,15 @@ class SubgoalLedger:
     def __init__(
         self,
         *,
+        min_nodes: int = 3,
         max_nodes: int = 6,
         max_failures: int = 3,
         max_forced_replans: int = 2,
         max_failure_notes: int = 3,
     ) -> None:
+        if min_nodes < 2 or min_nodes > max_nodes:
+            raise ValueError("min_nodes must be between 2 and max_nodes")
+        self.min_nodes = min_nodes
         self.max_nodes = max_nodes
         self.max_failures = max_failures
         self.max_forced_replans = max_forced_replans
@@ -68,7 +72,7 @@ class SubgoalLedger:
 
     @property
     def plan_ready(self) -> bool:
-        if len(self.nodes) < 3:
+        if len(self.nodes) < self.min_nodes:
             return False
         expected = set(self.nodes)
         for candidate in self.nodes.values():
@@ -425,6 +429,7 @@ class SubgoalLedger:
             "forced_recoveries": self.forced_recoveries,
             "strategy_revisions": self.strategy_revisions,
             "limits": {
+                "min_nodes": self.min_nodes,
                 "max_nodes": self.max_nodes,
                 "max_failures": self.max_failures,
                 "max_forced_replans": self.max_forced_replans,
@@ -462,6 +467,7 @@ def make_subgoal_tools(
     *,
     final_validator: Callable[[str], dict[str, Any]] | None = None,
     prelude: str = "",
+    auto_submit_verified: bool = False,
 ) -> dict[str, Any]:
     """Create role-scoped tools sharing one trial-local ledger."""
 
@@ -508,6 +514,26 @@ def make_subgoal_tools(
         payload["subgoal_id"] = subgoal_id
         payload["purpose"] = purpose
         payload["canonical_prelude_applied"] = bool(prelude.strip())
+        if (
+            auto_submit_verified
+            and result.compiled
+            and purpose in {"subgoal", "final"}
+            and evidence.get("ok")
+        ):
+            submission = ledger.submit_subgoal(
+                subgoal_id,
+                evidence["evidence_hash"],
+                f"compiler-verified {purpose} candidate",
+            )
+            payload["automatic_submission"] = submission
+            if submission.get("submitted"):
+                payload.update(
+                    {
+                        "handoff_target": "critic",
+                        "route_kind": "verified_candidate_auto_submit",
+                        "reason": f"{subgoal_id} compiled and is ready for critic review",
+                    }
+                )
         if evidence.get("recovery_required"):
             payload.update(
                 {

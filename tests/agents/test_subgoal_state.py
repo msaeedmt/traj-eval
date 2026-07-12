@@ -63,6 +63,18 @@ def test_natural_sequential_plan_is_ready_without_artificial_parallel_leaves():
     assert final["required_next_action"]["tool"] == "route_next_agent"
 
 
+def test_medium_plan_requires_four_nodes():
+    ledger = SubgoalLedger(min_nodes=4)
+    ledger.plan_subgoal("definitions", "Compile definitions", [])
+    ledger.plan_subgoal("construction", "Compile construction", ["definitions"])
+    third = ledger.plan_subgoal("uniqueness", "Compile uniqueness", ["construction"])
+    fourth = ledger.plan_subgoal("final", "Compile final theorem", ["uniqueness"])
+
+    assert third["state"]["plan_ready"] is False
+    assert fourth["state"]["plan_ready"] is True
+    assert fourth["state"]["limits"]["min_nodes"] == 4
+
+
 def test_plan_record_preserves_controller_owned_revision_history():
     ledger = _planned()
     ledger.nodes["forward"].status = type(ledger.nodes["forward"].status).BLOCKED
@@ -119,6 +131,20 @@ def test_submission_and_acceptance_require_two_compiler_owners():
     assert premature["ok"] is False
     assert accepted["accepted"] is True
     assert ledger.active_id == "reverse"
+
+
+def test_successful_subgoal_candidate_is_submitted_and_routes_to_critic():
+    ledger = _planned()
+    tools = make_subgoal_tools(_Compiler(), ledger, auto_submit_verified=True)
+
+    checked = tools["check_lean"](
+        "example : True := by trivial", "forward", "subgoal"
+    )
+
+    assert checked["automatic_submission"]["submitted"] is True
+    assert checked["handoff_target"] == "critic"
+    assert checked["route_kind"] == "verified_candidate_auto_submit"
+    assert ledger.nodes["forward"].status.value == "candidate"
 
 
 def test_compiler_uses_canonical_prelude_and_hashes_normalized_candidate():
