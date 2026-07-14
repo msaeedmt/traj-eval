@@ -187,3 +187,55 @@ def test_no_submission_silent_none():
     m = validate(events, TASK, compiler=stub)
     assert m.has_submission is False
     assert m.silent_failure is None
+
+
+def test_context_lines_extracts_preamble():
+    from traj_eval.metrics.lean.validator import _context_lines
+
+    block = (
+        "import Mathlib.CategoryTheory.NatTrans\n"
+        "open CategoryTheory\nvariable {C : Type*} [Category C]"
+    )
+    ctx = _context_lines(block)
+    assert "open CategoryTheory" in ctx
+    assert "variable {C" in ctx
+    assert "import" not in ctx  # import lines are dropped from context
+
+
+def test_context_lines_empty_for_self_contained():
+    from traj_eval.metrics.lean.validator import _context_lines
+
+    assert _context_lines("import Mathlib.Algebra.Ring.Basic") == ""
+
+
+def test_statement_preserved_prepends_full_mathlib_and_context():
+    # Regression: the probe must carry full Mathlib (fatem_012 lemmas) AND the
+    # task context (leancat variable/open). Build a task whose context is needed
+    # and confirm the probe compiles when the stub sees both.
+    from traj_eval.metrics.lean.validator import _check_statement_preserved
+
+    task = LeanTask(
+        task_id="t",
+        statement="theorem t (α β : (𝟭 C) ⟶ (𝟭 C)) : α ≫ β = β ≫ α",
+        imports=(
+            "import Mathlib.CategoryTheory.NatTrans\n"
+            "open CategoryTheory\nvariable {C : Type*} [Category C]"
+        ),
+    )
+    code = "import Mathlib\ntheorem t (α β : (𝟭 C) ⟶ (𝟭 C)) : α ≫ β = β ≫ α := by rfl"
+
+    seen = {}
+
+    class _C:
+        def check(self, probe):
+            seen["probe"] = probe
+            # only 'compiles' if BOTH full Mathlib and the context are present
+            ok = (
+                "import Mathlib\n" in probe
+                and "variable {C" in probe
+                and "open CategoryTheory" in probe
+            )
+            return LeanResult(ok, ok, 0, 0 if ok else 1, summary="")
+
+    assert _check_statement_preserved(code, task, _C()) is True
+    assert "open CategoryTheory" in seen["probe"]

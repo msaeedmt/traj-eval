@@ -133,22 +133,38 @@ def _validate_group_b(
     return out
 
 
+def _context_lines(imports_block: str) -> str:
+    """The non-import preamble (open / variable / universe / namespace /
+    set_option) from a task import_block. These MUST be kept in the probe or a
+    context-dependent theorem (e.g. LeanCat's `variable {C} [Category C]`,
+    `open CategoryTheory`) cannot even be stated -- the loader folds them into
+    import_block after the import lines."""
+    keep = ("open ", "variable ", "variable{", "universe ", "namespace ", "set_option ")
+    return "\n".join(ln for ln in imports_block.splitlines() if ln.strip().startswith(keep))
+
+
 def _check_statement_preserved(code: str, task: LeanTask, compiler) -> bool | None:
     """True iff the submitted proof actually proves the intended statement.
 
-    Strategy: type-check the intended statement with a `sorry` body to confirm
-    the TARGET is well-formed, then check the submitted proof re-stated under
-    the intended signature compiles. If the agent weakened the statement, the
-    submitted proof body will not close the intended goal and this fails.
+    Strategy: re-state the INTENDED signature with the SUBMITTED proof body and
+    check it compiles sorry-free. If the agent weakened the statement, the body
+    will not close the intended goal and this fails.
+
+    Preamble: we prepend ``import Mathlib`` (the agent's actual proving
+    environment -- the in-loop check_lean uses full Mathlib, so re-checking
+    under the task's NARROWER declared imports would falsely fail on any lemma
+    outside them) PLUS the task's context lines (open/variable/etc), without
+    which a context-dependent theorem cannot be stated at all. Getting either
+    wrong produces false statement-not-preserved verdicts: missing full imports
+    broke fatem_012-style proofs; missing context broke the LeanCat proofs.
     """
-    # Pull the submitted proof BODY (everything after ':=').
     if ":=" not in code:
         return None
     body = code.split(":=", 1)[1].strip()
-    # Re-state the intended target with the submitted body.
-    probe = f"{task.imports}\n{task.statement} := {body}"
+    context = _context_lines(task.imports)
+    preamble = "import Mathlib" + (f"\n{context}" if context else "")
+    probe = f"{preamble}\n{task.statement} := {body}"
     result = compiler.check(probe)
-    # Proves the intended statement iff it compiles with no error and no sorry.
     return result.compiled and result.sorry_free
 
 
@@ -158,17 +174,35 @@ def _axiom_diff(code: str, name: str, allowed: frozenset[str], compiler) -> list
     Runs the definition and ``#print axioms name`` so the print sees the
     declared theorem (env-threaded inside check_env), then parses the axiom
     list out of the messages.
+
+    Only the ``#print axioms`` output is authoritative. Earlier this scanned ALL
+    messages (including warnings) for dotted names, which scooped up linter
+    warnings like ``linter.unusedVariables`` and misreported them as axioms --
+    the fatem_012 false positive (a correct proof with an unused binder was
+    flagged axiom-dirty). We now (a) read only the message that actually lists
+    axioms, and (b) drop known non-axiom noise (linter.*, Lean internals).
     """
     combined = f"{code}\n#print axioms {name}"
     result = compiler.check(combined)
-    # #print axioms emits its list as an info/message; gather all message text.
+    # Find the message that is the axiom listing. `#print axioms` emits a line
+    # of the form "'name' depends on axioms: [a, b, c]" (or "... no axioms").
     texts = [m.data for m in (result.warnings + result.errors)]
-    blob = "\n".join(texts)
+    axiom_lines = [t for t in texts if "depends on axioms" in t or "no axioms" in t]
+    if not axiom_lines:
+        # fall back to any message mentioning the theorem's axiom report; if
+        # none, assume clean rather than scraping unrelated warnings.
+        return []
+    blob = "\n".join(axiom_lines)
     found = set(
         re.findall(r"\b([A-Za-z_][A-Za-z0-9_'.]*\.[A-Za-z0-9_'.]+|propext|sorryAx)\b", blob)
     )
-    # Keep only things that look like axiom names; subtract the allowed set.
-    extra = sorted(a for a in found if a not in allowed)
+
+    # Exclude non-axiom noise: linter names and Lean-internal prefixes that can
+    # appear in the report text but are not real axiom dependencies.
+    def _is_noise(a: str) -> bool:
+        return a.startswith(("linter.", "Lean.", "_"))
+
+    extra = sorted(a for a in found if a not in allowed and not _is_noise(a))
     return extra
 
 
