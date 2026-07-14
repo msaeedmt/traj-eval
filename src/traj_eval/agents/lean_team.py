@@ -43,7 +43,7 @@ def lean_routing_config(*, max_turns: int = 40) -> RoutingConfig:
             AgentRole.ENGINEER: RoleSpec(
                 role=AgentRole.ENGINEER,
                 handoff_targets=frozenset({AgentRole.CRITIC, AgentRole.REASONER}),
-                tools=frozenset({"check_lean", "search_lemmas"}),
+                tools=frozenset({"check_lean", "search_lemmas", "try_tactic", "show_goals"}),
             ),
             AgentRole.CRITIC: RoleSpec(
                 role=AgentRole.CRITIC,

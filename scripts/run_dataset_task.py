@@ -78,7 +78,9 @@ def main(argv: list[str]) -> int:
     print(f"imports: {record.imports}\n")
 
     from traj_eval.tools.lean_compiler import LeanCompiler
+    from traj_eval.tools.lean_goals import make_show_goals
     from traj_eval.tools.lean_search import make_search_lemmas
+    from traj_eval.tools.lean_tactic import make_try_tactic
 
     print(f"Starting REAL Lean compiler against {PROJECT_DIR} (first run is slow)...")
     compiler = LeanCompiler(PROJECT_DIR)
@@ -92,6 +94,8 @@ def main(argv: list[str]) -> int:
         tools={
             "check_lean": compiler.as_tool(),
             "search_lemmas": make_search_lemmas(num_results=5),
+            "try_tactic": make_try_tactic(compiler),
+            "show_goals": make_show_goals(compiler),
         },
         max_turns=30,
         ledger=ledger,
@@ -147,6 +151,14 @@ def main(argv: list[str]) -> int:
     print(f"  perseverated       : {rep.perseverated}")
     print(f"  max_repeat         : {rep.max_repeat}")
     print(f"  retry_success_rate : {rep.retry_success_rate}")
+
+    # Per-tool call counts over ALL tools (check_lean, search_lemmas, try_tactic,
+    # show_goals). The perseveration block above is check_lean-only by design; this
+    # surfaces the other tools so their usage (or non-usage) is visible.
+    print("\n==================== tool usage ====================")
+    print(f"  all tool calls     : {art.n_all_tool_calls}")
+    for name in sorted(art.tool_call_counts):
+        print(f"    {name:16s}: {art.tool_call_counts[name]}")
     return 0
 
 

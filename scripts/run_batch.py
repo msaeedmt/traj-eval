@@ -28,7 +28,7 @@ from __future__ import annotations
 import argparse
 import os
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from traj_eval.agents import (
@@ -73,6 +73,7 @@ class TrialOutcome:
     termination: str | None
     n_tool_calls: int
     perseverated: bool
+    tool_counts: dict[str, int] = field(default_factory=dict)  # per-tool call counts
 
 
 def _looks_like_import_error(events) -> bool:
@@ -110,7 +111,9 @@ def _classify(events, metrics, run_state) -> str:
 
 
 def run_one_trial(record: ProblemRecord, trial: int, compiler) -> TrialOutcome:
+    from traj_eval.tools.lean_goals import make_show_goals
     from traj_eval.tools.lean_search import make_search_lemmas
+    from traj_eval.tools.lean_tactic import make_try_tactic
 
     task = to_lean_task(record)
     context_note = (
@@ -136,6 +139,8 @@ def run_one_trial(record: ProblemRecord, trial: int, compiler) -> TrialOutcome:
         tools={
             "check_lean": compiler.as_tool(),
             "search_lemmas": make_search_lemmas(num_results=5),
+            "try_tactic": make_try_tactic(compiler),
+            "show_goals": make_show_goals(compiler),
         },
         max_turns=30,
         ledger=ledger,
@@ -175,6 +180,7 @@ def run_one_trial(record: ProblemRecord, trial: int, compiler) -> TrialOutcome:
         termination=run_state.reason,
         n_tool_calls=rep.n_tool_calls,
         perseverated=rep.perseverated,
+        tool_counts=dict(art.tool_call_counts),
     )
 
 
@@ -244,6 +250,27 @@ def _report(outcomes: list[TrialOutcome], trials: int) -> None:
     print(f"  total trials: {len(outcomes)}")
     for k, v in sorted(c.items()):
         print(f"    {k:16s}: {v}")
+
+    # Tool usage by outcome: mean calls per tool within each outcome bucket. This
+    # is the O2 view -- e.g. whether solved trials use show_goals/try_tactic more
+    # than unsolved ones, and whether a tool is firing at all. check_lean-only
+    # perseveration cannot see this; per-tool counts can.
+    print("\n==================== tool usage by outcome ====================")
+    all_tools = sorted({t for o in outcomes for t in o.tool_counts})
+    if not all_tools:
+        print("  (no tool calls recorded)")
+    else:
+        by_outcome: dict[str, list[TrialOutcome]] = {}
+        for o in outcomes:
+            by_outcome.setdefault(o.outcome, []).append(o)
+        header = "  " + f"{'outcome':16s}" + "".join(f"{t:>14s}" for t in all_tools)
+        print(header)
+        for oc, os_ in sorted(by_outcome.items()):
+            n = len(os_)
+            means = [sum(o.tool_counts.get(t, 0) for o in os_) / n for t in all_tools]
+            row = "  " + f"{oc:16s}" + "".join(f"{m:>14.2f}" for m in means)
+            print(row)
+        print("  (values are mean calls per trial, by outcome)")
 
 
 if __name__ == "__main__":

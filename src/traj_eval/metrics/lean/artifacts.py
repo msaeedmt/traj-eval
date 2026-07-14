@@ -36,13 +36,28 @@ from traj_eval.trace_core.schema import AgentRole, EventType, TraceEvent
 
 @dataclass(frozen=True)
 class ToolCallRecord:
-    """One check_lean call paired with the verdict that came back (if any)."""
+    """One tool call paired with the result that came back (if any).
+
+    ``tool_name`` names which tool was invoked (check_lean, search_lemmas,
+    try_tactic, show_goals, ...). ``arguments`` is the parsed argument dict as
+    the LLM emitted it, so a call's payload is inspectable regardless of tool.
+
+    ``code`` / ``compiled`` / ``sorry_free`` are the check_lean-specific fields:
+    ``code`` is the ``code`` argument (None for tools that take no code), and
+    ``compiled`` / ``sorry_free`` are the compile verdict (None for any tool
+    that is not check_lean, since only check_lean returns a compile result). The
+    compile-oriented consumers (last_verified, the perseveration detector) read
+    these and MUST filter to check_lean records first -- see ``check_lean_calls``
+    on TrialArtifacts, which is the check_lean-only view they use.
+    """
 
     call_id: str | None
-    code: str | None  # the `code` argument, parsed from the call's JSON arguments
-    compiled: bool | None  # from the matching result, if one was logged
+    code: str | None  # the `code` argument, if any (check_lean / try_tactic / show_goals)
+    compiled: bool | None  # check_lean verdict only; None for other tools
     sorry_free: bool | None
     seq: int
+    tool_name: str | None = None  # defaults to None == check_lean (backward compat)
+    arguments: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -56,14 +71,29 @@ class TrialArtifacts:
 
     submitted: str | None
     last_verified: str | None
+    # ``tool_calls`` is the check_lean-ONLY view, kept for backward compatibility:
+    # every consumer that reads .code/.compiled (last_verified, the perseveration
+    # detector, analyze_batch's got_clean) expects only compile records here, so
+    # this list contains exactly the check_lean calls. The full, all-tools list
+    # is ``all_tool_calls``.
     tool_calls: list[ToolCallRecord] = field(default_factory=list)
+    all_tool_calls: list[ToolCallRecord] = field(default_factory=list)
     declared_success: bool = False  # final step ended in critic APPROVE
-    n_tool_calls: int = 0
-    n_failed_compiles: int = 0  # tool results whose verdict was compiled == False
+    n_tool_calls: int = 0  # count of check_lean calls (backward-compatible meaning)
+    n_failed_compiles: int = 0  # check_lean results whose verdict was compiled == False
+    # Per-tool call counts over ALL tools (check_lean, search_lemmas, try_tactic,
+    # show_goals, ...). This is what makes non-compile tool activity measurable:
+    # e.g. {"check_lean": 4, "show_goals": 6, "search_lemmas": 3, "try_tactic": 0}.
+    tool_call_counts: dict[str, int] = field(default_factory=dict)
 
     @property
     def compiler_was_called(self) -> bool:
         return self.n_tool_calls > 0
+
+    @property
+    def n_all_tool_calls(self) -> int:
+        """Total tool calls across every tool, not just check_lean."""
+        return len(self.all_tool_calls)
 
     @property
     def submitted_eq_last_verified(self) -> bool | None:
@@ -88,24 +118,28 @@ def _normalise(code: str) -> str:
     return " ".join(code.split())
 
 
-def _call_code(event: TraceEvent) -> tuple[str | None, str | None]:
-    """(call_id, code) from a TOOL_CALL event's first check_lean call.
+def _call_info(event: TraceEvent) -> tuple[str | None, str | None, str | None, dict]:
+    """(call_id, tool_name, code, arguments) from a TOOL_CALL event's first call.
 
-    Returns (None, None) if the arguments cannot be parsed or carry no code.
+    Generalised over ``_call_code``: reads whichever tool was called, not only
+    check_lean. ``code`` is the ``code`` argument when present (check_lean /
+    try_tactic / show_goals all take one), else None. ``arguments`` is the full
+    parsed argument dict (e.g. ``{"query": ...}`` for search_lemmas), or {} when
+    it cannot be parsed -- an unreadable argument is empty, never guessed.
     """
     calls = event.payload.get("tool_calls") or []
     for c in calls:
-        if c.get("name") not in (None, "check_lean"):
-            continue
+        name = c.get("name")
         args = c.get("arguments")
         if not args:
-            return c.get("id"), None
+            return c.get("id"), name, None, {}
         try:
             parsed = json.loads(args)
         except (json.JSONDecodeError, TypeError):
-            return c.get("id"), None
-        return c.get("id"), parsed.get("code")
-    return None, None
+            return c.get("id"), name, None, {}
+        code = parsed.get("code") if isinstance(parsed, dict) else None
+        return c.get("id"), name, code, (parsed if isinstance(parsed, dict) else {})
+    return None, None, None, {}
 
 
 def _result_verdict(event: TraceEvent) -> tuple[str | None, bool | None, bool | None]:
@@ -158,22 +192,40 @@ def extract_artifacts(events: list[TraceEvent]) -> TrialArtifacts:
             cid, compiled, sorry_free = _result_verdict(e)
             results_by_id[cid] = (compiled, sorry_free)
 
-    tool_calls: list[ToolCallRecord] = []
+    # Record EVERY tool call (check_lean, search_lemmas, try_tactic, show_goals,
+    # ...). Compile verdicts only exist for check_lean results, so compiled/
+    # sorry_free stay None for every other tool -- their EXECUTION_RESULT text is
+    # a suggestion or a lemma list, not a {'compiled': ...} dict, so it simply is
+    # not in results_by_id.
+    all_tool_calls: list[ToolCallRecord] = []
+    tool_call_counts: dict[str, int] = {}
     for e in events:
         if e.event_type is EventType.TOOL_CALL:
-            cid, code = _call_code(e)
+            cid, name, code, args = _call_info(e)
             compiled, sorry_free = results_by_id.get(cid, (None, None))
-            tool_calls.append(
+            all_tool_calls.append(
                 ToolCallRecord(
                     call_id=cid,
+                    tool_name=name,
                     code=code,
                     compiled=compiled,
                     sorry_free=sorry_free,
                     seq=e.seq,
+                    arguments=args,
                 )
             )
+            if name is not None:
+                tool_call_counts[name] = tool_call_counts.get(name, 0) + 1
 
-    # 3. last_verified: code of the last call whose result compiled successfully.
+    # The check_lean-only view every compile-oriented consumer expects. A record
+    # with tool_name None is treated as check_lean for backward compatibility
+    # (older traces did not tag the name; check_lean was the only code-bearing
+    # tool then).
+    tool_calls: list[ToolCallRecord] = [
+        rec for rec in all_tool_calls if rec.tool_name in (None, "check_lean")
+    ]
+
+    # 3. last_verified: code of the last check_lean call whose result compiled.
     last_verified: str | None = None
     for rec in tool_calls:
         if rec.compiled and rec.code is not None:
@@ -202,7 +254,9 @@ def extract_artifacts(events: list[TraceEvent]) -> TrialArtifacts:
         submitted=submitted,
         last_verified=last_verified,
         tool_calls=tool_calls,
+        all_tool_calls=all_tool_calls,
         declared_success=declared_success,
-        n_tool_calls=len(tool_calls),
+        n_tool_calls=len(tool_calls),  # check_lean count (backward-compatible)
         n_failed_compiles=n_failed,
+        tool_call_counts=tool_call_counts,
     )
