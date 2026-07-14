@@ -1,1 +1,0 @@
-{"tool":"run","command":"python tests/engineer/evidence/stargazer_true_task/workdir/stargazer_engineer_script.py"}

@@ -1,6 +1,0 @@
-{"tool": "read_file", "path": "README.md"}
-{"tool": "write_file", "path": "runs/engineer/tmp/example_from_engineer.txt", "content": "This is an example private engineer artifact.\\n"}
-{"tool": "run", "command": "python --version"}
-{"tool": "git_status"}
-{"tool": "git_diff"}
-{"tool": "finish", "message": "Example only."}

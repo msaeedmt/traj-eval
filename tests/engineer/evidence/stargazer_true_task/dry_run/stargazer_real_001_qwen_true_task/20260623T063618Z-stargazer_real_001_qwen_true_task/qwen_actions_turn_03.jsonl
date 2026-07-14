@@ -1,1 +1,0 @@
-{"tool": "run", "command": "python -c \"import json, sys; sys.path.insert(0, r'notebooks/qwen_saeed_stargazer_real1/support'); from stargazer.evaluator import _parse_submission_planets; s=json.load(open(r'tests/engineer/evidence/stargazer_true_task/workdir/stargazer_workdir/agent_submission.json')); print(len(_parse_submission_planets(s, 'params_and_model')))\""}
