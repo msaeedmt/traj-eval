@@ -19,6 +19,7 @@ and what an agent actually expresses is the coordination signal the run records.
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import wraps
 from typing import Any
 
 from autogen import GroupChatManager, LLMConfig, UserProxyAgent
@@ -30,7 +31,34 @@ from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import AgentRole
 
 RECOVERY_TRIANGLE_V1 = "recovery_triangle_v1"
-SUPPORTED_LEAN_SETUPS = (RECOVERY_TRIANGLE_V1,)
+RECOVERY_TRIANGLE_NO_RETRIEVAL_V1 = "recovery_triangle_no_retrieval_v1"
+RETRIEVAL_DISABLED_RESULT = (
+    "search_lemmas unavailable (retrieval disabled by matched ablation); "
+    "proceed without retrieval."
+)
+SUPPORTED_LEAN_SETUPS = (
+    RECOVERY_TRIANGLE_V1,
+    RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
+)
+
+
+def _tools_for_setup(
+    tools: dict[str, Callable[..., Any]], setup: str
+) -> dict[str, Callable[..., Any]]:
+    """Apply only the named setup's retrieval intervention."""
+    if setup != RECOVERY_TRIANGLE_NO_RETRIEVAL_V1 or "search_lemmas" not in tools:
+        return tools
+
+    search_lemmas = tools["search_lemmas"]
+
+    @wraps(search_lemmas)
+    def retrieval_disabled(query: str) -> str:
+        _ = query
+        return RETRIEVAL_DISABLED_RESULT
+
+    conditioned_tools = dict(tools)
+    conditioned_tools["search_lemmas"] = retrieval_disabled
+    return conditioned_tools
 
 
 def lean_routing_config(*, max_turns: int = 40) -> RoutingConfig:
@@ -89,7 +117,7 @@ def build_lean_free_team(
         llm_config,
         config=config,
         agents=agents,
-        tools=tools,
+        tools=_tools_for_setup(tools, setup),
         ledger=ledger,
         step_context=step_context,
     )

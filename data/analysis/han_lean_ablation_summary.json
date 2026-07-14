@@ -1,0 +1,156 @@
+{
+  "schema_version": "han_lean_ablation_summary_v1",
+  "generated_on": "2026-07-15",
+  "branch": "Han",
+  "branch_roles": {
+    "Han": "private Engineer sources, contained experiments, sanitized results, and educational interpretation",
+    "Science-Work-Flow-": "read-only private experiment warehouse and history source",
+    "experiment/qwen-tool-routed-subgoals": "read-only tool-routed evidence",
+    "han-lean-anchors-merge": "public current tree containing validated Lean artifacts and an independent model boundary"
+  },
+  "research_coverage": {
+    "deduplicated_task_count": 73,
+    "traj_eval_task_count": 33,
+    "science_work_flow_task_count": 40,
+    "canonical_rollouts_semantically_parsed": 73,
+    "missing_or_inaccessible_rollouts": 0,
+    "raw_chat_bodies_committed": false,
+    "social_media_accessed": false
+  },
+  "history": [
+    {
+      "commit": "9b3db45",
+      "finding": "introduced the task-specific Qwen JSONL Engineer worker"
+    },
+    {
+      "commit": "74ecd5d",
+      "finding": "added Stargazer evidence that actions could be emitted, executed, written, and traced"
+    },
+    {
+      "commit": "1414edf",
+      "finding": "moved Engineer sources under the agents package"
+    },
+    {
+      "commit": "e491473",
+      "finding": "copied the essential Windows-clean Lean anchor integration; this is not a merge commit to revert"
+    },
+    {
+      "commit": "eb3fb46",
+      "finding": "added generic runtime compatibility without demonstrating causal Lean improvement"
+    },
+    {
+      "commit": "3722de5",
+      "finding": "recorded recovery and statement-faithfulness evidence without a solved-task gain"
+    }
+  ],
+  "retrieval_ablation": {
+    "baseline_setup": "recovery_triangle_v1",
+    "ablation_setup": "recovery_triangle_no_retrieval_v1",
+    "intervention": "replace only the search_lemmas result with a deterministic retrieval-disabled response",
+    "fixed_factors": [
+      "roles",
+      "prompts",
+      "routing policy",
+      "provider route",
+      "tool names",
+      "turn budget"
+    ],
+    "metadata_field": "retrieval_condition",
+    "trace_isolation": "baseline filenames remain stable; the ablation uses a distinct trial ID, trace path, and summary filename",
+    "code_validation": {
+      "fixed_test_count": 78,
+      "fixed_tests_passed": 78,
+      "provider_registration_probe_passed": true,
+      "default_behavior_changed": false
+    },
+    "contained_codex_smoke": {
+      "model": "gpt-5.4-mini",
+      "reasoning_effort": "low",
+      "fallback_model": null,
+      "theorem_id": "LeanCat002",
+      "maximum_model_calls": 8,
+      "worker_processes_attempted": 6,
+      "successful_worker_processes": 0,
+      "diagnostic_invocations": 1,
+      "output_token_limit_per_call": 1500,
+      "grounded_arm_valid": false,
+      "no_retrieval_arm_valid": false,
+      "startup_failure": "features.rollout_budget.reminder_at_remaining_tokens was required by the enabled local Codex rollout-budget configuration",
+      "model_responses_observed": 0,
+      "retrieval_effect_measured": false,
+      "result": "invalid matched smoke; no performance comparison is admissible"
+    }
+  },
+  "lean_validation": {
+    "lean_version": "4.30.0",
+    "transport": "--stdin",
+    "valid_fixture_accepted": true,
+    "invalid_fixture_rejected": true,
+    "toolchain_sha256": "54727eec5cba149c18842e6deb5c41b369d66455c93ce135d7d5347c782b2325",
+    "manifest_sha256": "2cdaf8d0a2c4ab338158ba046288e277aef2fb3657f502541d6ee39380b9da71",
+    "mathlib_basic_olean_sha256": "b4c7248885d11e571871049709e610a9b7b8ba846143fdd273c59c6fba0ff1db"
+  },
+  "engineer_replay": {
+    "skipped_run_plus_finish_false_positive": true,
+    "successful_run_process_plus_finish_false_negative": true,
+    "allowed_paths_enforced_by_write_handlers": false,
+    "malformed_mixed_output_partially_accepted": true,
+    "hidden_evaluation_excluded_from_step_prompts": true,
+    "active_lean_import_graph": {
+      "node_count": 25,
+      "edge_count": 59,
+      "engineer_import_edge": false,
+      "unchanged": true,
+      "sha256": "b425751f07b2f6e23fabac3d54a0f914ae5f3f5170a3c7ba868600c9c934e4e7"
+    },
+    "conclusion": "the generic runtime is dormant burden with reproducible safety defects, not demonstrated Lean robustness"
+  },
+  "warehouse_evidence_boundary": {
+    "queried_read_only": true,
+    "supports": [
+      "separating provider reachability from scientific success",
+      "separating claimed output from physical artifacts",
+      "keeping hidden evaluation outside prompts",
+      "treating critic masking and coordination collapse as explicit failure modes"
+    ],
+    "does_not_support": [
+      "a matched Lean retrieval effect",
+      "broad Engineer utility",
+      "overall NLP proposal improvement"
+    ]
+  },
+  "decision": {
+    "private_branch": "preserve Engineer sources and experiment conclusions on Han",
+    "public_branch": "archive dormant runtime and Engineer packages while retaining validated Lean support and the independent model boundary",
+    "history_rewrite": false,
+    "e491473_retained": true
+  },
+  "claim_boundary": {
+    "strengths": [
+      "matched retrieval intervention",
+      "external Lean kernel verdict",
+      "deterministic runtime-truthfulness checks"
+    ],
+    "drawbacks": [
+      "one theorem",
+      "one model",
+      "residual Codex wrapper behavior",
+      "startup configuration failure",
+      "Engineer replay measures correctness rather than broad task utility"
+    ],
+    "can_establish": [
+      "dormant dependency burden",
+      "current Engineer safety and truthfulness defects",
+      "instrumentation for a future matched retrieval test"
+    ],
+    "cannot_establish": [
+      "a retrieval benefit from this invalid smoke",
+      "overall NLP proposal improvement",
+      "general architecture superiority"
+    ],
+    "next_required_controls": [
+      "repeated matched trials",
+      "single-agent control"
+    ]
+  }
+}

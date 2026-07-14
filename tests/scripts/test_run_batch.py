@@ -6,15 +6,25 @@ and import-error detection are.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from inspect import signature
 
+from traj_eval.agents import lean_team
 from traj_eval.agents import make_trial_meta
+from traj_eval.agents.lean_team import (
+    RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
+    RECOVERY_TRIANGLE_V1,
+)
 from scripts.run_batch import (
     TrialOutcome,
     _build_run_summary,
     _configure_console,
     _report,
+    _summary_stem,
     _task_prompt,
+    _trace_path,
     _trace_is_valid,
+    _trial_config,
+    _trial_key,
     _write_summary,
 )
 from traj_eval.dataset.loader import ProblemRecord
@@ -243,6 +253,94 @@ def test_task_prompt_allows_evidence_backed_free_routing():
 
     assert "Each role chooses its next allowed action" in prompt
     assert "extra communication is not itself success" in prompt
+
+
+def test_no_retrieval_changes_only_search_result():
+    calls: list[str] = []
+
+    def check_lean(code: str) -> str:
+        return code
+
+    def search_lemmas(query: str) -> str:
+        """Search Mathlib for candidate declarations."""
+        calls.append(query)
+        return f"found: {query}"
+
+    tools = {"check_lean": check_lean, "search_lemmas": search_lemmas}
+    grounded = lean_team._tools_for_setup(tools, RECOVERY_TRIANGLE_V1)
+    ablated = lean_team._tools_for_setup(
+        tools, RECOVERY_TRIANGLE_NO_RETRIEVAL_V1
+    )
+
+    assert grounded is tools
+    assert set(ablated) == set(grounded)
+    assert ablated["check_lean"] is grounded["check_lean"]
+    assert ablated["search_lemmas"].__name__ == search_lemmas.__name__
+    assert signature(ablated["search_lemmas"]) == signature(search_lemmas)
+    assert ablated["search_lemmas"].__doc__ == search_lemmas.__doc__
+    assert grounded["search_lemmas"]("monic composition") == "found: monic composition"
+    assert (
+        ablated["search_lemmas"]("monic composition")
+        == lean_team.RETRIEVAL_DISABLED_RESULT
+    )
+    assert calls == ["monic composition"]
+
+
+def test_retrieval_metadata_is_matched_except_condition_labels():
+    grounded = _trial_config(RECOVERY_TRIANGLE_V1)
+    ablated = _trial_config(RECOVERY_TRIANGLE_NO_RETRIEVAL_V1)
+
+    assert grounded["retrieval_condition"] == "enabled"
+    assert ablated == grounded | {
+        "setup": RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
+        "retrieval_condition": "disabled",
+    }
+
+
+def test_retrieval_arms_use_distinct_trace_identity_and_paths(tmp_path):
+    baseline_key = _trial_key("LeanCat002", 0, RECOVERY_TRIANGLE_V1)
+    ablation_key = _trial_key(
+        "LeanCat002", 0, RECOVERY_TRIANGLE_NO_RETRIEVAL_V1
+    )
+
+    assert baseline_key == "LeanCat002_t0"
+    assert ablation_key == (
+        "LeanCat002_t0__recovery_triangle_no_retrieval_v1"
+    )
+    assert _trace_path(tmp_path, "LeanCat002", 0, RECOVERY_TRIANGLE_V1) == (
+        tmp_path / "LeanCat002_t0.jsonl"
+    )
+    assert _trace_path(
+        tmp_path, "LeanCat002", 0, RECOVERY_TRIANGLE_NO_RETRIEVAL_V1
+    ) == tmp_path / "LeanCat002_t0__recovery_triangle_no_retrieval_v1.jsonl"
+    assert _summary_stem(RECOVERY_TRIANGLE_V1) == "summary"
+    assert _summary_stem(RECOVERY_TRIANGLE_NO_RETRIEVAL_V1) == (
+        "summary__recovery_triangle_no_retrieval_v1"
+    )
+
+
+def test_no_retrieval_summary_does_not_overwrite_baseline(tmp_path):
+    baseline = _build_run_summary(
+        [], expected_trials=0, setup=RECOVERY_TRIANGLE_V1, model="probe"
+    )
+    ablation = _build_run_summary(
+        [],
+        expected_trials=0,
+        setup=RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
+        model="probe",
+    )
+
+    _write_summary(tmp_path, baseline)
+    _write_summary(tmp_path, ablation)
+
+    assert (tmp_path / "summary.json").is_file()
+    assert (tmp_path / "summary.md").is_file()
+    assert (
+        tmp_path / "summary__recovery_triangle_no_retrieval_v1.json"
+    ).is_file()
+    assert (
+        tmp_path / "summary__recovery_triangle_no_retrieval_v1.md"
+    ).is_file()
 
 
 def test_report_preserves_summary_mapping(capsys):

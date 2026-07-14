@@ -45,6 +45,7 @@ from traj_eval.agents import (
 )
 from traj_eval.agents.free_routing import finalize_run
 from traj_eval.agents.lean_team import (
+    RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
     RECOVERY_TRIANGLE_V1,
     SUPPORTED_LEAN_SETUPS,
     build_lean_free_team,
@@ -61,6 +62,43 @@ DATASET_ROOT = Path("dataset/Lean")
 PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
 LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
+
+
+def _trial_config(setup: str) -> dict[str, object]:
+    """Build matched trial metadata for the retrieval intervention."""
+    return {
+        "setup": setup,
+        "prompt_revision": RECOVERY_TRIANGLE_V1,
+        "routing_policy": "agent_chosen_handoffs",
+        "provider_route": "openai_compatible",
+        "tools": ["check_lean", "search_lemmas"],
+        "max_turns": 30,
+        "retrieval_condition": (
+            "disabled"
+            if setup == RECOVERY_TRIANGLE_NO_RETRIEVAL_V1
+            else "enabled"
+        ),
+    }
+
+
+def _trial_key(task_id: str, trial: int, setup: str) -> str:
+    """Keep legacy baseline names while isolating every non-baseline arm."""
+    base = f"{task_id}_t{trial}"
+    if setup == RECOVERY_TRIANGLE_V1:
+        return base
+    return f"{base}__{setup}"
+
+
+def _trace_path(output_dir: Path, task_id: str, trial: int, setup: str) -> Path:
+    """Return the condition-specific trace path used by run and rescore modes."""
+    return output_dir / f"{_trial_key(task_id, trial, setup)}.jsonl"
+
+
+def _summary_stem(setup: str) -> str:
+    """Keep legacy baseline summaries while isolating non-baseline reports."""
+    if setup == RECOVERY_TRIANGLE_V1:
+        return "summary"
+    return f"summary__{setup}"
 
 
 @dataclass
@@ -166,26 +204,20 @@ def run_one_trial(
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    log_path = output_dir / f"{record.id}_t{trial}.jsonl"
+    trial_id = _trial_key(record.id, trial, setup)
+    log_path = _trace_path(output_dir, record.id, trial, setup)
     meta = make_trial_meta(
-        trial_id=f"{record.id}_t{trial}",
+        trial_id=trial_id,
         task_id=record.id,
         backbone=os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini"),
         testbed="lean",
         architecture=f"lean_{setup}",
         grounding=True,
-        config={
-            "setup": setup,
-            "prompt_revision": RECOVERY_TRIANGLE_V1,
-            "routing_policy": "agent_chosen_handoffs",
-            "provider_route": "openai_compatible",
-            "tools": ["check_lean", "search_lemmas"],
-            "max_turns": 30,
-        },
+        config=_trial_config(setup),
     )
     writer = TrialLogWriter(log_path, meta)
     observer = TraceObserver(
-        writer, trial_id=f"{record.id}_t{trial}", ledger=ledger, step_context=step_context
+        writer, trial_id=trial_id, ledger=ledger, step_context=step_context
     )
     observer.attach([a for a in groupchat.agents if a.name != "user"])
     observer.record_task(prompt)
@@ -250,7 +282,7 @@ def main() -> int:
     observed_models: set[str] = set()
     for r in records:
         for t in range(args.trials):
-            log_path = args.output_dir / f"{r.id}_t{t}.jsonl"
+            log_path = _trace_path(args.output_dir, r.id, t, args.setup)
             if args.summarize_existing:
                 if not _trace_is_valid(log_path):
                     errors.append(
@@ -425,7 +457,8 @@ def _build_run_summary(
 
 def _write_summary(output_dir: Path, summary: dict) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "summary.json").write_text(
+    summary_stem = _summary_stem(summary["setup"])
+    (output_dir / f"{summary_stem}.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
     )
     communication = summary["communication"]
@@ -466,7 +499,9 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
             "It does not support an O3 architecture-improvement claim.",
         ]
     )
-    (output_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (output_dir / f"{summary_stem}.md").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
 
 
 def _report(outcomes: list[TrialOutcome], summary: dict) -> None:
