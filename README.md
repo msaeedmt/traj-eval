@@ -8,16 +8,15 @@ Jiadong Han · Mohammad Saeed Motevali Amin
 ## What this is
 
 Output-centric evaluation cannot say *where* a multi-agent reasoning failure
-originates or how it propagates. This framework instruments inter-agent
-communication as a directed event graph, scores both the reasoning process and
-the final artefact, and attributes anchor violations to specific events and
-agents — across two testbeds with contrasting step-checkability:
+originates or how it propagates. This public branch applies trajectory
+instrumentation to **Lean 4 theorem proving**, where the Lean kernel supplies
+an external, step-verifiable verdict. It records inter-agent communication as a
+directed event graph, scores both the reasoning process and the final proof,
+and attributes anchor violations to specific events and agents.
 
-* **Lean 4** theorem proving (step-verifiable; kernel ground truth)
-* **Astrophysical inference** (partially step-verifiable; Stargazer forward model)
-
-See `docs/SETUP.md` for the full environment setup and `docs/ARCHITECTURE.md`
-for the module map and the framework-agnostic vs. domain-adaptable split.
+See `dataset/Lean/README.md` for the benchmark and Lean setup. Model endpoints
+use the independent configuration boundary in `src/traj_eval/agents/config.py`;
+`configs/qwen.remote.example.env` documents the public Qwen template.
 
 ## Quick start
 
@@ -31,15 +30,15 @@ uv run python scripts/export_schema.py   # regenerate JSON Schema
 
 ```
 src/traj_eval/
-  trace_core/    framework-agnostic: schema, storage, graph G   (O1)
-  anchors/
-    lean/        domain-adaptable anchor logic (proof state)
-    astro/       domain-adaptable anchor logic (forward model)
-  detectors/     trajectory-level failure detectors             (O2)
-  experiments/   architecture / backbone / stress matrix        (O3)
-  datasets/      loaders + count assertions (FATE, LeanCat, Stargazer)
-  dashboard/     trajectory views & anchor inspection (built last)
-schema/          exported JSON Schema (generated)
+  agents/        Lean team, routing, roles, and model boundary
+  anchors/lean/  Lean proof-state anchor logic
+  dataset/       benchmark loading and verification
+  metrics/       communication and Lean outcome metrics
+  tools/         Lean compiler and retrieval adapters
+  trace_core/    event schema, storage, and graph G              (O1)
+dataset/Lean/    public MiniFATELeanCat benchmark and Lake project
+schema/          exported JSON Schema
+scripts/         Lean batch runner and reproducible analysis
 tests/           pytest suite
 ```
 
@@ -48,4 +47,4 @@ tests/           pytest suite
 * **O1** Localisation infrastructure — non-invasive observer, schema-validated
   event log, directed graph, attribution of first anchor violation.
 * **O2** Failure taxonomy & automatic detectors over G.
-* **O3** Early prediction across verification regimes (stretch).
+* **O3** Early prediction over Lean proof trajectories (stretch).
