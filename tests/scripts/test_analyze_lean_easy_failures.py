@@ -78,6 +78,30 @@ def test_public_text_redacts_workstation_and_temp_paths():
     assert "module.olean" in public
 
 
+def test_public_text_normalizes_identical_dataset_from_another_checkout():
+    raw = (
+        "C:\\another checkout\\traj-eval\\dataset\\Lean\\.lake\\module.olean "
+        "'C:\\\\another checkout\\\\traj-eval\\\\dataset\\\\Lean\\\\escaped.olean'"
+        " /opt/cache/traj-eval/dataset/Lean/.lake/posix.olean"
+    )
+
+    public = analyzer._public_text(raw)
+
+    assert not _has_windows_absolute_path(public)
+    assert "<repo>\\dataset\\Lean\\.lake\\module.olean" in public
+    assert "<repo>\\\\dataset\\\\Lean\\\\escaped.olean" in public
+    assert "<repo>/dataset/Lean/.lake/posix.olean" in public
+    assert "/opt/cache" not in public
+    assert "<repo>\\dataset\\LeanCat" not in analyzer._public_text(
+        "C:\\another checkout\\dataset\\LeanCat\\near-miss.olean"
+    )
+    uris = (
+        "https://example.org/cache/dataset/Lean/file.olean "
+        "file:///opt/cache/dataset/Lean/file.olean"
+    )
+    assert analyzer._public_text(uris) == uris
+
+
 def test_review_source_has_exactly_100_hash_bound_trials():
     reviews = _reviews()
     assert len(reviews) == 100
@@ -339,6 +363,9 @@ def test_writes_structured_trace_only_bundle_without_mutating_raw_traces(tmp_pat
 
     assert rc == 0
     assert public_csv.read_text(encoding="utf-8") == out_csv.read_text(encoding="utf-8")
+    assert b"\r\n" not in out_csv.read_bytes()
+    assert b"\r\n" not in public_csv.read_bytes()
+    assert b"\r\n" not in public_json.read_bytes()
     rows = list(csv.DictReader(out_csv.open(encoding="utf-8")))
     assert len(rows) == 1
     assert list(rows[0]) == analyzer.CSV_FIELDS

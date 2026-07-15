@@ -11,10 +11,55 @@ def _compiler(tmp_path: Path) -> LeanCliCompiler:
     compiler = object.__new__(LeanCliCompiler)
     compiler.project_dir = tmp_path
     compiler.timeout = 7
-    compiler.tmp_dir = tmp_path
     compiler.lean_bin = Path("lean")
     compiler.lean_path = []
     return compiler
+
+
+def test_init_does_not_create_a_project_temp_directory(monkeypatch, tmp_path):
+    def fail_mkdir(*args, **kwargs):
+        raise AssertionError("LeanCliCompiler must not create project directories")
+
+    monkeypatch.setattr(Path, "mkdir", fail_mkdir)
+    monkeypatch.setattr(
+        LeanCliCompiler, "_find_local_lean", lambda self: Path("lean")
+    )
+    monkeypatch.setattr(
+        LeanCliCompiler, "_build_lean_path", lambda self: ["cached-lean-path"]
+    )
+
+    compiler = LeanCliCompiler(tmp_path)
+
+    assert compiler.project_dir == tmp_path.resolve()
+    assert not hasattr(compiler, "tmp_dir")
+
+
+def test_check_uses_stdin_without_project_file_mutation(monkeypatch, tmp_path):
+    calls: list[tuple[list[str], dict]] = []
+
+    def fail_file_operation(*args, **kwargs):
+        raise AssertionError("LeanCliCompiler must not write or unlink project files")
+
+    def run(cmd, **kwargs):
+        calls.append((cmd, kwargs))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(Path, "write_text", fail_file_operation)
+    monkeypatch.setattr(Path, "unlink", fail_file_operation)
+    monkeypatch.setattr(subprocess, "run", run)
+    code = "theorem target : True := trivial"
+
+    result = _compiler(tmp_path).check(code)
+
+    assert result.compiled is True
+    assert len(calls) == 1
+    cmd, kwargs = calls[0]
+    assert cmd == ["lean", "--stdin"]
+    assert kwargs["input"] == code
+    assert kwargs["cwd"] == tmp_path
+    assert kwargs["text"] is True
+    assert kwargs["capture_output"] is True
+    assert kwargs["timeout"] == 7
 
 
 def test_timeout_is_an_infrastructure_unknown(monkeypatch, tmp_path):

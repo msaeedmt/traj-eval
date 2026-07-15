@@ -313,6 +313,23 @@ def _public_text(text: str | None) -> str:
             value = re.sub(
                 re.escape(root), replacement, value, flags=re.IGNORECASE
             )
+
+    def known_dataset_root(match: re.Match[str]) -> str:
+        matched = match.group(0)
+        if "/" in matched and "\\" not in matched:
+            separator = "/"
+        else:
+            separator = "\\\\" if "\\\\" in matched else "\\"
+        return f"<repo>{separator}dataset{separator}Lean"
+
+    value = re.sub(
+        r"(?i)(?:(?<![a-z0-9_])[a-z]:(?:\\{1,2}|/)"
+        r"|(?<![a-z0-9_<>:/])/)[^'\"\r\n]*?"
+        r"(?:\\{1,2}|/)dataset(?:\\{1,2}|/)Lean"
+        r"(?=(?:\\{1,2}|/)|['\"\s]|$)",
+        known_dataset_root,
+        value,
+    )
     value = re.sub(
         r"(?i)(?:\.traj_eval_tmp(?:\\{1,2}|/))check_[0-9a-f]+\.lean",
         "<lean-temp>.lean",
@@ -1702,7 +1719,7 @@ def build_trace_documents(
 def _write_csv(path: Path, rows: list[dict[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS)
+        writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(_public_value(row) for row in rows)
 
@@ -1715,7 +1732,9 @@ def _copy_for_report(src: Path, dst: Path) -> None:
 def _write_json(path: Path, docs: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        json.dumps(_public_value(docs), ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(_public_value(docs), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+        newline="\n",
     )
 
 
