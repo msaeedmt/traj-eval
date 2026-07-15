@@ -23,6 +23,10 @@ build/
 !/data/.gitkeep
 /runs/
 *.jsonl
+!/data/batch/
+!/data/batch/version_1_trial_traces/
+!/data/batch/version_1_trial_traces/*.jsonl
+!/data/batch/version_1_trial_traces/README.md
 !/data/analysis/
 !/data/analysis/lean_easy_failure_reviews.jsonl
 

@@ -17,7 +17,7 @@ from traj_eval.dataset.loader import load_dataset
 from traj_eval.trace_core.storage import read_trial
 
 
-TRACE_DIR = Path("data/batch")
+TRACE_DIR = Path("data/batch/version_1_trial_traces")
 REVIEW_PATH = Path("data/analysis/lean_easy_failure_reviews.jsonl")
 DATASET_ROOT = Path("dataset/Lean")
 
