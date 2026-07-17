@@ -36,6 +36,7 @@ from dataclasses import dataclass, field
 
 from traj_eval.metrics.lean.artifacts import (
     TrialArtifacts,
+    candidate_kind,
     extract_artifacts,
     prohibited_placeholders,
     target_proof_body,
@@ -209,6 +210,28 @@ def _validate_group_b(
     errors = [error for error in (check_error, statement_error, axiom_error) if error]
     out["validation_error"] = "; ".join(errors) or None
     return out
+
+
+def validate_candidate(code: str, task: LeanTask, compiler) -> dict:
+    """Independently validate one proposed final artifact without a trace."""
+    kind = candidate_kind(code, task.statement)
+    artifacts = TrialArtifacts(
+        submitted=code,
+        last_verified=code,
+        submission_source="direct_candidate",
+        submitted_kind=kind,
+        last_verified_kind=kind,
+    )
+    result = _validate_group_b(artifacts, task, compiler)
+    result["passed"] = _validator_ok(
+        (
+            result["final_proof_compiles"],
+            result["final_proof_sorry_free"],
+            result["statement_preserved"],
+            result["axiom_clean"],
+        )
+    )
+    return result
 
 
 def _check_statement_preserved(

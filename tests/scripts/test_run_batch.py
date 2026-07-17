@@ -15,6 +15,7 @@ from scripts.run_batch import (
     LEAN_TOOL_NAMES,
     TrialOutcome,
     _build_agent_tools,
+    _build_trial_tools,
     _build_run_summary,
     _configure_console,
     _report,
@@ -25,6 +26,12 @@ from scripts.run_batch import (
     run_one_trial,
 )
 from traj_eval.dataset.loader import ProblemRecord
+from traj_eval.agents.lean_team import (
+    TOOL_ROUTED_SUBGOALS_V1,
+    TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
+    lean_routing_config,
+)
+from traj_eval.trace_core.schema import AgentRole
 from traj_eval.metrics.communication import CommunicationSummary
 from traj_eval.metrics.lean.outcomes import classify_outcome, looks_like_import_error
 from traj_eval.trace_core.storage import TrialLogWriter
@@ -69,6 +76,48 @@ def test_batch_runner_registers_the_fixed_lean_tool_surface():
     assert tuple(tools) == LEAN_TOOL_NAMES
 
 
+def test_subgoal_ablation_differs_only_by_two_engineer_goal_tools():
+    class _Compiler:
+        def check(self, code):
+            return type(
+                "Result",
+                (),
+                {
+                    "compiled": True,
+                    "summary": "compiled",
+                    "to_dict": lambda self: {"compiled": True},
+                },
+            )()
+
+    record = ProblemRecord(
+        id="task",
+        source="FATE-M",
+        difficulty="easy",
+        informal="Informal.",
+        statement="theorem task : True := by trivial",
+        context="",
+    )
+    dag_tools, dag_state, _ = _build_trial_tools(
+        _Compiler(), record, TOOL_ROUTED_SUBGOALS_V1
+    )
+    combined_tools, combined_state, _ = _build_trial_tools(
+        _Compiler(), record, TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1
+    )
+
+    assert set(combined_tools) - set(dag_tools) == {"try_tactic", "show_goals"}
+    assert dag_state.snapshot() == combined_state.snapshot()
+    dag_engineer = lean_routing_config(
+        setup=TOOL_ROUTED_SUBGOALS_V1
+    ).roles[AgentRole.ENGINEER]
+    combined_engineer = lean_routing_config(
+        setup=TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1
+    ).roles[AgentRole.ENGINEER]
+    assert combined_engineer.tools - dag_engineer.tools == {
+        "try_tactic",
+        "show_goals",
+    }
+
+
 def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_path):
     captured: dict[str, object] = {}
 
@@ -94,9 +143,26 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
         def record_task(self, prompt):
             pass
 
+        def record_termination(self, reason, **details):
+            captured["termination"] = {"reason": reason, **details}
+
     def fake_team(*args, **kwargs):
         captured["team_max_turns"] = kwargs["max_turns"]
-        return object(), _User(), SimpleNamespace(agents=[]), SimpleNamespace(reason="cap")
+        return (
+            object(),
+            _User(),
+            SimpleNamespace(agents=[]),
+            SimpleNamespace(
+                reason="cap",
+                turns=200,
+                invalid_handoffs=0,
+                tool_handoffs=0,
+                forced_recoveries=0,
+                completion_gate_denials=0,
+                tool_protocol_errors=0,
+                controller_fallback_routes=0,
+            ),
+        )
 
     def fake_meta(**kwargs):
         captured["meta_config"] = kwargs["config"]
@@ -131,6 +197,7 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
     assert DEFAULT_MAX_TURNS == 30
     assert captured["team_max_turns"] == 200
     assert captured["meta_config"]["max_turns"] == 200
+    assert captured["termination"]["turns"] == 200
     assert result is sentinel
 
 

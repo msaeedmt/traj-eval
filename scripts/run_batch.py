@@ -47,14 +47,18 @@ from traj_eval.agents.free_routing import finalize_run
 from traj_eval.agents.lean_team import (
     RECOVERY_TRIANGLE_V1,
     SUPPORTED_LEAN_SETUPS,
+    TOOL_ROUTED_SUBGOALS_V1,
+    TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
     build_lean_free_team,
 )
+from traj_eval.agents.subgoal_state import SubgoalLedger, make_subgoal_tools
 from traj_eval.dataset.loader import ProblemRecord, load_dataset, to_lean_task
 from traj_eval.detectors.perseveration import detect_perseveration
 from traj_eval.metrics.communication import CommunicationSummary, summarize_communication
 from traj_eval.metrics.lean.artifacts import extract_artifacts
 from traj_eval.metrics.lean.outcomes import classify_outcome
-from traj_eval.metrics.lean.validator import validate
+from traj_eval.metrics.lean.validator import validate, validate_candidate
+from traj_eval.trace_core.schema import AgentRole
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
 DATASET_ROOT = Path("dataset/Lean")
@@ -87,18 +91,31 @@ def _trace_is_valid(path: Path) -> bool:
     return True
 
 
-def _task_prompt(record: ProblemRecord) -> str:
+def _task_prompt(
+    record: ProblemRecord, *, setup: str = RECOVERY_TRIANGLE_V1
+) -> str:
     context_note = (
         f"\n\nThe theorem is stated in this context (already in scope; do not restate it, "
         f"and keep these when you write the proof):\n{record.context}"
         if record.context
         else ""
     )
+    coordination = (
+        "Use the typed subgoal tools to create at least two concrete work "
+        "subgoals and one final integration subgoal. Route only through tools; "
+        "do not emit HANDOFF or VERDICT markers."
+        if setup
+        in {
+            TOOL_ROUTED_SUBGOALS_V1,
+            TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
+        }
+        else "Each role chooses its next allowed action."
+    )
     return (
         f"Prove this Lean 4 theorem (source: {record.source}, difficulty: {record.difficulty}).\n\n"
         f"Informal statement:\n{record.informal}\n\n"
         f"Formal statement to prove:\n{record.statement}{context_note}\n\n"
-        "Each role chooses its next allowed action. Use search_lemmas and check_lean "
+        f"{coordination} Use search_lemmas and compiler tools "
         "when they resolve real uncertainty. Hand off only when the receiving role can "
         "act on concrete mathematical, compiler, or review evidence. A non-linear route "
         "is allowed, but extra communication is not itself success. The final proof must "
@@ -165,6 +182,47 @@ def _build_agent_tools(compiler) -> dict:
     }
 
 
+def _build_trial_tools(compiler, record: ProblemRecord, setup: str):
+    """Build a matched tool surface and optional trial-local subgoal state."""
+    if setup not in {
+        TOOL_ROUTED_SUBGOALS_V1,
+        TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
+    }:
+        return _build_agent_tools(compiler), None, None
+
+    from traj_eval.tools.lean_search import make_search_lemmas
+
+    subgoals = SubgoalLedger(min_nodes=3, max_failures=3, max_forced_replans=2)
+    task = to_lean_task(record)
+    tools = make_subgoal_tools(
+        compiler,
+        subgoals,
+        final_validator=lambda code: validate_candidate(code, task, compiler),
+        prelude=record.import_block,
+        auto_submit_verified=True,
+    )
+    tools["search_lemmas"] = make_search_lemmas(num_results=5)
+    if setup == TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1:
+        from traj_eval.tools.lean_goals import make_show_goals
+        from traj_eval.tools.lean_tactic import make_try_tactic
+
+        tools["try_tactic"] = make_try_tactic(compiler)
+        tools["show_goals"] = make_show_goals(compiler)
+
+    def post_tool_route(
+        caller: AgentRole, called: frozenset[str]
+    ) -> tuple[AgentRole, str] | None:
+        if (
+            caller is AgentRole.REASONER
+            and subgoals.plan_ready
+            and "route_next_agent" not in called
+        ):
+            return AgentRole.ENGINEER, "controller_plan_ready_fallback"
+        return None
+
+    return tools, subgoals, post_tool_route
+
+
 def run_one_trial(
     record: ProblemRecord,
     trial: int,
@@ -176,7 +234,7 @@ def run_one_trial(
     worker_model: str | None = None,
     worker_thinking: str = "auto",
 ) -> TrialOutcome:
-    prompt = _task_prompt(record)
+    prompt = _task_prompt(record, setup=setup)
 
     worker_model = worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
     enable_thinking = _resolve_worker_thinking(worker_model, worker_thinking)
@@ -186,13 +244,17 @@ def run_one_trial(
     )
     ledger = RoutingLedger()
     step_context = StepContext()
+    tools, subgoal_ledger, post_tool_route = _build_trial_tools(
+        compiler, record, setup
+    )
     manager, user, groupchat, run_state = build_lean_free_team(
         llm_config,
-        tools=_build_agent_tools(compiler),
+        tools=tools,
         setup=setup,
         max_turns=max_turns,
         ledger=ledger,
         step_context=step_context,
+        post_tool_route=post_tool_route,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -206,10 +268,14 @@ def run_one_trial(
         grounding=True,
         config={
             "setup": setup,
-            "prompt_revision": RECOVERY_TRIANGLE_V1,
-            "routing_policy": "agent_chosen_handoffs",
+            "prompt_revision": setup,
+            "routing_policy": (
+                "tool_routed_subgoal_dag"
+                if subgoal_ledger is not None
+                else "agent_chosen_handoffs"
+            ),
             "provider_route": "openai_compatible",
-            "tools": list(LEAN_TOOL_NAMES),
+            "tools": sorted(tools),
             "max_turns": max_turns,
             "worker_enable_thinking": enable_thinking,
         },
@@ -223,9 +289,26 @@ def run_one_trial(
 
     try:
         user.initiate_chat(manager, message=prompt, clear_history=True)
+    except Exception as exc:
+        observer.record_infrastructure_error(exc)
+        raise
     finally:
-        writer.close()
         finalize_run(run_state)
+        try:
+            if subgoal_ledger is not None:
+                observer.record_controller_plan(subgoal_ledger.plan_record())
+            observer.record_termination(
+                run_state.reason or "framework_stop",
+                turns=run_state.turns,
+                invalid_handoffs=run_state.invalid_handoffs,
+                tool_handoffs=run_state.tool_handoffs,
+                forced_recoveries=run_state.forced_recoveries,
+                completion_gate_denials=run_state.completion_gate_denials,
+                tool_protocol_errors=run_state.tool_protocol_errors,
+                controller_fallback_routes=run_state.controller_fallback_routes,
+            )
+        finally:
+            writer.close()
 
     return _score_trace(
         record,
