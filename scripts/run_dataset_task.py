@@ -80,7 +80,9 @@ def main(argv: list[str]) -> int:
     print(f"imports: {record.imports}\n")
 
     from traj_eval.tools.lean_cli_compiler import LeanCliCompiler
+    from traj_eval.tools.lean_goals import make_show_goals
     from traj_eval.tools.lean_search import make_search_lemmas
+    from traj_eval.tools.lean_tactic import make_try_tactic
 
     print(f"Starting REAL Lean compiler against {PROJECT_DIR}...")
     compiler = LeanCliCompiler(PROJECT_DIR, timeout=LEAN_TIMEOUT)
@@ -94,6 +96,8 @@ def main(argv: list[str]) -> int:
         tools={
             "check_lean": compiler.as_tool(),
             "search_lemmas": make_search_lemmas(num_results=5),
+            "try_tactic": make_try_tactic(compiler),
+            "show_goals": make_show_goals(compiler),
         },
         max_turns=30,
         ledger=ledger,

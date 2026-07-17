@@ -26,6 +26,17 @@ def _fake_check_lean(code: str) -> str:
     return "ok"
 
 
+def test_default_lean_tool_permissions_are_role_scoped():
+    from traj_eval.agents.lean_team import lean_routing_config
+
+    config = lean_routing_config()
+    assert config.roles[AgentRole.REASONER].tools == frozenset({"search_lemmas"})
+    assert config.roles[AgentRole.ENGINEER].tools == frozenset(
+        {"check_lean", "search_lemmas", "try_tactic", "show_goals"}
+    )
+    assert config.roles[AgentRole.CRITIC].tools == frozenset({"check_lean"})
+
+
 # Reasoner -> engineer; engineer -> {critic, reasoner} + check_lean; critic ->
 # {engineer} + terminate. The triangle from the design discussion.
 def _config():

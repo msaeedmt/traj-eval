@@ -46,7 +46,9 @@ def lean_routing_config(*, max_turns: int = 40) -> RoutingConfig:
             AgentRole.ENGINEER: RoleSpec(
                 role=AgentRole.ENGINEER,
                 handoff_targets=frozenset({AgentRole.CRITIC, AgentRole.REASONER}),
-                tools=frozenset({"check_lean", "search_lemmas"}),
+                tools=frozenset(
+                    {"check_lean", "search_lemmas", "try_tactic", "show_goals"}
+                ),
             ),
             AgentRole.CRITIC: RoleSpec(
                 role=AgentRole.CRITIC,
@@ -70,7 +72,7 @@ def build_lean_free_team(
 ) -> tuple[GroupChatManager, UserProxyAgent, Any, Any]:
     """Build the Lean reasoner/engineer/critic free-routing team.
 
-    ``tools`` maps tool names (e.g. "check_lean", "search_lemmas") to functions.
+    ``tools`` maps tool names (e.g. "check_lean", "show_goals") to functions.
     Only the tools named in the config's RoleSpecs are registered; passing extra
     tools is harmless, and omitting one a role lists just means that role's
     requests for it will be (correctly) unroutable -- itself an observable

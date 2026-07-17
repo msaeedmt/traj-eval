@@ -9,7 +9,9 @@ from dataclasses import dataclass
 
 from traj_eval.agents import make_trial_meta
 from scripts.run_batch import (
+    LEAN_TOOL_NAMES,
     TrialOutcome,
+    _build_agent_tools,
     _build_run_summary,
     _configure_console,
     _report,
@@ -37,6 +39,29 @@ class _FakeMetrics:
 class _FakeEvent:
     event_type: object
     payload: dict
+
+
+def test_batch_runner_registers_the_fixed_lean_tool_surface():
+    class _Compiler:
+        def as_tool(self):
+            return lambda code: {"compiled": True, "code": code}
+
+        def check(self, code):
+            return type(
+                "Result",
+                (),
+                {
+                    "compiled": True,
+                    "warnings": [],
+                    "errors": [],
+                    "sorries": [],
+                    "n_sorries": 0,
+                },
+            )()
+
+    tools = _build_agent_tools(_Compiler())
+
+    assert tuple(tools) == LEAN_TOOL_NAMES
 
 
 def _make_result_event(text):

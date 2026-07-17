@@ -61,6 +61,7 @@ DATASET_ROOT = Path("dataset/Lean")
 PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
 LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
+LEAN_TOOL_NAMES = ("check_lean", "search_lemmas", "try_tactic", "show_goals")
 
 
 @dataclass
@@ -138,6 +139,20 @@ def _score_trace(
     )
 
 
+def _build_agent_tools(compiler) -> dict:
+    """Build the fixed tool surface around one kernel-backed compiler."""
+    from traj_eval.tools.lean_goals import make_show_goals
+    from traj_eval.tools.lean_search import make_search_lemmas
+    from traj_eval.tools.lean_tactic import make_try_tactic
+
+    return {
+        "check_lean": compiler.as_tool(),
+        "search_lemmas": make_search_lemmas(num_results=5),
+        "try_tactic": make_try_tactic(compiler),
+        "show_goals": make_show_goals(compiler),
+    }
+
+
 def run_one_trial(
     record: ProblemRecord,
     trial: int,
@@ -146,8 +161,6 @@ def run_one_trial(
     output_dir: Path = LOG_DIR,
     setup: str = RECOVERY_TRIANGLE_V1,
 ) -> TrialOutcome:
-    from traj_eval.tools.lean_search import make_search_lemmas
-
     prompt = _task_prompt(record)
 
     llm_config = build_llm_config()
@@ -155,10 +168,7 @@ def run_one_trial(
     step_context = StepContext()
     manager, user, groupchat, run_state = build_lean_free_team(
         llm_config,
-        tools={
-            "check_lean": compiler.as_tool(),
-            "search_lemmas": make_search_lemmas(num_results=5),
-        },
+        tools=_build_agent_tools(compiler),
         setup=setup,
         max_turns=30,
         ledger=ledger,
@@ -179,7 +189,7 @@ def run_one_trial(
             "prompt_revision": RECOVERY_TRIANGLE_V1,
             "routing_policy": "agent_chosen_handoffs",
             "provider_route": "openai_compatible",
-            "tools": ["check_lean", "search_lemmas"],
+            "tools": list(LEAN_TOOL_NAMES),
             "max_turns": 30,
         },
     )
@@ -239,11 +249,11 @@ def main() -> int:
             print(f"  {r.id:22s} {r.source:8s} {r.difficulty}")
         return 0
 
-    print(f"Starting REAL Lean compiler against {PROJECT_DIR}...")
+    print(f"Starting Lean CLI validator against {PROJECT_DIR}...")
     from traj_eval.tools.lean_cli_compiler import LeanCliCompiler
 
     compiler = LeanCliCompiler(PROJECT_DIR, timeout=LEAN_TIMEOUT)
-    print("Compiler ready.\n")
+    print("Lean validator and tools ready.\n")
 
     outcomes: list[TrialOutcome] = []
     errors: list[dict[str, str | int]] = []
@@ -286,7 +296,13 @@ def main() -> int:
             print(f"  running {r.id} trial {t + 1}/{args.trials} ...", flush=True)
             try:
                 outcomes.append(
-                    run_one_trial(r, t, compiler, output_dir=args.output_dir, setup=args.setup)
+                    run_one_trial(
+                        r,
+                        t,
+                        compiler,
+                        output_dir=args.output_dir,
+                        setup=args.setup,
+                    )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch
                 print(f"    ERROR in {r.id} t{t}: {type(e).__name__}: {str(e)[:200]}")
