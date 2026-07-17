@@ -12,6 +12,8 @@ import scripts.run_batch as run_batch
 from traj_eval.agents import make_trial_meta
 from scripts.run_batch import (
     DEFAULT_MAX_TURNS,
+    DEFAULT_WORKER_MAX_TOKENS,
+    DEFAULT_WORKER_TIMEOUT_SECONDS,
     LEAN_TOOL_NAMES,
     TrialOutcome,
     _build_agent_tools,
@@ -195,8 +197,12 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
     )
 
     assert DEFAULT_MAX_TURNS == 30
+    assert DEFAULT_WORKER_MAX_TOKENS == 1500
+    assert DEFAULT_WORKER_TIMEOUT_SECONDS == 180.0
     assert captured["team_max_turns"] == 200
     assert captured["meta_config"]["max_turns"] == 200
+    assert captured["meta_config"]["worker_max_tokens"] == 1500
+    assert captured["meta_config"]["worker_timeout_seconds"] == 180.0
     assert captured["termination"]["turns"] == 200
     assert result is sentinel
 

@@ -67,6 +67,8 @@ LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
 LEAN_TOOL_NAMES = ("check_lean", "search_lemmas", "try_tactic", "show_goals")
 DEFAULT_MAX_TURNS = 30
+DEFAULT_WORKER_MAX_TOKENS = 1500
+DEFAULT_WORKER_TIMEOUT_SECONDS = 180.0
 
 
 @dataclass
@@ -233,6 +235,8 @@ def run_one_trial(
     max_turns: int = DEFAULT_MAX_TURNS,
     worker_model: str | None = None,
     worker_thinking: str = "auto",
+    worker_max_tokens: int = DEFAULT_WORKER_MAX_TOKENS,
+    worker_timeout_seconds: float = DEFAULT_WORKER_TIMEOUT_SECONDS,
 ) -> TrialOutcome:
     prompt = _task_prompt(record, setup=setup)
 
@@ -241,6 +245,8 @@ def run_one_trial(
     llm_config = build_llm_config(
         model=worker_model,
         enable_thinking=enable_thinking,
+        max_tokens=worker_max_tokens,
+        timeout_seconds=worker_timeout_seconds,
     )
     ledger = RoutingLedger()
     step_context = StepContext()
@@ -278,6 +284,8 @@ def run_one_trial(
             "tools": sorted(tools),
             "max_turns": max_turns,
             "worker_enable_thinking": enable_thinking,
+            "worker_max_tokens": worker_max_tokens,
+            "worker_timeout_seconds": worker_timeout_seconds,
         },
     )
     writer = TrialLogWriter(log_path, meta)
@@ -337,6 +345,18 @@ def main() -> int:
         help="Qwen thinking mode; auto disables it for Qwen models",
     )
     ap.add_argument(
+        "--worker-max-tokens",
+        type=int,
+        default=DEFAULT_WORKER_MAX_TOKENS,
+        help="maximum output tokens per worker call",
+    )
+    ap.add_argument(
+        "--worker-timeout-seconds",
+        type=float,
+        default=DEFAULT_WORKER_TIMEOUT_SECONDS,
+        help="provider timeout for each worker call",
+    )
+    ap.add_argument(
         "--setup",
         choices=SUPPORTED_LEAN_SETUPS,
         default=RECOVERY_TRIANGLE_V1,
@@ -353,6 +373,10 @@ def main() -> int:
     args = ap.parse_args()
     if args.max_turns < 1:
         ap.error("--max-turns must be at least 1")
+    if args.worker_max_tokens < 1:
+        ap.error("--worker-max-tokens must be at least 1")
+    if args.worker_timeout_seconds <= 0:
+        ap.error("--worker-timeout-seconds must be positive")
 
     records: list[ProblemRecord] = []
     for diff in args.difficulty:
@@ -422,6 +446,8 @@ def main() -> int:
                         setup=args.setup,
                         max_turns=args.max_turns,
                         worker_thinking=args.worker_thinking,
+                        worker_max_tokens=args.worker_max_tokens,
+                        worker_timeout_seconds=args.worker_timeout_seconds,
                     )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch

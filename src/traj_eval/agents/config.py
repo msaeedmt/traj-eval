@@ -30,6 +30,7 @@ def build_llm_config(
     model: str | None = None,
     max_tokens: int | None = None,
     enable_thinking: bool | None = None,
+    timeout_seconds: float | None = None,
 ) -> LLMConfig:
     """Build an AG2 LLMConfig from the environment.
 
@@ -55,6 +56,10 @@ def build_llm_config(
         if max_tokens < 1:
             raise ValueError("max_tokens must be positive")
         entry["max_tokens"] = max_tokens
+    if timeout_seconds is not None:
+        if timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
+        entry["timeout"] = timeout_seconds
     if enable_thinking is not None:
         entry["extra_body"] = {
             "chat_template_kwargs": {"enable_thinking": enable_thinking}
