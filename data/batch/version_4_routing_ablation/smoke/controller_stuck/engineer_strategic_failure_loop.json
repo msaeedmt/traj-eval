@@ -1,0 +1,35 @@
+{
+  "expected_role": "reasoner",
+  "passed": false,
+  "probe": "engineer_strategic_failure_loop",
+  "request": {
+    "allowed_next_roles": [
+      "critic",
+      "engineer",
+      "reasoner"
+    ],
+    "transcript": [
+      {
+        "content": "Candidate A uses the same rewrite sequence.",
+        "name": "engineer"
+      },
+      {
+        "content": "check_lean: compiled=false; unsolved goals remain.",
+        "name": "executor"
+      },
+      {
+        "content": "The same proof shape still fails; I lack a viable lemma strategy.",
+        "name": "engineer"
+      },
+      {
+        "content": "check_lean: compiled=false; the same goal remains.",
+        "name": "executor"
+      }
+    ]
+  },
+  "response": {
+    "content": "```json\n{\"next_role\":\"reasoner\",\"reason\":\"Engineer has repeated a failed proof shape and explicitly lacks a viable strategy, triggering recovery to reasoner.\"}\n```"
+  },
+  "schema": "han_controller_stuck_smoke_v4",
+  "score_reason": "invalid_controller_output"
+}

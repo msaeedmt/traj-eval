@@ -1,0 +1,34 @@
+{
+  "expected_role": "engineer",
+  "passed": true,
+  "probe": "reasoner_retrieval_loop",
+  "request": {
+    "allowed_next_roles": [
+      "engineer",
+      "reasoner"
+    ],
+    "transcript": [
+      {
+        "content": "I need a commutativity lemma; search_lemmas Nat addition.",
+        "name": "reasoner"
+      },
+      {
+        "content": "Search results include Nat.add_comm.",
+        "name": "executor"
+      },
+      {
+        "content": "I still need a commutativity lemma; search_lemmas Nat addition.",
+        "name": "reasoner"
+      },
+      {
+        "content": "Search results again include Nat.add_comm.",
+        "name": "executor"
+      }
+    ]
+  },
+  "response": {
+    "content": "{\"next_role\":\"engineer\",\"reason\":\"The reasoner is stuck in a loop repeating the same search despite receiving the result 'Nat.add_comm'. Routing to the engineer to attempt a concrete Lean proof using this lemma will expose any real compiler obstructions or goal mismatches.\"}"
+  },
+  "schema": "han_controller_stuck_smoke_v4",
+  "score_reason": "expected_route"
+}
