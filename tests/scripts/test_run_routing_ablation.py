@@ -11,6 +11,7 @@ from scripts.run_routing_ablation import (
     DEFAULT_TASKS,
     PROJECT_CONTRACT_FILES,
     PROVIDER_MAX_RETRIES,
+    RETRIEVAL_ONLY_STREAK_EVALUATION,
     _read_smoke_result,
     _refuse_existing,
     _trace_is_valid,
@@ -61,6 +62,8 @@ def _outcome(arm: RoutingArm, task: str, trial: int, solved: bool) -> TrialOutco
         elapsed_seconds=1.0,
         n_tool_calls=1,
         perseverated=False,
+        retrieval_only_streak=0,
+        max_retrieval_only_streak_seen=0,
         reasoner_stuck_to_engineer=0,
         engineer_stuck_to_reasoner=0,
         engineer_local_retries=0,
@@ -175,6 +178,11 @@ def test_v4_trial_metadata_discloses_disabled_provider_retries():
 
     assert PROVIDER_MAX_RETRIES == 0
     assert config["provider_max_retries"] == 0
+    assert config["retrieval_only_streak_limit"] == 8
+    assert (
+        config["retrieval_only_streak_evaluation"]
+        == RETRIEVAL_ONLY_STREAK_EVALUATION
+    )
 
 
 def test_refuse_existing_never_overwrites(tmp_path):
@@ -189,8 +197,17 @@ def test_refuse_existing_never_overwrites(tmp_path):
 def test_resumable_trace_requires_explicit_terminal_event(tmp_path):
     partial = tmp_path / "partial.jsonl"
     complete = tmp_path / "complete.jsonl"
+    legacy = tmp_path / "legacy.jsonl"
     meta = make_trial_meta(
-        "trial", task_id="task", backbone="model", testbed="lean", grounding=True
+        "trial",
+        task_id="task",
+        backbone="model",
+        testbed="lean",
+        grounding=True,
+        config={
+            "retrieval_only_streak_limit": 8,
+            "retrieval_only_streak_evaluation": RETRIEVAL_ONLY_STREAK_EVALUATION,
+        },
     )
     writer = TrialLogWriter(partial, meta)
     writer.close()
@@ -201,6 +218,21 @@ def test_resumable_trace_requires_explicit_terminal_event(tmp_path):
     observer.record_termination("cap")
     writer.close()
     assert _trace_is_valid(complete) is True
+
+    writer = TrialLogWriter(
+        legacy,
+        make_trial_meta(
+            "legacy",
+            task_id="task",
+            backbone="model",
+            testbed="lean",
+            grounding=True,
+        ),
+    )
+    observer = TraceObserver(writer, trial_id="legacy")
+    observer.record_termination("cap")
+    writer.close()
+    assert _trace_is_valid(legacy) is False
 
 
 def test_provider_file_is_read_without_mutating_process_route(monkeypatch, tmp_path):

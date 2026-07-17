@@ -28,6 +28,7 @@ from traj_eval.agents.lean_routing_ablation import (
     CENTRAL_ARMS,
     CONTROLLER_PROMPT,
     CONTROLLER_STUCK_PROBES,
+    RETRIEVAL_ONLY_STREAK_LIMIT,
     RoutingArm,
     TOOL_SUBSTRATE_PROVENANCE,
     build_routing_ablation_team,
@@ -49,6 +50,7 @@ PROJECT_CONTRACT_FILES = ("lean-toolchain", "lake-manifest.json", "lakefile.lean
 WORKER_MAX_TOKENS = 1_500
 CONTROLLER_MAX_TOKENS = 128
 PROVIDER_MAX_RETRIES = 0
+RETRIEVAL_ONLY_STREAK_EVALUATION = "post_executor_batch"
 
 
 @dataclass(frozen=True)
@@ -66,6 +68,8 @@ class TrialOutcome:
     elapsed_seconds: float
     n_tool_calls: int
     perseverated: bool
+    retrieval_only_streak: int
+    max_retrieval_only_streak_seen: int
     reasoner_stuck_to_engineer: int
     engineer_stuck_to_reasoner: int
     engineer_local_retries: int
@@ -170,10 +174,16 @@ def _trace_is_valid(path: Path) -> bool:
     if not path.is_file() or path.stat().st_size == 0:
         return False
     try:
-        _, events = read_trial(path)
+        meta, events = read_trial(path)
     except Exception:  # noqa: BLE001 - resume must reject any malformed evidence
         return False
-    return any(event.payload.get("phase") == "termination" for event in events)
+    return (
+        meta.config.get("retrieval_only_streak_limit")
+        == RETRIEVAL_ONLY_STREAK_LIMIT
+        and meta.config.get("retrieval_only_streak_evaluation")
+        == RETRIEVAL_ONLY_STREAK_EVALUATION
+        and any(event.payload.get("phase") == "termination" for event in events)
+    )
 
 
 def _terminal_details(path: Path) -> dict[str, Any]:
@@ -224,6 +234,8 @@ def _trial_config(
         "worker_max_tokens": WORKER_MAX_TOKENS,
         "controller_max_tokens": CONTROLLER_MAX_TOKENS if arm in CENTRAL_ARMS else None,
         "provider_max_retries": PROVIDER_MAX_RETRIES,
+        "retrieval_only_streak_limit": RETRIEVAL_ONLY_STREAK_LIMIT,
+        "retrieval_only_streak_evaluation": RETRIEVAL_ONLY_STREAK_EVALUATION,
         "lean_project_contract": contract_hashes,
     }
 
@@ -255,6 +267,10 @@ def _score_trace(
         elapsed_seconds=float(details.get("elapsed_seconds", 0.0)),
         n_tool_calls=repetition.n_tool_calls,
         perseverated=repetition.perseverated,
+        retrieval_only_streak=int(details.get("retrieval_only_streak", 0)),
+        max_retrieval_only_streak_seen=int(
+            details.get("max_retrieval_only_streak_seen", 0)
+        ),
         reasoner_stuck_to_engineer=int(details.get("reasoner_stuck_to_engineer", 0)),
         engineer_stuck_to_reasoner=int(details.get("engineer_stuck_to_reasoner", 0)),
         engineer_local_retries=int(details.get("engineer_local_retries", 0)),
@@ -371,6 +387,8 @@ def run_one_trial(
             total_model_calls=state.total_model_calls,
             invalid_routes=state.invalid_routes,
             max_identical_calls_seen=state.max_identical_calls_seen,
+            retrieval_only_streak=state.retrieval_only_streak,
+            max_retrieval_only_streak_seen=state.max_retrieval_only_streak_seen,
             max_failed_compiles_seen=state.max_failed_compiles_seen,
             reasoner_stuck_to_engineer=state.reasoner_stuck_to_engineer,
             engineer_stuck_to_reasoner=state.engineer_stuck_to_reasoner,
@@ -489,6 +507,9 @@ def _arm_summary(
             sum(item.total_model_calls for item in outcomes) / len(outcomes)
             if outcomes
             else 0.0
+        ),
+        "max_retrieval_only_streak_seen": max(
+            (item.max_retrieval_only_streak_seen for item in outcomes), default=0
         ),
         "planner_recoveries": sum(item.reasoner_stuck_to_engineer for item in outcomes),
         "engineer_replans": sum(item.engineer_stuck_to_reasoner for item in outcomes),
@@ -610,6 +631,8 @@ def _summary_markdown(summary: dict[str, Any]) -> str:
             f"- Completed: {summary['completed_trials']}/{summary['expected_trials']}",
             f"- Kernel-validated solved: {solved}",
             f"- Mean model calls: {summary['mean_total_model_calls']:.2f}",
+            "- Maximum retrieval-only streak: "
+            f"{summary['max_retrieval_only_streak_seen']}",
             f"- Reasoner/planner stuck recoveries: {summary['planner_recoveries']}",
             f"- Engineer strategic replans: {summary['engineer_replans']}",
             f"- Engineer local retries: {summary['engineer_local_retries']}",

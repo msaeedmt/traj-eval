@@ -185,6 +185,183 @@ def test_valid_tool_call_resets_invalid_counter_like_upstream_free_routing():
     assert state.consecutive_invalid == 0
 
 
+@pytest.mark.parametrize("arm", tuple(RoutingArm))
+def test_alternating_reasoner_searches_stop_after_eight_completed_calls(arm):
+    groupchat, state = _build(arm)
+    select = groupchat.speaker_selection_method
+    controller = _controller(groupchat) if "central" in arm.value else None
+    queries = (
+        "ZMod n IsDomain Nat.Prime n",
+        "ZMod n IsDomain iff Nat.Prime n",
+    )
+
+    for index in range(8):
+        _append(
+            groupchat,
+            "reasoner",
+            None,
+            tool_calls=[
+                {
+                    "id": f"search-{index}",
+                    "function": {
+                        "name": "search_lemmas",
+                        "arguments": json.dumps({"query": queries[index % 2]}),
+                    },
+                }
+            ],
+        )
+        assert select(_Speaker("reasoner"), groupchat).name == "executor"
+        _append(groupchat, "executor", "search completed")
+        selected = select(_Speaker("executor"), groupchat)
+        if index < 7:
+            if controller is None:
+                assert selected.name == "reasoner"
+            else:
+                assert selected is controller
+                _append(
+                    groupchat,
+                    "system",
+                    '{"next_role":"reasoner","reason":"inspect retrieval"}',
+                )
+                assert select(controller, groupchat).name == "reasoner"
+        else:
+            assert selected is None
+
+    assert state.reason == "stuck"
+    assert state.retrieval_only_streak == 8
+    assert state.max_retrieval_only_streak_seen == 8
+    assert state.max_identical_calls_seen == 1
+
+
+def test_non_search_worker_progress_resets_retrieval_only_streak():
+    groupchat, state = _build(RoutingArm.LEGACY_DETERMINISTIC)
+    select = groupchat.speaker_selection_method
+    state.retrieval_only_streak = 3
+    state.max_retrieval_only_streak_seen = 3
+    _append(groupchat, "reasoner", "The strategy is ready for formalisation.")
+
+    assert select(_Speaker("reasoner"), groupchat).name == "engineer"
+    assert state.retrieval_only_streak == 0
+    assert state.max_retrieval_only_streak_seen == 3
+
+
+def test_parallel_reasoner_searches_count_completed_calls_not_executor_turns():
+    groupchat, state = _build(RoutingArm.LEGACY_DETERMINISTIC)
+    select = groupchat.speaker_selection_method
+
+    for batch in range(4):
+        _append(
+            groupchat,
+            "reasoner",
+            None,
+            tool_calls=[
+                {
+                    "id": f"search-{batch}-{index}",
+                    "function": {
+                        "name": "search_lemmas",
+                        "arguments": json.dumps(
+                            {"query": f"ZMod query {batch}-{index}"}
+                        ),
+                    },
+                }
+                for index in range(2)
+            ],
+        )
+        assert select(_Speaker("reasoner"), groupchat).name == "executor"
+        _append(groupchat, "executor", "both searches completed")
+        selected = select(_Speaker("executor"), groupchat)
+        if batch < 3:
+            assert selected.name == "reasoner"
+        else:
+            assert selected is None
+
+    assert state.reason == "stuck"
+    assert state.worker_turns == 4
+    assert state.retrieval_only_streak == 8
+    assert state.max_retrieval_only_streak_seen == 8
+
+
+def test_unauthorized_tool_attempt_does_not_reset_retrieval_only_streak():
+    groupchat, state = _build(RoutingArm.LEGACY_DETERMINISTIC)
+    select = groupchat.speaker_selection_method
+    state.retrieval_only_streak = 3
+    state.max_retrieval_only_streak_seen = 3
+    _append(
+        groupchat,
+        "reasoner",
+        None,
+        tool_calls=[
+            {
+                "id": "unauthorized-check",
+                "function": {"name": "check_lean", "arguments": '{"code":"x"}'},
+            }
+        ],
+    )
+
+    assert select(_Speaker("reasoner"), groupchat).name == "reasoner"
+    assert state.invalid_routes == 1
+    assert state.retrieval_only_streak == 3
+
+
+def test_invalid_free_response_cannot_evade_retrieval_only_limit():
+    groupchat, state = _build(RoutingArm.UPSTREAM_FREE)
+    select = groupchat.speaker_selection_method
+    queries = (
+        "ZMod n IsDomain Nat.Prime n",
+        "ZMod n IsDomain iff Nat.Prime n",
+    )
+
+    for index in range(8):
+        _append(
+            groupchat,
+            "reasoner",
+            None,
+            tool_calls=[
+                {
+                    "id": f"search-{index}",
+                    "function": {
+                        "name": "search_lemmas",
+                        "arguments": json.dumps({"query": queries[index % 2]}),
+                    },
+                }
+            ],
+        )
+        assert select(_Speaker("reasoner"), groupchat).name == "executor"
+        _append(groupchat, "executor", "search completed")
+        selected = select(_Speaker("executor"), groupchat)
+        if index == 7:
+            assert selected is None
+            break
+        assert selected.name == "reasoner"
+        _append(groupchat, "reasoner", "Still searching without a handoff marker.")
+        assert select(_Speaker("reasoner"), groupchat).name == "reasoner"
+
+    assert state.reason == "stuck"
+    assert state.invalid_routes == 7
+    assert state.retrieval_only_streak == 8
+
+
+def test_valid_non_search_tool_resets_retrieval_only_streak():
+    groupchat, state = _build(RoutingArm.LEGACY_DETERMINISTIC)
+    select = groupchat.speaker_selection_method
+    state.retrieval_only_streak = 3
+    state.max_retrieval_only_streak_seen = 3
+    _append(
+        groupchat,
+        "engineer",
+        None,
+        tool_calls=[
+            {
+                "id": "valid-check",
+                "function": {"name": "check_lean", "arguments": '{"code":"x"}'},
+            }
+        ],
+    )
+
+    assert select(_Speaker("engineer"), groupchat).name == "executor"
+    assert state.retrieval_only_streak == 0
+
+
 def test_central_controller_is_separate_from_worker_budget():
     groupchat, state = _build(
         RoutingArm.CENTRAL_WORKER_MATCHED, workers=2, total=2
@@ -235,7 +412,7 @@ def test_central_controller_records_reasoner_stuck_recovery():
     state.last_worker_role = AgentRole.REASONER
     state.after_tool_result = True
     state.last_tool_names = frozenset({"search_lemmas"})
-    state.consecutive_identical_calls = 2
+    state.retrieval_only_streak = 2
     _append(
         groupchat,
         "system",
@@ -244,6 +421,7 @@ def test_central_controller_records_reasoner_stuck_recovery():
 
     assert select(controller, groupchat).name == "engineer"
     assert state.reasoner_stuck_to_engineer == 1
+    assert state.retrieval_only_streak == 0
 
 
 def test_central_controller_distinguishes_engineer_replan_from_local_retry():

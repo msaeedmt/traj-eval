@@ -159,6 +159,7 @@ try {
     Write-Host ("Model: {0}" -f $Model)
     Write-Host ("Output: {0}" -f $outputRoot)
     Write-Host ("Conservative maximum model calls: {0}" -f $maximumCalls)
+    Write-Host "Retrieval-only no-progress threshold: 8 completed Reasoner search_lemmas calls, evaluated after each executor batch."
     Write-Host "Provider credentials will be read by Python from the env file and will not be copied into run documentation."
 
     if ($PlanOnly) {
@@ -187,6 +188,7 @@ try {
         "- Worker timeout seconds: $WorkerTimeoutSeconds",
         "- Provider-internal retries: 0",
         "- Recorded outer infrastructure retries: at most 1 per slot",
+        "- Retrieval-only no-progress threshold: 8 completed Reasoner search_lemmas calls, evaluated after each executor batch; a parallel batch may cross the threshold and is counted exactly",
         "- Conservative maximum model calls: $maximumCalls",
         "- Lean project: $leanPath",
         "- Provider configuration file: $providerPath (credentials not copied)",

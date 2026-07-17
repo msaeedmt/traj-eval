@@ -42,6 +42,7 @@ ARM_PROVENANCE = {
     RoutingArm.CENTRAL_TOTAL_CALL_MATCHED: "han_v4_private",
 }
 TOOL_SUBSTRATE_PROVENANCE = "45f0ab1"
+RETRIEVAL_ONLY_STREAK_LIMIT = 8
 
 
 CENTRAL_ARMS = {
@@ -256,6 +257,9 @@ class RoutingRunState:
     last_call_code: str | None = None
     consecutive_identical_calls: int = 0
     max_identical_calls_seen: int = 0
+    pending_retrieval_calls: int = 0
+    retrieval_only_streak: int = 0
+    max_retrieval_only_streak_seen: int = 0
     consecutive_failed_compiles: int = 0
     max_failed_compiles_seen: int = 0
     last_tool_names: frozenset[str] = frozenset()
@@ -403,6 +407,27 @@ def _mark_invalid(state: RoutingRunState) -> bool:
 
 
 def _update_tool_guards(state: RoutingRunState, message: dict[str, Any]) -> bool:
+    # AG2 returns a complete executor batch, so preserve its exact call count even
+    # when one parallel batch crosses the post-execution threshold.
+    completed_retrieval_calls = state.pending_retrieval_calls
+    state.pending_retrieval_calls = 0
+    if (
+        state.last_worker_role is AgentRole.REASONER
+        and state.last_tool_names == frozenset({"search_lemmas"})
+        and completed_retrieval_calls > 0
+    ):
+        state.retrieval_only_streak += completed_retrieval_calls
+        state.max_retrieval_only_streak_seen = max(
+            state.max_retrieval_only_streak_seen,
+            state.retrieval_only_streak,
+        )
+        if state.retrieval_only_streak >= RETRIEVAL_ONLY_STREAK_LIMIT:
+            state.terminated = True
+            state.reason = "stuck"
+            return False
+    else:
+        state.retrieval_only_streak = 0
+
     verdict = _compile_verdict(message)
     state.last_compile_verdict = verdict
     if verdict is True:
@@ -427,7 +452,7 @@ def _record_controller_recovery(
         state.last_worker_role is AgentRole.REASONER
         and state.after_tool_result
         and state.last_tool_names == frozenset({"search_lemmas"})
-        and state.consecutive_identical_calls >= 2
+        and state.retrieval_only_streak >= 2
         and selected is AgentRole.ENGINEER
     ):
         state.reasoner_stuck_to_engineer += 1
@@ -572,6 +597,8 @@ def build_routing_ablation_team(
                 selected, _ = decision
                 state.consecutive_invalid = 0
             _record_controller_recovery(state, selected)
+            if selected is not state.last_worker_role:
+                state.retrieval_only_streak = 0
             state.after_tool_result = False
             return route(workers[selected], AgentRole.SYSTEM)
 
@@ -612,10 +639,19 @@ def build_routing_ablation_team(
             called = _called_tools(message)
             state.last_tool_names = frozenset(called)
             if not called or not called <= TOOL_PERMISSIONS[role]:
+                state.pending_retrieval_calls = 0
                 return stop("stuck") if _mark_invalid(state) else route(
                     workers[AgentRole.REASONER], role
                 )
             state.consecutive_invalid = 0
+            if role is AgentRole.REASONER and called == {"search_lemmas"}:
+                state.pending_retrieval_calls = sum(
+                    call.get("function", {}).get("name") == "search_lemmas"
+                    for call in message.get("tool_calls") or []
+                )
+            else:
+                state.pending_retrieval_calls = 0
+                state.retrieval_only_streak = 0
             code = _normalise_call(message)
             if code is not None and code == state.last_call_code:
                 state.consecutive_identical_calls += 1
@@ -629,15 +665,19 @@ def build_routing_ablation_team(
                 return stop("stuck")
             return route(executor, role)
 
+        state.pending_retrieval_calls = 0
         if state.budget_exhausted:
             return stop("cap")
 
         if arm is RoutingArm.LEGACY_DETERMINISTIC:
             if role is AgentRole.REASONER:
+                state.retrieval_only_streak = 0
                 return route(workers[AgentRole.ENGINEER], role)
             if role is AgentRole.ENGINEER:
+                state.retrieval_only_streak = 0
                 return route(workers[AgentRole.CRITIC], role)
             if VERDICT_REJECT in text.upper():
+                state.retrieval_only_streak = 0
                 return route(workers[AgentRole.ENGINEER], role)
             return stop("stuck")
 
@@ -651,6 +691,7 @@ def build_routing_ablation_team(
                     target = None
             if target in HANDOFF_TARGETS[role]:
                 state.consecutive_invalid = 0
+                state.retrieval_only_streak = 0
                 return route(workers[target], role)
             if _mark_invalid(state):
                 return None
