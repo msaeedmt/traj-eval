@@ -62,6 +62,7 @@ PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
 LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
 LEAN_TOOL_NAMES = ("check_lean", "search_lemmas", "try_tactic", "show_goals")
+DEFAULT_MAX_TURNS = 30
 
 
 @dataclass
@@ -160,6 +161,7 @@ def run_one_trial(
     *,
     output_dir: Path = LOG_DIR,
     setup: str = RECOVERY_TRIANGLE_V1,
+    max_turns: int = DEFAULT_MAX_TURNS,
 ) -> TrialOutcome:
     prompt = _task_prompt(record)
 
@@ -170,7 +172,7 @@ def run_one_trial(
         llm_config,
         tools=_build_agent_tools(compiler),
         setup=setup,
-        max_turns=30,
+        max_turns=max_turns,
         ledger=ledger,
         step_context=step_context,
     )
@@ -190,7 +192,7 @@ def run_one_trial(
             "routing_policy": "agent_chosen_handoffs",
             "provider_route": "openai_compatible",
             "tools": list(LEAN_TOOL_NAMES),
-            "max_turns": 30,
+            "max_turns": max_turns,
         },
     )
     writer = TrialLogWriter(log_path, meta)
@@ -221,6 +223,12 @@ def main() -> int:
     ap.add_argument("--difficulty", nargs="+", default=["easy"], help="tiers to run")
     ap.add_argument("--trials", type=int, default=3, help="trials per problem")
     ap.add_argument(
+        "--max-turns",
+        type=int,
+        default=DEFAULT_MAX_TURNS,
+        help="maximum agent turns per trial",
+    )
+    ap.add_argument(
         "--setup",
         choices=SUPPORTED_LEAN_SETUPS,
         default=RECOVERY_TRIANGLE_V1,
@@ -235,6 +243,8 @@ def main() -> int:
     )
     ap.add_argument("--dry-run", action="store_true", help="list problems and exit")
     args = ap.parse_args()
+    if args.max_turns < 1:
+        ap.error("--max-turns must be at least 1")
 
     records: list[ProblemRecord] = []
     for diff in args.difficulty:
@@ -242,8 +252,8 @@ def main() -> int:
 
     if args.dry_run:
         print(
-            f"Would run setup={args.setup}: {len(records)} problems x {args.trials} trials "
-            f"into {args.output_dir}:"
+            f"Would run setup={args.setup}, max_turns={args.max_turns}: "
+            f"{len(records)} problems x {args.trials} trials into {args.output_dir}:"
         )
         for r in records:
             print(f"  {r.id:22s} {r.source:8s} {r.difficulty}")
@@ -302,6 +312,7 @@ def main() -> int:
                         compiler,
                         output_dir=args.output_dir,
                         setup=args.setup,
+                        max_turns=args.max_turns,
                     )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch

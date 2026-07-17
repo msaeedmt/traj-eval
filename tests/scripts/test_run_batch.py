@@ -6,9 +6,12 @@ and import-error detection are.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import SimpleNamespace
 
+import scripts.run_batch as run_batch
 from traj_eval.agents import make_trial_meta
 from scripts.run_batch import (
+    DEFAULT_MAX_TURNS,
     LEAN_TOOL_NAMES,
     TrialOutcome,
     _build_agent_tools,
@@ -18,6 +21,7 @@ from scripts.run_batch import (
     _task_prompt,
     _trace_is_valid,
     _write_summary,
+    run_one_trial,
 )
 from traj_eval.dataset.loader import ProblemRecord
 from traj_eval.metrics.communication import CommunicationSummary
@@ -62,6 +66,71 @@ def test_batch_runner_registers_the_fixed_lean_tool_surface():
     tools = _build_agent_tools(_Compiler())
 
     assert tuple(tools) == LEAN_TOOL_NAMES
+
+
+def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_path):
+    captured: dict[str, object] = {}
+
+    class _User:
+        def initiate_chat(self, manager, *, message, clear_history):
+            captured["prompt"] = message
+
+    class _Writer:
+        def __init__(self, path, meta):
+            captured["log_path"] = path
+            captured["meta"] = meta
+
+        def close(self):
+            pass
+
+    class _Observer:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def attach(self, agents):
+            pass
+
+        def record_task(self, prompt):
+            pass
+
+    def fake_team(*args, **kwargs):
+        captured["team_max_turns"] = kwargs["max_turns"]
+        return object(), _User(), SimpleNamespace(agents=[]), SimpleNamespace(reason="cap")
+
+    def fake_meta(**kwargs):
+        captured["meta_config"] = kwargs["config"]
+        return object()
+
+    sentinel = object()
+    monkeypatch.setattr(run_batch, "build_llm_config", lambda: object())
+    monkeypatch.setattr(run_batch, "_build_agent_tools", lambda compiler: {})
+    monkeypatch.setattr(run_batch, "build_lean_free_team", fake_team)
+    monkeypatch.setattr(run_batch, "make_trial_meta", fake_meta)
+    monkeypatch.setattr(run_batch, "TrialLogWriter", _Writer)
+    monkeypatch.setattr(run_batch, "TraceObserver", _Observer)
+    monkeypatch.setattr(run_batch, "finalize_run", lambda state: None)
+    monkeypatch.setattr(run_batch, "_score_trace", lambda *args, **kwargs: sentinel)
+
+    record = ProblemRecord(
+        id="task",
+        source="FATE-M",
+        difficulty="easy",
+        informal="Informal.",
+        statement="theorem task : True := by trivial",
+        context="",
+    )
+    result = run_one_trial(
+        record,
+        0,
+        object(),
+        output_dir=tmp_path,
+        max_turns=200,
+    )
+
+    assert DEFAULT_MAX_TURNS == 30
+    assert captured["team_max_turns"] == 200
+    assert captured["meta_config"]["max_turns"] == 200
+    assert result is sentinel
 
 
 def _make_result_event(text):
