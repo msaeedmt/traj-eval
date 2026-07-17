@@ -163,6 +163,7 @@ class TraceObserver:
         self._writer = writer
         self._trial_id = trial_id
         self._seq = 0
+        self._last_event_id: str | None = None
         # Optional bridge to the speaker-selection function. When present, the
         # observer reads routing-derived parents for each event and reports each
         # emit back so later edges can point at it (Step 2b).
@@ -202,6 +203,7 @@ class TraceObserver:
             },
         )
         self._writer.append(event)
+        self._last_event_id = event_id
         if self._ledger is not None:
             self._ledger.record_emit(AgentRole.SYSTEM, event_id)
         return event_id
@@ -275,12 +277,59 @@ class TraceObserver:
             payload=payload,
         )
         self._writer.append(event)
+        self._last_event_id = event_id
 
         # Let later routing decisions point at this event.
         if self._ledger is not None:
             self._ledger.record_emit(role, event_id)
 
         return message  # non-invasive: return exactly what we received
+
+    def record_termination(self, reason: str, **details: Any) -> str:
+        """Append an explicit terminal node after the chat stops."""
+        event_id = str(uuid.uuid4())
+        event = TraceEvent(
+            event_id=event_id,
+            trial_id=self._trial_id,
+            seq=self._next_seq(),
+            timestamp=datetime.now(UTC),
+            event_type=EventType.MESSAGE,
+            agent_role=AgentRole.SYSTEM,
+            caused_by=[self._last_event_id] if self._last_event_id else [],
+            payload={
+                "phase": "termination",
+                "termination_reason": reason,
+                **details,
+            },
+        )
+        self._writer.append(event)
+        self._last_event_id = event_id
+        if self._ledger is not None:
+            self._ledger.record_emit(AgentRole.SYSTEM, event_id)
+        return event_id
+
+    def record_infrastructure_error(self, error: BaseException) -> str:
+        """Record a provider/runtime failure separately from agent behavior."""
+        event_id = str(uuid.uuid4())
+        event = TraceEvent(
+            event_id=event_id,
+            trial_id=self._trial_id,
+            seq=self._next_seq(),
+            timestamp=datetime.now(UTC),
+            event_type=EventType.EXECUTION_RESULT,
+            agent_role=AgentRole.SYSTEM,
+            caused_by=[self._last_event_id] if self._last_event_id else [],
+            payload={
+                "phase": "infrastructure_error",
+                "error_type": type(error).__name__,
+                "message": str(error)[:1000],
+            },
+        )
+        self._writer.append(event)
+        self._last_event_id = event_id
+        if self._ledger is not None:
+            self._ledger.record_emit(AgentRole.SYSTEM, event_id)
+        return event_id
 
     def attach(self, agents: list[ConversableAgent]) -> None:
         """Register the message hook on every agent."""
