@@ -61,7 +61,10 @@ function Resolve-ExistingDirectory {
 function Write-NewUtf8File {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string[]]$Lines
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [AllowEmptyString()]
+        [string[]]$Lines
     )
     if (Test-Path -LiteralPath $Path) {
         throw "Refusing to overwrite existing artifact: $Path"
