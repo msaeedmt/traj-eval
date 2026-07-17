@@ -35,6 +35,21 @@ def test_provider_default_omits_qwen_extra_body(monkeypatch):
     assert config.config_list[0].get("extra_body") is None
 
 
+def test_explicit_provider_route_does_not_depend_on_process_environment(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "stale-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://stale.invalid/v1")
+
+    config = build_llm_config(
+        model="qwen",
+        api_key="file-key",
+        base_url="https://qwen.invalid/v1",
+    )
+
+    entry = config.config_list[0]
+    assert entry["api_key"] == "file-key"
+    assert str(entry["base_url"]) == "https://qwen.invalid/v1"
+
+
 def test_provider_limits_must_be_positive(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 

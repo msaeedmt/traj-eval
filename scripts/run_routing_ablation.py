@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import sys
 import time
@@ -23,10 +24,12 @@ from autogen import ConversableAgent
 from traj_eval.agents import RoutingLedger, StepContext, TraceObserver, make_trial_meta
 from traj_eval.agents.config import build_llm_config
 from traj_eval.agents.lean_routing_ablation import (
+    ARM_PROVENANCE,
     CENTRAL_ARMS,
     CONTROLLER_PROMPT,
     CONTROLLER_STUCK_PROBES,
     RoutingArm,
+    TOOL_SUBSTRATE_PROVENANCE,
     build_routing_ablation_team,
     evaluate_controller_stuck_probe,
     finalize_routing_ablation,
@@ -100,11 +103,12 @@ def verify_lean_project_contract(dataset_root: Path, lean_project: Path) -> dict
     return hashes
 
 
-def load_provider_env(path: Path) -> None:
-    """Load only the two OpenAI-compatible endpoint variables from an ignored file."""
+def read_provider_env(path: Path) -> dict[str, str]:
+    """Read a provider route without mutating process or provider configuration."""
     allowed = {"OPENAI_API_KEY", "OPENAI_BASE_URL"}
     if not path.is_file():
         raise FileNotFoundError(f"provider environment file not found: {path}")
+    values: dict[str, str] = {}
     for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#") or "=" not in line:
@@ -112,10 +116,11 @@ def load_provider_env(path: Path) -> None:
         key, value = line.split("=", 1)
         key = key.strip()
         if key in allowed:
-            os.environ[key] = value.strip().strip("\"'")
-    missing = sorted(key for key in allowed if not os.environ.get(key))
+            values[key] = value.strip().strip("\"'")
+    missing = sorted(key for key in allowed if not values.get(key))
     if missing:
         raise RuntimeError(f"provider environment is missing: {', '.join(missing)}")
+    return values
 
 
 def task_prompt(record: ProblemRecord) -> str:
@@ -203,6 +208,9 @@ def _trial_config(
         "arm": arm.value,
         "model": model,
         "routing_only_intervention": True,
+        "routing_source_commit": ARM_PROVENANCE[arm],
+        "tool_substrate_commit": TOOL_SUBSTRATE_PROVENANCE,
+        "subgoal_dag": False,
         "worker_roles": ["reasoner", "engineer", "critic"],
         "tools": ["check_lean", "search_lemmas", "try_tactic", "show_goals"],
         "imports": "Mathlib",
@@ -261,6 +269,7 @@ def run_one_trial(
     path: Path,
     compiler: Any,
     model: str,
+    provider: dict[str, str],
     max_worker_turns: int,
     max_total_model_calls: int,
     timeout_seconds: float,
@@ -276,6 +285,8 @@ def run_one_trial(
     worker_config = build_llm_config(
         temperature=0.2,
         model=model,
+        api_key=provider["OPENAI_API_KEY"],
+        base_url=provider["OPENAI_BASE_URL"],
         max_tokens=WORKER_MAX_TOKENS,
         enable_thinking=False,
         timeout_seconds=timeout_seconds,
@@ -284,6 +295,8 @@ def run_one_trial(
         build_llm_config(
             temperature=0.0,
             model=model,
+            api_key=provider["OPENAI_API_KEY"],
+            base_url=provider["OPENAI_BASE_URL"],
             max_tokens=CONTROLLER_MAX_TOKENS,
             enable_thinking=False,
             json_mode=True,
@@ -371,6 +384,38 @@ def _retry_path(path: Path) -> Path:
     return path.with_name(f"{path.stem}_retry1{path.suffix}")
 
 
+def preflight_new_run(
+    output_dir: Path,
+    schedule: list[tuple[int, str, RoutingArm]],
+    arms: tuple[RoutingArm, ...],
+) -> None:
+    """Refuse the entire run before its first call if any future artifact collides."""
+    targets: list[Path] = []
+    for trial, task_id, arm in schedule:
+        trace = _trace_path(output_dir, arm, task_id, trial)
+        targets.extend((trace, _retry_path(trace)))
+    for arm in arms:
+        targets.extend(
+            (
+                output_dir / arm.value / "summary.json",
+                output_dir / arm.value / "RESULTS.md",
+            )
+        )
+    targets.extend(
+        (
+            output_dir / "run_manifest.json",
+            output_dir / "analysis" / "metrics.json",
+            output_dir / "analysis" / "COMPARISON.md",
+        )
+    )
+    collisions = [target.resolve() for target in targets if target.exists()]
+    if collisions:
+        manifest = "\n".join(str(path) for path in collisions)
+        raise FileExistsError(
+            f"refusing new run with {len(collisions)} artifact collision(s):\n{manifest}"
+        )
+
+
 def run_trial_with_one_infrastructure_retry(
     record: ProblemRecord,
     trial: int,
@@ -415,6 +460,17 @@ def run_trial_with_one_infrastructure_retry(
 def _arm_summary(
     arm: RoutingArm, outcomes: list[TrialOutcome], expected: int, model: str
 ) -> dict[str, Any]:
+    by_task: dict[str, dict[str, Any]] = {}
+    for task_id in sorted({item.task_id for item in outcomes}):
+        task_outcomes = [item for item in outcomes if item.task_id == task_id]
+        solved = sum(item.outcome == "solved" for item in task_outcomes)
+        low, high = wilson_interval(solved, len(task_outcomes))
+        by_task[task_id] = {
+            "solved": solved,
+            "trials": len(task_outcomes),
+            "rate": solved / len(task_outcomes) if task_outcomes else 0.0,
+            "wilson_95": [low, high],
+        }
     return {
         "schema": "han_lean_routing_ablation_summary_v4",
         "arm": arm.value,
@@ -433,7 +489,108 @@ def _arm_summary(
         "planner_recoveries": sum(item.reasoner_stuck_to_engineer for item in outcomes),
         "engineer_replans": sum(item.engineer_stuck_to_reasoner for item in outcomes),
         "engineer_local_retries": sum(item.engineer_local_retries for item in outcomes),
+        "tasks": by_task,
         "trials": [asdict(item) for item in outcomes],
+    }
+
+
+def wilson_interval(
+    successes: int, trials: int, z: float = 1.959963984540054
+) -> tuple[float, float]:
+    """Return a two-sided Wilson interval for a binomial success rate."""
+    if trials < 0 or successes < 0 or successes > trials:
+        raise ValueError("Wilson counts must satisfy 0 <= successes <= trials")
+    if trials == 0:
+        return 0.0, 0.0
+    rate = successes / trials
+    denominator = 1 + z**2 / trials
+    centre = (rate + z**2 / (2 * trials)) / denominator
+    half_width = (
+        z
+        * math.sqrt(rate * (1 - rate) / trials + z**2 / (4 * trials**2))
+        / denominator
+    )
+    return max(0.0, centre - half_width), min(1.0, centre + half_width)
+
+
+def _mcnemar_exact_p(candidate_only: int, baseline_only: int) -> float:
+    discordant = candidate_only + baseline_only
+    if discordant == 0:
+        return 1.0
+    tail = sum(
+        math.comb(discordant, index)
+        for index in range(min(candidate_only, baseline_only) + 1)
+    )
+    return min(1.0, 2 * tail / (2**discordant))
+
+
+def build_preplanned_comparison(outcomes: list[TrialOutcome]) -> dict[str, Any]:
+    """Compare matched trial slots without post-hoc arm or task selection."""
+    by_slot = {
+        (item.arm, item.task_id, item.trial): item.outcome == "solved"
+        for item in outcomes
+    }
+    baseline = RoutingArm.UPSTREAM_FREE.value
+    candidates = (
+        RoutingArm.LEGACY_DETERMINISTIC.value,
+        RoutingArm.CENTRAL_WORKER_MATCHED.value,
+        RoutingArm.CENTRAL_TOTAL_CALL_MATCHED.value,
+    )
+    comparisons: dict[str, Any] = {}
+    for candidate in candidates:
+        candidate_slots = {
+            (task_id, trial): solved
+            for (arm, task_id, trial), solved in by_slot.items()
+            if arm == candidate
+        }
+        baseline_slots = {
+            (task_id, trial): solved
+            for (arm, task_id, trial), solved in by_slot.items()
+            if arm == baseline
+        }
+        paired_slots = sorted(candidate_slots.keys() & baseline_slots.keys())
+        candidate_only = sum(
+            candidate_slots[slot] and not baseline_slots[slot] for slot in paired_slots
+        )
+        baseline_only = sum(
+            baseline_slots[slot] and not candidate_slots[slot] for slot in paired_slots
+        )
+        comparisons[f"{candidate}_vs_{baseline}"] = {
+            "paired_slots": len(paired_slots),
+            "candidate_solved": sum(candidate_slots[slot] for slot in paired_slots),
+            "baseline_solved": sum(baseline_slots[slot] for slot in paired_slots),
+            "candidate_only_solved": candidate_only,
+            "baseline_only_solved": baseline_only,
+            "paired_rate_delta": (
+                (candidate_only - baseline_only) / len(paired_slots)
+                if paired_slots
+                else 0.0
+            ),
+            "mcnemar_exact_two_sided_p": _mcnemar_exact_p(
+                candidate_only, baseline_only
+            ),
+        }
+    total_key = (
+        f"{RoutingArm.CENTRAL_TOTAL_CALL_MATCHED.value}_vs_"
+        f"{RoutingArm.UPSTREAM_FREE.value}"
+    )
+    total_comparison = comparisons[total_key]
+    cost_effective = (
+        total_comparison["paired_slots"] > 0
+        and total_comparison["candidate_solved"]
+        > total_comparison["baseline_solved"]
+    )
+    return {
+        "schema": "han_lean_routing_preplanned_comparison_v4",
+        "success_definition": "external kernel-validated outcome == solved",
+        "baseline": baseline,
+        "comparisons": comparisons,
+        "central_routing_cost_effective": cost_effective,
+        "cost_effective_rule": (
+            "true only if central_total_call_matched has more paired solved slots "
+            "than upstream_free"
+        ),
+        "claim_boundary": "two selected tasks and one Qwen model",
     }
 
 
@@ -460,6 +617,41 @@ def _summary_markdown(summary: dict[str, Any]) -> str:
     )
 
 
+def _comparison_markdown(comparison: dict[str, Any]) -> str:
+    lines = [
+        "# Preplanned Routing Comparison",
+        "",
+        f"- Baseline: `{comparison['baseline']}`",
+        "- Success: external kernel-validated `solved` outcome.",
+        "- Pairing: task ID plus trial index.",
+        "- Scope: two selected tasks and one Qwen model.",
+        "- Central routing cost-effective: "
+        f"`{str(comparison['central_routing_cost_effective']).lower()}`",
+        "",
+        "## Paired comparisons",
+        "",
+    ]
+    for name, result in comparison["comparisons"].items():
+        lines.extend(
+            [
+                f"### {name}",
+                "",
+                f"- Paired slots: {result['paired_slots']}",
+                f"- Candidate solved: {result['candidate_solved']}",
+                f"- Baseline solved: {result['baseline_solved']}",
+                f"- Paired rate delta: {result['paired_rate_delta']:.4f}",
+                f"- Exact McNemar p: {result['mcnemar_exact_two_sided_p']:.4f}",
+                "",
+            ]
+        )
+    lines.append(
+        "These comparisons are descriptive for the preregistered two-task slice; "
+        "they do not establish overall NLP-proposal improvement."
+    )
+    lines.append("")
+    return "\n".join(lines)
+
+
 def write_summaries(
     output_dir: Path,
     outcomes: list[TrialOutcome],
@@ -467,6 +659,23 @@ def write_summaries(
     expected_per_arm: int,
     model: str,
 ) -> None:
+    output_targets = [output_dir / "run_manifest.json"]
+    for arm in arms:
+        output_targets.extend(
+            [
+                output_dir / arm.value / "summary.json",
+                output_dir / arm.value / "RESULTS.md",
+            ]
+        )
+    output_targets.extend(
+        [
+            output_dir / "analysis" / "metrics.json",
+            output_dir / "analysis" / "COMPARISON.md",
+        ]
+    )
+    for target in output_targets:
+        _refuse_existing(target)
+
     all_summaries: dict[str, Any] = {}
     for arm in arms:
         arm_outcomes = [item for item in outcomes if item.arm == arm.value]
@@ -494,6 +703,16 @@ def write_summaries(
         ),
         encoding="utf-8",
     )
+    comparison = build_preplanned_comparison(outcomes)
+    metrics_path = output_dir / "analysis" / "metrics.json"
+    comparison_path = output_dir / "analysis" / "COMPARISON.md"
+    _refuse_existing(metrics_path)
+    _refuse_existing(comparison_path)
+    metrics_path.parent.mkdir(parents=True, exist_ok=True)
+    metrics_path.write_text(
+        json.dumps(comparison, indent=2, sort_keys=True), encoding="utf-8"
+    )
+    comparison_path.write_text(_comparison_markdown(comparison), encoding="utf-8")
 
 
 def _read_smoke_result(path: Path) -> dict[str, Any]:
@@ -507,13 +726,20 @@ def _read_smoke_result(path: Path) -> dict[str, Any]:
 
 
 def run_controller_stuck_smoke(
-    output_dir: Path, model: str, timeout: float, *, resume: bool = False
+    output_dir: Path,
+    model: str,
+    timeout: float,
+    provider: dict[str, str],
+    *,
+    resume: bool = False,
 ) -> int:
     """Make two routing-only calls for planner and Engineer stuck scenarios."""
     target_dir = output_dir / "smoke" / "controller_stuck"
     config = build_llm_config(
         temperature=0.0,
         model=model,
+        api_key=provider["OPENAI_API_KEY"],
+        base_url=provider["OPENAI_BASE_URL"],
         max_tokens=CONTROLLER_MAX_TOKENS,
         enable_thinking=False,
         json_mode=True,
@@ -612,19 +838,27 @@ def main() -> int:
     print(f"mode={args.mode} tasks={tasks} arms={[arm.value for arm in arms]}")
     print(f"official trial slots={len(schedule)}; max worker turns={args.max_worker_turns}")
     if args.mode == "dry-run":
+        preflight_new_run(args.output_dir, schedule, arms)
+        print("collision preflight=pass")
         for trial, task_id, arm in schedule:
             print(f"t{trial:02d} {task_id} {arm.value}")
         return 0
 
-    if not args.model or not args.provider_env:
-        parser.error("live modes require --model and --provider-env")
-    load_provider_env(args.provider_env.resolve())
+    provider_env = args.provider_env
+    if provider_env is None and os.environ.get("TRAJ_EVAL_PROVIDER_ENV"):
+        provider_env = Path(os.environ["TRAJ_EVAL_PROVIDER_ENV"])
+    if not args.model or provider_env is None:
+        parser.error(
+            "live modes require --model and TRAJ_EVAL_PROVIDER_ENV (or --provider-env)"
+        )
+    provider = read_provider_env(provider_env.resolve())
     os.environ["TRAJ_EVAL_MODEL"] = args.model
     if args.mode == "controller-smoke":
         return run_controller_stuck_smoke(
             args.output_dir,
             args.model,
             args.worker_timeout_seconds,
+            provider,
             resume=args.resume,
         )
 
@@ -641,6 +875,8 @@ def main() -> int:
     run_schedule = (
         balanced_schedule(tasks, arms, 1) if args.mode == "arm-smoke" else schedule
     )
+    if not args.resume:
+        preflight_new_run(run_output, run_schedule, arms)
     outcomes: list[TrialOutcome] = []
     for trial, task_id, arm in run_schedule:
         path = _trace_path(run_output, arm, task_id, trial)
@@ -654,6 +890,7 @@ def main() -> int:
                 resume=args.resume,
                 compiler=compiler,
                 model=args.model,
+                provider=provider,
                 max_worker_turns=args.max_worker_turns,
                 max_total_model_calls=args.max_total_model_calls,
                 timeout_seconds=args.worker_timeout_seconds,

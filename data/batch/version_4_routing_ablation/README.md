@@ -13,6 +13,8 @@ The historical evidence reports `easy_fatem_019` at 0/10 solved and
 - Model: one explicitly selected Qwen OpenAI-compatible backend for every role.
 - Worker roles: Reasoner (the Lean planner-equivalent), Engineer, Critic.
 - Tools: `check_lean`, `search_lemmas`, `try_tactic`, `show_goals`.
+- Kernel tools: exact validated source/tests from
+  `han-lean-anchors-merge@45f0ab1`.
 - Imports: `import Mathlib`.
 - Worker output cap: 1,500 tokens; controller output cap: 128 tokens.
 - Maximum worker turns: 200.
@@ -61,6 +63,11 @@ are written only after the selected run completes.
 
 The existing 100 V1 JSONL files in `data/batch` and the default path in
 `scripts/run_batch.py` are not changed by this experiment.
+
+Provider credentials and endpoint are read without modification from the file
+named by `TRAJ_EVAL_PROVIDER_ENV` (the CLI override is equivalent). They are
+passed directly into the in-memory AG2 configuration; the runner sets only
+`TRAJ_EVAL_MODEL` in its process environment and never edits the provider file.
 
 ## Claim boundary
 

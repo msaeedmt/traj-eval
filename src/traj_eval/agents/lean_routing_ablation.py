@@ -35,6 +35,15 @@ class RoutingArm(StrEnum):
     CENTRAL_TOTAL_CALL_MATCHED = "central_total_call_matched"
 
 
+ARM_PROVENANCE = {
+    RoutingArm.LEGACY_DETERMINISTIC: "c961421",
+    RoutingArm.UPSTREAM_FREE: "74f275e",
+    RoutingArm.CENTRAL_WORKER_MATCHED: "han_v4_private",
+    RoutingArm.CENTRAL_TOTAL_CALL_MATCHED: "han_v4_private",
+}
+TOOL_SUBSTRATE_PROVENANCE = "45f0ab1"
+
+
 CENTRAL_ARMS = {
     RoutingArm.CENTRAL_WORKER_MATCHED,
     RoutingArm.CENTRAL_TOTAL_CALL_MATCHED,

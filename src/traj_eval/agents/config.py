@@ -28,6 +28,8 @@ def build_llm_config(
     *,
     temperature: float = 0.2,
     model: str | None = None,
+    api_key: str | None = None,
+    base_url: str | None = None,
     max_tokens: int | None = None,
     enable_thinking: bool | None = None,
     json_mode: bool = False,
@@ -38,7 +40,7 @@ def build_llm_config(
     Raises a clear error if the key is missing, so a misconfigured shell fails
     loudly instead of producing a confusing auth error deep inside a chat.
     """
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = api_key or os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError(
             "OPENAI_API_KEY is not set. Export it in your shell or put it in a "
@@ -69,7 +71,7 @@ def build_llm_config(
         entry["response_format"] = {"type": "json_object"}
 
     # Only set base_url when overriding; absent => OpenAI's default endpoint.
-    base_url = os.environ.get("OPENAI_BASE_URL")
+    base_url = base_url or os.environ.get("OPENAI_BASE_URL")
     if base_url:
         entry["base_url"] = base_url
 

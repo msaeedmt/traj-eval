@@ -9,11 +9,13 @@ pytest.importorskip("autogen", reason="agents extra (ag2) not installed")
 from autogen import LLMConfig
 
 from traj_eval.agents.lean_routing_ablation import (
+    ARM_PROVENANCE,
     COMMON_CRITIC_PROMPT,
     COMMON_ENGINEER_PROMPT,
     COMMON_REASONER_PROMPT,
     CONTROLLER_STUCK_PROBES,
     RoutingArm,
+    TOOL_SUBSTRATE_PROVENANCE,
     build_routing_ablation_team,
     evaluate_controller_stuck_probe,
     parse_controller_decision,
@@ -69,6 +71,12 @@ def test_mathematical_prompts_are_shared_across_arms():
         assert prompts[AgentRole.REASONER].startswith(COMMON_REASONER_PROMPT)
         assert prompts[AgentRole.ENGINEER].startswith(COMMON_ENGINEER_PROMPT)
         assert prompts[AgentRole.CRITIC].startswith(COMMON_CRITIC_PROMPT)
+
+
+def test_arm_provenance_is_preregistered():
+    assert ARM_PROVENANCE[RoutingArm.LEGACY_DETERMINISTIC] == "c961421"
+    assert ARM_PROVENANCE[RoutingArm.UPSTREAM_FREE] == "74f275e"
+    assert TOOL_SUBSTRATE_PROVENANCE == "45f0ab1"
 
 
 def test_controller_contract_accepts_only_allowed_strict_json():
