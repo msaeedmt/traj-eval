@@ -18,6 +18,7 @@ from scripts.run_batch import (
     _build_run_summary,
     _configure_console,
     _report,
+    _resolve_worker_thinking,
     _task_prompt,
     _trace_is_valid,
     _write_summary,
@@ -102,7 +103,7 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
         return object()
 
     sentinel = object()
-    monkeypatch.setattr(run_batch, "build_llm_config", lambda: object())
+    monkeypatch.setattr(run_batch, "build_llm_config", lambda **kwargs: object())
     monkeypatch.setattr(run_batch, "_build_agent_tools", lambda compiler: {})
     monkeypatch.setattr(run_batch, "build_lean_free_team", fake_team)
     monkeypatch.setattr(run_batch, "make_trial_meta", fake_meta)
@@ -131,6 +132,13 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
     assert captured["team_max_turns"] == 200
     assert captured["meta_config"]["max_turns"] == 200
     assert result is sentinel
+
+
+def test_worker_thinking_auto_disables_qwen_only():
+    assert _resolve_worker_thinking("openai/Qwen3.5-27B.gguf", "auto") is False
+    assert _resolve_worker_thinking("gpt-4o-mini", "auto") is None
+    assert _resolve_worker_thinking("anything", "enabled") is True
+    assert _resolve_worker_thinking("anything", "disabled") is False
 
 
 def _make_result_event(text):

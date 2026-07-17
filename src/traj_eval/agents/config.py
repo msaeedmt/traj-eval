@@ -24,7 +24,13 @@ from autogen import LLMConfig
 DEFAULT_MODEL = "gpt-4o-mini"
 
 
-def build_llm_config(*, temperature: float = 0.2) -> LLMConfig:
+def build_llm_config(
+    *,
+    temperature: float = 0.2,
+    model: str | None = None,
+    max_tokens: int | None = None,
+    enable_thinking: bool | None = None,
+) -> LLMConfig:
     """Build an AG2 LLMConfig from the environment.
 
     Raises a clear error if the key is missing, so a misconfigured shell fails
@@ -37,7 +43,7 @@ def build_llm_config(*, temperature: float = 0.2) -> LLMConfig:
             "(gitignored) .env file before running any agent."
         )
 
-    model = os.environ.get("TRAJ_EVAL_MODEL", DEFAULT_MODEL)
+    model = model or os.environ.get("TRAJ_EVAL_MODEL", DEFAULT_MODEL)
 
     entry: dict[str, object] = {
         "api_type": "openai",
@@ -45,6 +51,14 @@ def build_llm_config(*, temperature: float = 0.2) -> LLMConfig:
         "api_key": api_key,
         "temperature": temperature,
     }
+    if max_tokens is not None:
+        if max_tokens < 1:
+            raise ValueError("max_tokens must be positive")
+        entry["max_tokens"] = max_tokens
+    if enable_thinking is not None:
+        entry["extra_body"] = {
+            "chat_template_kwargs": {"enable_thinking": enable_thinking}
+        }
 
     # Only set base_url when overriding; absent => OpenAI's default endpoint.
     base_url = os.environ.get("OPENAI_BASE_URL")

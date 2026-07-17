@@ -114,6 +114,17 @@ def _configure_console() -> None:
             reconfigure(encoding="utf-8", errors="backslashreplace")
 
 
+def _resolve_worker_thinking(model: str, mode: str) -> bool | None:
+    """Map the CLI mode to the provider request; Qwen defaults to non-thinking."""
+    if mode == "enabled":
+        return True
+    if mode == "disabled":
+        return False
+    if mode != "auto":
+        raise ValueError(f"unsupported worker thinking mode: {mode}")
+    return False if "qwen" in model.casefold() else None
+
+
 def _score_trace(
     record: ProblemRecord,
     trial: int,
@@ -162,10 +173,17 @@ def run_one_trial(
     output_dir: Path = LOG_DIR,
     setup: str = RECOVERY_TRIANGLE_V1,
     max_turns: int = DEFAULT_MAX_TURNS,
+    worker_model: str | None = None,
+    worker_thinking: str = "auto",
 ) -> TrialOutcome:
     prompt = _task_prompt(record)
 
-    llm_config = build_llm_config()
+    worker_model = worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
+    enable_thinking = _resolve_worker_thinking(worker_model, worker_thinking)
+    llm_config = build_llm_config(
+        model=worker_model,
+        enable_thinking=enable_thinking,
+    )
     ledger = RoutingLedger()
     step_context = StepContext()
     manager, user, groupchat, run_state = build_lean_free_team(
@@ -182,7 +200,7 @@ def run_one_trial(
     meta = make_trial_meta(
         trial_id=f"{record.id}_t{trial}",
         task_id=record.id,
-        backbone=os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini"),
+        backbone=worker_model,
         testbed="lean",
         architecture=f"lean_{setup}",
         grounding=True,
@@ -193,6 +211,7 @@ def run_one_trial(
             "provider_route": "openai_compatible",
             "tools": list(LEAN_TOOL_NAMES),
             "max_turns": max_turns,
+            "worker_enable_thinking": enable_thinking,
         },
     )
     writer = TrialLogWriter(log_path, meta)
@@ -227,6 +246,12 @@ def main() -> int:
         type=int,
         default=DEFAULT_MAX_TURNS,
         help="maximum agent turns per trial",
+    )
+    ap.add_argument(
+        "--worker-thinking",
+        choices=["auto", "enabled", "disabled"],
+        default="auto",
+        help="Qwen thinking mode; auto disables it for Qwen models",
     )
     ap.add_argument(
         "--setup",
@@ -313,6 +338,7 @@ def main() -> int:
                         output_dir=args.output_dir,
                         setup=args.setup,
                         max_turns=args.max_turns,
+                        worker_thinking=args.worker_thinking,
                     )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch
