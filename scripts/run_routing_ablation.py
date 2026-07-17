@@ -48,6 +48,7 @@ DEFAULT_TASKS = ("easy_fatem_019", "easy_fatem_020")
 PROJECT_CONTRACT_FILES = ("lean-toolchain", "lake-manifest.json", "lakefile.lean")
 WORKER_MAX_TOKENS = 1_500
 CONTROLLER_MAX_TOKENS = 128
+PROVIDER_MAX_RETRIES = 0
 
 
 @dataclass(frozen=True)
@@ -222,6 +223,7 @@ def _trial_config(
         ),
         "worker_max_tokens": WORKER_MAX_TOKENS,
         "controller_max_tokens": CONTROLLER_MAX_TOKENS if arm in CENTRAL_ARMS else None,
+        "provider_max_retries": PROVIDER_MAX_RETRIES,
         "lean_project_contract": contract_hashes,
     }
 
@@ -290,6 +292,7 @@ def run_one_trial(
         max_tokens=WORKER_MAX_TOKENS,
         enable_thinking=False,
         timeout_seconds=timeout_seconds,
+        max_retries=PROVIDER_MAX_RETRIES,
     )
     controller_config = (
         build_llm_config(
@@ -301,6 +304,7 @@ def run_one_trial(
             enable_thinking=False,
             json_mode=True,
             timeout_seconds=timeout_seconds,
+            max_retries=PROVIDER_MAX_RETRIES,
         )
         if arm in CENTRAL_ARMS
         else None
@@ -744,6 +748,7 @@ def run_controller_stuck_smoke(
         enable_thinking=False,
         json_mode=True,
         timeout_seconds=timeout,
+        max_retries=PROVIDER_MAX_RETRIES,
     )
     failed = 0
     for probe in (item for item in CONTROLLER_STUCK_PROBES if item.live_smoke):

@@ -10,9 +10,11 @@ pytest.importorskip("autogen", reason="agents extra (ag2) not installed")
 from scripts.run_routing_ablation import (
     DEFAULT_TASKS,
     PROJECT_CONTRACT_FILES,
+    PROVIDER_MAX_RETRIES,
     _read_smoke_result,
     _refuse_existing,
     _trace_is_valid,
+    _trial_config,
     balanced_schedule,
     build_preplanned_comparison,
     preflight_new_run,
@@ -160,6 +162,19 @@ def test_task_prompt_is_routing_neutral_and_imports_mathlib():
     assert "central" not in prompt.lower()
     assert "free routing" not in prompt.lower()
     assert "deterministic" not in prompt.lower()
+
+
+def test_v4_trial_metadata_discloses_disabled_provider_retries():
+    config = _trial_config(
+        RoutingArm.LEGACY_DETERMINISTIC,
+        model="qwen",
+        max_worker_turns=200,
+        max_total_model_calls=200,
+        contract_hashes={"lean-toolchain": "hash"},
+    )
+
+    assert PROVIDER_MAX_RETRIES == 0
+    assert config["provider_max_retries"] == 0
 
 
 def test_refuse_existing_never_overwrites(tmp_path):

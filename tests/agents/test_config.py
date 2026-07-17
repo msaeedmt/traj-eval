@@ -16,11 +16,13 @@ def test_qwen_limits_flow_to_openai_config(monkeypatch):
         enable_thinking=False,
         json_mode=True,
         timeout_seconds=45,
+        max_retries=0,
     )
 
     entry = config.config_list[0]
     assert entry["max_tokens"] == 384
     assert entry["timeout"] == 45
+    assert entry["max_retries"] == 0
     assert entry["extra_body"] == {
         "chat_template_kwargs": {"enable_thinking": False}
     }
@@ -33,6 +35,7 @@ def test_provider_default_omits_qwen_extra_body(monkeypatch):
     config = build_llm_config(model="gpt-4o-mini")
 
     assert config.config_list[0].get("extra_body") is None
+    assert config.config_list[0].get("max_retries") is None
 
 
 def test_explicit_provider_route_does_not_depend_on_process_environment(monkeypatch):
@@ -57,3 +60,5 @@ def test_provider_limits_must_be_positive(monkeypatch):
         build_llm_config(max_tokens=0)
     with pytest.raises(ValueError, match="timeout_seconds"):
         build_llm_config(timeout_seconds=0)
+    with pytest.raises(ValueError, match="max_retries"):
+        build_llm_config(max_retries=-1)

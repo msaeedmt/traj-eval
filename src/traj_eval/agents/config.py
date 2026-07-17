@@ -34,6 +34,7 @@ def build_llm_config(
     enable_thinking: bool | None = None,
     json_mode: bool = False,
     timeout_seconds: float | None = None,
+    max_retries: int | None = None,
 ) -> LLMConfig:
     """Build an AG2 LLMConfig from the environment.
 
@@ -63,6 +64,10 @@ def build_llm_config(
         if timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         entry["timeout"] = timeout_seconds
+    if max_retries is not None:
+        if max_retries < 0:
+            raise ValueError("max_retries must be non-negative")
+        entry["max_retries"] = max_retries
     if enable_thinking is not None:
         entry["extra_body"] = {
             "chat_template_kwargs": {"enable_thinking": enable_thinking}
