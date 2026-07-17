@@ -14,6 +14,7 @@ def test_qwen_limits_flow_to_openai_config(monkeypatch):
         model="openai/Qwen3.5-27B.gguf",
         max_tokens=384,
         enable_thinking=False,
+        json_mode=True,
         timeout_seconds=45,
     )
 
@@ -23,6 +24,7 @@ def test_qwen_limits_flow_to_openai_config(monkeypatch):
     assert entry["extra_body"] == {
         "chat_template_kwargs": {"enable_thinking": False}
     }
+    assert entry["response_format"] == {"type": "json_object"}
 
 
 def test_provider_default_omits_qwen_extra_body(monkeypatch):

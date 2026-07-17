@@ -30,6 +30,7 @@ def build_llm_config(
     model: str | None = None,
     max_tokens: int | None = None,
     enable_thinking: bool | None = None,
+    json_mode: bool = False,
     timeout_seconds: float | None = None,
 ) -> LLMConfig:
     """Build an AG2 LLMConfig from the environment.
@@ -64,6 +65,8 @@ def build_llm_config(
         entry["extra_body"] = {
             "chat_template_kwargs": {"enable_thinking": enable_thinking}
         }
+    if json_mode:
+        entry["response_format"] = {"type": "json_object"}
 
     # Only set base_url when overriding; absent => OpenAI's default endpoint.
     base_url = os.environ.get("OPENAI_BASE_URL")

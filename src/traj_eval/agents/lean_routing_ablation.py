@@ -141,6 +141,9 @@ the result.
 
 Return one JSON object and nothing else:
 {"next_role":"reasoner|engineer|critic","reason":"short routing reason"}
+
+OUTPUT FORMAT IS A HARD RUNTIME CONSTRAINT. The first character must be `{`
+and the last character must be `}`. Do not use Markdown or a ```json fence.
 """
 
 

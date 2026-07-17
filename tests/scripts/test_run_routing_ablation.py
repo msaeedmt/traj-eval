@@ -10,6 +10,7 @@ pytest.importorskip("autogen", reason="agents extra (ag2) not installed")
 from scripts.run_routing_ablation import (
     DEFAULT_TASKS,
     PROJECT_CONTRACT_FILES,
+    _read_smoke_result,
     _refuse_existing,
     _trace_is_valid,
     balanced_schedule,
@@ -99,6 +100,21 @@ def test_explicit_provider_file_overrides_stale_process_route(monkeypatch, tmp_p
 
     assert os.environ["OPENAI_BASE_URL"] == "https://qwen.invalid/v1"
     assert os.environ["OPENAI_API_KEY"] == "file-key"
+
+
+def test_preserved_failed_smoke_result_is_read_without_reinterpretation(tmp_path):
+    result = tmp_path / "probe.json"
+    result.write_text('{"passed": false, "score_reason": "invalid"}', encoding="utf-8")
+
+    assert _read_smoke_result(result)["passed"] is False
+
+
+def test_malformed_preserved_smoke_result_blocks_resume(tmp_path):
+    malformed = tmp_path / "probe.json"
+    malformed.write_text('{"score_reason": "missing pass field"}', encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="preserved smoke schema"):
+        _read_smoke_result(malformed)
 
 
 def test_lean_project_contract_requires_matching_hashes_and_lake(tmp_path):

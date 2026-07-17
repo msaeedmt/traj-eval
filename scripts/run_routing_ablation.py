@@ -286,6 +286,7 @@ def run_one_trial(
             model=model,
             max_tokens=CONTROLLER_MAX_TOKENS,
             enable_thinking=False,
+            json_mode=True,
             timeout_seconds=timeout_seconds,
         )
         if arm in CENTRAL_ARMS
@@ -495,7 +496,19 @@ def write_summaries(
     )
 
 
-def run_controller_stuck_smoke(output_dir: Path, model: str, timeout: float) -> int:
+def _read_smoke_result(path: Path) -> dict[str, Any]:
+    try:
+        result = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"invalid preserved smoke result: {path.resolve()}") from exc
+    if not isinstance(result, dict) or not isinstance(result.get("passed"), bool):
+        raise RuntimeError(f"invalid preserved smoke schema: {path.resolve()}")
+    return result
+
+
+def run_controller_stuck_smoke(
+    output_dir: Path, model: str, timeout: float, *, resume: bool = False
+) -> int:
     """Make two routing-only calls for planner and Engineer stuck scenarios."""
     target_dir = output_dir / "smoke" / "controller_stuck"
     config = build_llm_config(
@@ -503,11 +516,19 @@ def run_controller_stuck_smoke(output_dir: Path, model: str, timeout: float) -> 
         model=model,
         max_tokens=CONTROLLER_MAX_TOKENS,
         enable_thinking=False,
+        json_mode=True,
         timeout_seconds=timeout,
     )
     failed = 0
     for probe in (item for item in CONTROLLER_STUCK_PROBES if item.live_smoke):
         target = target_dir / f"{probe.name}.json"
+        if target.exists():
+            if not resume:
+                _refuse_existing(target)
+            original = _read_smoke_result(target)
+            if original["passed"]:
+                continue
+            target = target.with_name(f"{target.stem}_retry1{target.suffix}")
         _refuse_existing(target)
         controller = ConversableAgent(
             name="system",
@@ -601,7 +622,10 @@ def main() -> int:
     os.environ["TRAJ_EVAL_MODEL"] = args.model
     if args.mode == "controller-smoke":
         return run_controller_stuck_smoke(
-            args.output_dir, args.model, args.worker_timeout_seconds
+            args.output_dir,
+            args.model,
+            args.worker_timeout_seconds,
+            resume=args.resume,
         )
 
     contract_hashes = verify_lean_project_contract(DATASET_ROOT, args.lean_project)
