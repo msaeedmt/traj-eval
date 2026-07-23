@@ -24,20 +24,31 @@ from autogen import LLMConfig
 DEFAULT_MODEL = "gpt-4o-mini"
 
 
-def build_llm_config(*, temperature: float = 0.2) -> LLMConfig:
+def build_llm_config(
+    *,
+    temperature: float = 0.2,
+    model: str | None = None,
+    api_key: str | None = None,
+    base_url: str | None = None,
+    max_tokens: int | None = None,
+    enable_thinking: bool | None = None,
+    json_mode: bool = False,
+    timeout_seconds: float | None = None,
+    max_retries: int | None = None,
+) -> LLMConfig:
     """Build an AG2 LLMConfig from the environment.
 
     Raises a clear error if the key is missing, so a misconfigured shell fails
     loudly instead of producing a confusing auth error deep inside a chat.
     """
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = api_key or os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError(
             "OPENAI_API_KEY is not set. Export it in your shell or put it in a "
             "(gitignored) .env file before running any agent."
         )
 
-    model = os.environ.get("TRAJ_EVAL_MODEL", DEFAULT_MODEL)
+    model = model or os.environ.get("TRAJ_EVAL_MODEL", DEFAULT_MODEL)
 
     entry: dict[str, object] = {
         "api_type": "openai",
@@ -45,9 +56,27 @@ def build_llm_config(*, temperature: float = 0.2) -> LLMConfig:
         "api_key": api_key,
         "temperature": temperature,
     }
+    if max_tokens is not None:
+        if max_tokens < 1:
+            raise ValueError("max_tokens must be positive")
+        entry["max_tokens"] = max_tokens
+    if timeout_seconds is not None:
+        if timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
+        entry["timeout"] = timeout_seconds
+    if max_retries is not None:
+        if max_retries < 0:
+            raise ValueError("max_retries must be non-negative")
+        entry["max_retries"] = max_retries
+    if enable_thinking is not None:
+        entry["extra_body"] = {
+            "chat_template_kwargs": {"enable_thinking": enable_thinking}
+        }
+    if json_mode:
+        entry["response_format"] = {"type": "json_object"}
 
     # Only set base_url when overriding; absent => OpenAI's default endpoint.
-    base_url = os.environ.get("OPENAI_BASE_URL")
+    base_url = base_url or os.environ.get("OPENAI_BASE_URL")
     if base_url:
         entry["base_url"] = base_url
 

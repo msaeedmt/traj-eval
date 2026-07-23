@@ -1,9 +1,9 @@
 """Direct Lean checker backed by local Lean project artifacts.
 
 This is a simpler runtime alternative to the long-lived LeanInteract server for
-batch experiments. It checks each snippet in a fresh temporary file inside the
-Lean project and returns the same LeanResult shape consumed by the agents and
-offline validator.
+batch experiments. It sends each snippet through Lean's ``--stdin`` transport
+and returns the same LeanResult shape consumed by the agents and offline
+validator without creating or deleting project files.
 """
 
 from __future__ import annotations
@@ -11,7 +11,6 @@ from __future__ import annotations
 import os
 import re
 import subprocess
-import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -48,8 +47,6 @@ class LeanCliCompiler:
     def __init__(self, project_dir: str | Path, *, timeout: int = 120) -> None:
         self.project_dir = Path(project_dir).resolve()
         self.timeout = timeout
-        self.tmp_dir = self.project_dir / ".traj_eval_tmp"
-        self.tmp_dir.mkdir(parents=True, exist_ok=True)
         self.lean_bin = self._find_local_lean()
         self.lean_path = self._build_lean_path()
         if self.lean_bin is None:
@@ -87,23 +84,22 @@ class LeanCliCompiler:
                     paths.append(str(lib))
         return paths
 
-    def _command_and_env(self, path: Path) -> tuple[list[str], dict[str, str] | None]:
+    def _command_and_env(self) -> tuple[list[str], dict[str, str] | None]:
         env = os.environ.copy()
         existing = env.get("LEAN_PATH")
         parts = [*self.lean_path]
         if existing:
             parts.append(existing)
         env["LEAN_PATH"] = os.pathsep.join(parts)
-        return [str(self.lean_bin), str(path)], env
+        return [str(self.lean_bin), "--stdin"], env
 
     def check(self, code: str) -> LeanResult:
-        path = self.tmp_dir / f"check_{uuid.uuid4().hex}.lean"
-        path.write_text(code, encoding="utf-8")
-        cmd, env = self._command_and_env(path)
+        cmd, env = self._command_and_env()
         try:
             proc = subprocess.run(
                 cmd,
                 cwd=self.project_dir,
+                input=code,
                 text=True,
                 capture_output=True,
                 encoding="utf-8",
@@ -115,8 +111,6 @@ class LeanCliCompiler:
             return _infrastructure_result(f"lean timed out after {self.timeout}s: {exc}")
         except OSError as exc:
             return _infrastructure_result(f"lean process failed: {type(exc).__name__}: {exc}")
-        finally:
-            path.unlink(missing_ok=True)
 
         output = "\n".join(part for part in (proc.stdout, proc.stderr) if part)
         opaque_output = output.strip().lower() in {"", "lean failed"}

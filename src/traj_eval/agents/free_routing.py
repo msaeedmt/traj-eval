@@ -53,6 +53,19 @@ class RoleSpec:
 
 
 @dataclass(frozen=True)
+class ToolStallHandoff:
+    """Request one bounded handoff-summary turn after repeated tool batches."""
+
+    caller: AgentRole
+    tool: str
+    after_batches: int
+    target: AgentRole
+    handoff_prompt: str
+    required_fields: tuple[str, ...] = ()
+    require_failed_compile: bool = False
+
+
+@dataclass(frozen=True)
 class RoutingConfig:
     """The domain's coordination graph: the seam where a domain configures the
     agnostic controller. Lean and astro differ only in this object (plus the
@@ -65,6 +78,7 @@ class RoutingConfig:
     max_consecutive_invalid: int = 3  # consecutive bad hand-offs -> 'stuck'
     max_identical_calls: int = 4  # identical tool submissions in a row -> 'stuck'
     max_failed_compiles: int = 6  # consecutive failed compiles w/ no success -> 'stuck'
+    tool_stall_handoffs: tuple[ToolStallHandoff, ...] = ()
 
     def spec(self, role: AgentRole) -> RoleSpec | None:
         return self.roles.get(role)
@@ -92,6 +106,11 @@ class _RunState:
     # successful compile resets it to 0.
     consecutive_failed_compiles: int = 0
     max_failed_compiles_seen: int = 0
+    tool_stall_streaks: dict[tuple[AgentRole, str], int] = field(default_factory=dict)
+    tool_stall_handoffs: int = 0
+    handoff_prompt_turns: int = 0
+    handoff_prompt_failures: int = 0
+    pending_handoff: ToolStallHandoff | None = None
 
 
 def _role_of(name: str) -> AgentRole | None:
@@ -120,6 +139,31 @@ def _is_native_tool_call(message: dict[str, Any]) -> bool:
     marker because AG2 has no native 'choose next agent' mechanism.)
     """
     return bool(message.get("tool_calls"))
+
+
+def _called_tools(message: dict[str, Any]) -> frozenset[str | None]:
+    return frozenset(
+        call.get("function", {}).get("name")
+        for call in message.get("tool_calls") or []
+    )
+
+
+def _valid_handoff_summary(text: str, rule: ToolStallHandoff) -> bool:
+    """Validate the structured recovery summary promised by the prompt."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    expected_marker = f"HANDOFF: {rule.target.value}"
+    if not lines or lines[-1].casefold() != expected_marker.casefold():
+        return False
+    for field in rule.required_fields:
+        if field.endswith(":"):
+            if not any(
+                line.startswith(field) and line[len(field) :].strip()
+                for line in lines
+            ):
+                return False
+        elif field not in lines:
+            return False
+    return True
 
 
 def _compile_verdict(message: dict[str, Any]) -> bool | None:
@@ -190,6 +234,35 @@ def build_free_routing_team(
     the termination reason and coordination-error counts after the run.
     """
     tools = tools or {}
+    stall_handoffs = config.tool_stall_handoffs
+    seen_stall_keys: set[tuple[AgentRole, str]] = set()
+    for stall_handoff in stall_handoffs:
+        stall_key = (stall_handoff.caller, stall_handoff.tool)
+        if stall_key in seen_stall_keys:
+            raise ValueError("tool stall handoff caller/tool pairs must be unique")
+        seen_stall_keys.add(stall_key)
+        caller_spec = config.spec(stall_handoff.caller)
+        if stall_handoff.after_batches < 1:
+            raise ValueError("tool stall handoff threshold must be positive")
+        if not stall_handoff.handoff_prompt.strip():
+            raise ValueError("tool stall handoff prompt must not be blank")
+        if any(not field.strip() for field in stall_handoff.required_fields):
+            raise ValueError("tool stall handoff required fields must not be blank")
+        if caller_spec is None or stall_handoff.tool not in caller_spec.tools:
+            raise ValueError("tool stall handoff caller must be allowed to use its tool")
+        if stall_handoff.caller not in agents:
+            raise ValueError("tool stall handoff caller must have a configured agent")
+        if (
+            stall_handoff.target not in caller_spec.handoff_targets
+            or stall_handoff.target not in agents
+        ):
+            raise ValueError("tool stall handoff target must be an allowed handoff")
+        if (
+            stall_handoff.require_failed_compile
+            and stall_handoff.after_batches >= config.max_failed_compiles
+        ):
+            raise ValueError("failed-compile handoff must precede the hard compile limit")
+
     user = UserProxyAgent(
         name="user",
         human_input_mode="NEVER",
@@ -217,6 +290,29 @@ def build_free_routing_team(
 
     members = [user, executor, *[agents[r] for r in config.roles if r in agents]]
     state = _RunState()
+    base_system_messages = {
+        role: agent.system_message for role, agent in agents.items()
+    }
+
+    def _stall_key(rule: ToolStallHandoff) -> tuple[AgentRole, str]:
+        return rule.caller, rule.tool
+
+    def _reset_nonmatching_stalls(
+        role: AgentRole | None,
+        called: frozenset[str | None],
+    ) -> None:
+        for rule in stall_handoffs:
+            if role is not rule.caller or called != frozenset({rule.tool}):
+                state.tool_stall_streaks[_stall_key(rule)] = 0
+
+    def _clear_pending_handoff() -> ToolStallHandoff | None:
+        pending = state.pending_handoff
+        if pending is not None:
+            agents[pending.caller].update_system_message(
+                base_system_messages[pending.caller]
+            )
+            state.pending_handoff = None
+        return pending
 
     def _route(agent, parent_role: AgentRole):
         # Record the causal edge: the NEXT agent's event will be caused by the
@@ -233,6 +329,7 @@ def build_free_routing_team(
     def select_next(last_speaker, groupchat: GroupChat):
         state.turns += 1
         if state.turns >= config.max_turns:
+            _clear_pending_handoff()
             state.terminated, state.reason = True, "cap"
             return None
 
@@ -261,7 +358,33 @@ def build_free_routing_team(
                 if state.consecutive_failed_compiles >= config.max_failed_compiles:
                     state.terminated, state.reason = True, "stuck"
                     return None
-            caller = _last_caller_before_executor(groupchat)
+            caller, caller_message = _last_caller_before_executor(groupchat)
+            called = _called_tools(caller_message)
+            _reset_nonmatching_stalls(caller, called)
+            completed = bool(_last_message(groupchat).get("tool_responses"))
+            for rule in stall_handoffs:
+                matches = (
+                    completed
+                    and caller is rule.caller
+                    and called == frozenset({rule.tool})
+                    and (not rule.require_failed_compile or verdict is False)
+                )
+                key = _stall_key(rule)
+                if not matches:
+                    state.tool_stall_streaks[key] = 0
+                    continue
+                streak = state.tool_stall_streaks.get(key, 0) + 1
+                state.tool_stall_streaks[key] = streak
+                if streak >= rule.after_batches:
+                    state.tool_stall_streaks[key] = 0
+                    state.pending_handoff = rule
+                    state.handoff_prompt_turns += 1
+                    agents[rule.caller].update_system_message(
+                        base_system_messages[rule.caller]
+                        + "\n\n--- controller recovery turn ---\n"
+                        + rule.handoff_prompt.strip()
+                    )
+                    return _route(agents[rule.caller], AgentRole.EXECUTOR)
             return _route(agents.get(caller), AgentRole.EXECUTOR) if caller else None
 
         role = _role_of(name)
@@ -273,6 +396,22 @@ def build_free_routing_team(
 
         text = _last_text(groupchat)
 
+        pending_handoff = state.pending_handoff
+        if pending_handoff is not None and role is pending_handoff.caller:
+            _clear_pending_handoff()
+            marker = parse_handoff(text)
+            if (
+                _is_native_tool_call(_last_message(groupchat))
+                or marker.get("handoff_target") != pending_handoff.target.value
+                or not _valid_handoff_summary(text, pending_handoff)
+            ):
+                state.handoff_prompt_failures += 1
+                state.terminated, state.reason = True, "stuck"
+                return None
+            state.tool_stall_handoffs += 1
+            state.consecutive_invalid = 0
+            return _route(agents[pending_handoff.target], role)
+
         # 1. Terminal marker (e.g. critic APPROVE) from a role allowed to end.
         if spec.can_terminate and VERDICT_APPROVE in text.upper():
             state.terminated, state.reason = True, "clean"
@@ -282,8 +421,9 @@ def build_free_routing_team(
         #    it and returns control to this caller. The tool must be one this
         #    role is allowed to call; a disallowed tool is a coordination error.
         last_msg = _last_message(groupchat)
+        _reset_nonmatching_stalls(role, _called_tools(last_msg))
         if _is_native_tool_call(last_msg):
-            called = {tc.get("function", {}).get("name") for tc in last_msg.get("tool_calls") or []}
+            called = _called_tools(last_msg)
             if called and called <= spec.tools:
                 state.consecutive_invalid = 0
                 # Perseveration bound: if this submission is byte-identical
@@ -320,12 +460,14 @@ def build_free_routing_team(
         # 4. No tool call and no parseable hand-off: a coordination omission.
         return _invalid(state, config, agents)
 
-    def _last_caller_before_executor(groupchat: GroupChat) -> AgentRole | None:
+    def _last_caller_before_executor(
+        groupchat: GroupChat,
+    ) -> tuple[AgentRole | None, dict[str, Any]]:
         for msg in reversed(groupchat.messages[:-1]):
             r = _role_of(msg.get("name", ""))
             if r is not None and r is not AgentRole.EXECUTOR:
-                return r
-        return None
+                return r, msg
+        return None, {}
 
     # AG2's GroupChat.max_round counts EVERY message (each agent turn, tool
     # call, and tool result), so it advances faster than our per-decision

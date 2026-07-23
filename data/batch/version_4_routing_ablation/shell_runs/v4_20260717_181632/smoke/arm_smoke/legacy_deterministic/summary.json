@@ -1,0 +1,160 @@
+{
+  "arm": "legacy_deterministic",
+  "completed_trials": 2,
+  "engineer_local_retries": 0,
+  "engineer_replans": 0,
+  "expected_trials": 2,
+  "max_retrieval_only_streak_seen": 8,
+  "mean_total_model_calls": 8.5,
+  "model": "openai/Qwen3.5-27B-Q5_K_M.gguf",
+  "outcomes": {
+    "solved": 1,
+    "unsolved": 1
+  },
+  "planner_recoveries": 0,
+  "schema": "han_lean_routing_ablation_summary_v4",
+  "tasks": {
+    "easy_fatem_019": {
+      "rate": 0.0,
+      "solved": 0,
+      "trials": 1,
+      "wilson_95": [
+        0.0,
+        0.7934506856227626
+      ]
+    },
+    "easy_fatem_020": {
+      "rate": 1.0,
+      "solved": 1,
+      "trials": 1,
+      "wilson_95": [
+        0.20654931437723745,
+        1.0
+      ]
+    }
+  },
+  "terminations": {
+    "clean": 1,
+    "stuck": 1
+  },
+  "trials": [
+    {
+      "arm": "legacy_deterministic",
+      "attempt": 0,
+      "communication": {
+        "critic_approvals": 0,
+        "critic_rechecks": 0,
+        "critic_rejections": 0,
+        "critic_to_engineer": 0,
+        "engineer_to_critic": 0,
+        "engineer_to_reasoner": 0,
+        "evidence_backed_revisions": 0,
+        "explicit_handoffs": 0,
+        "failed_compile_results": 0,
+        "graph_dead_end_fraction": 0.05555555555555555,
+        "graph_longest_path": 17,
+        "implicit_reasoner_reentries": 0,
+        "reasoner_to_engineer": 0,
+        "revision_followed_by_compile_success": false,
+        "successful_compile_results": 0
+      },
+      "controller_turns": 0,
+      "elapsed_seconds": 36.984172,
+      "engineer_local_retries": 0,
+      "engineer_stuck_to_reasoner": 0,
+      "max_retrieval_only_streak_seen": 8,
+      "n_tool_calls": 0,
+      "outcome": "unsolved",
+      "perseverated": false,
+      "reasoner_stuck_to_engineer": 0,
+      "retrieval_only_streak": 8,
+      "task_id": "easy_fatem_019",
+      "termination": "stuck",
+      "total_model_calls": 8,
+      "trace": "legacy_deterministic/easy_fatem_019_t00.jsonl",
+      "trial": 0,
+      "validation": {
+        "axiom_clean": null,
+        "compiler_was_called": false,
+        "declared_success": false,
+        "extra_axioms": [],
+        "final_proof_compiles": null,
+        "final_proof_sorry_free": null,
+        "has_submission": false,
+        "last_verified_kind": "none",
+        "n_failed_compiles": 0,
+        "n_tool_calls": 0,
+        "prohibited_placeholders": [],
+        "silent_failure": null,
+        "statement_preserved": null,
+        "submission_accepted": false,
+        "submission_source": "none",
+        "submitted_eq_last_verified": null,
+        "submitted_kind": "none",
+        "task_id": "easy_fatem_019",
+        "validation_error": null,
+        "validation_status": "not_evaluated"
+      },
+      "worker_turns": 8
+    },
+    {
+      "arm": "legacy_deterministic",
+      "attempt": 0,
+      "communication": {
+        "critic_approvals": 1,
+        "critic_rechecks": 0,
+        "critic_rejections": 0,
+        "critic_to_engineer": 0,
+        "engineer_to_critic": 0,
+        "engineer_to_reasoner": 0,
+        "evidence_backed_revisions": 0,
+        "explicit_handoffs": 0,
+        "failed_compile_results": 0,
+        "graph_dead_end_fraction": 0.058823529411764705,
+        "graph_longest_path": 16,
+        "implicit_reasoner_reentries": 0,
+        "reasoner_to_engineer": 0,
+        "revision_followed_by_compile_success": false,
+        "successful_compile_results": 1
+      },
+      "controller_turns": 0,
+      "elapsed_seconds": 97.280416,
+      "engineer_local_retries": 0,
+      "engineer_stuck_to_reasoner": 0,
+      "max_retrieval_only_streak_seen": 5,
+      "n_tool_calls": 1,
+      "outcome": "solved",
+      "perseverated": false,
+      "reasoner_stuck_to_engineer": 0,
+      "retrieval_only_streak": 0,
+      "task_id": "easy_fatem_020",
+      "termination": "clean",
+      "total_model_calls": 9,
+      "trace": "legacy_deterministic/easy_fatem_020_t00.jsonl",
+      "trial": 0,
+      "validation": {
+        "axiom_clean": true,
+        "compiler_was_called": true,
+        "declared_success": true,
+        "extra_axioms": [],
+        "final_proof_compiles": true,
+        "final_proof_sorry_free": true,
+        "has_submission": true,
+        "last_verified_kind": "exact_target",
+        "n_failed_compiles": 0,
+        "n_tool_calls": 1,
+        "prohibited_placeholders": [],
+        "silent_failure": false,
+        "statement_preserved": true,
+        "submission_accepted": true,
+        "submission_source": "approved_verified_target",
+        "submitted_eq_last_verified": true,
+        "submitted_kind": "exact_target",
+        "task_id": "easy_fatem_020",
+        "validation_error": null,
+        "validation_status": "accepted"
+      },
+      "worker_turns": 9
+    }
+  ]
+}
