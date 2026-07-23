@@ -11,6 +11,9 @@
     "build:html": "npm run build && node scripts/build-standalone-html.mjs",
     "build:md": "npm run sync-data && node scripts/build-mobile-markdown.mjs",
     "build:mobile": "npm run build && node scripts/build-standalone-html.mjs && node scripts/build-mobile-markdown.mjs",
+    "build:meeting": "node scripts/build-meeting-report.mjs",
+    "check:meeting": "node scripts/build-meeting-report.mjs --check",
+    "test:meeting": "node --test tests/meeting-report.test.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
   "devDependencies": {
