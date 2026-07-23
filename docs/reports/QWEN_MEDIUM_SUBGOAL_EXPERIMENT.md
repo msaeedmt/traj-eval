@@ -6,7 +6,7 @@ Can bounded subgoal planning, compiler-triggered reasoner recovery, and strict
 critic gates produce useful non-linear communication on medium Lean tasks?
 
 This experiment follows the NLP Lab proposal objectives and the analysis rules
-in `docs/LEAN_FAILURE_ANALYSIS_GUIDE.md`:
+in `docs/guides/LEAN_FAILURE_ANALYSIS_GUIDE.md`:
 
 - O1: localize the first failed or recovered subgoal in the causal trace.
 - O2: classify reasoner, engineer, critic, and global coordination failures.
@@ -75,7 +75,9 @@ python scripts\run_batch.py `
   --task-id medium_leancat_008 medium_fateh_001 `
   --trials 10 `
   --setup tool_routed_subgoals_v1 `
-  --output-dir data\experiments\qwen_medium_subgoals_v1 `
+  --output-dir data\batch\qwen_medium_subgoals_v1 `
+  --analysis-dir data\analysis\qwen_medium_subgoals_v1 `
+  --docs-dir docs\experiments\qwen_medium_subgoals_v1 `
   --max-turns 160 `
   --max-engineer-failures 3 `
   --max-forced-replans 3 `
@@ -122,16 +124,17 @@ produced:
 | Critic approvals | 0 |
 | Verified completions | 0 |
 
-This supports proposal objective O1 only as observable event- and subgoal-level
-localization, and O2 only as an exploratory coordination/failure taxonomy. O3
-is not tested: there is no matched baseline, stress progression, or early
-prediction model. Following `docs/LEAN_FAILURE_ANALYSIS_GUIDE.md`, successful
-probes and accepted subgoals are not treated as final theorem proofs. The main
-result is therefore behavioral: typed routing created substantial return
-communication and strict critic rejection, but did not produce a kernel-valid
-medium-task solution.
+This provides descriptive trajectory and instrumentation evidence relevant to
+O1/O2. It does not validate localisation accuracy or detector precision,
+recall, or F1. O3 is not tested: there is no matched baseline, stress
+progression, or early-prediction model. Following
+`docs/guides/LEAN_FAILURE_ANALYSIS_GUIDE.md`, successful probes and accepted subgoals
+are not treated as final theorem proofs. Under the tested conditions, typed
+routing produced substantial return communication and strict critic rejection
+but no kernel-valid medium-task solution.
 
-`summary.json` and `summary.md` are deterministic offline summaries of the raw
-traces. Infrastructure interruption is represented by a missing terminal event
-and is not reclassified as a proof failure; the resume guard now skips only
-traces containing an explicit terminal event.
+`data/analysis/qwen_medium_subgoals_v1/summary.json` and
+`docs/experiments/qwen_medium_subgoals_v1/summary.md` are deterministic offline
+summaries of the raw traces. Infrastructure interruption is represented by a
+missing terminal event and is not reclassified as a proof failure; the resume
+guard skips only traces containing an explicit terminal event.

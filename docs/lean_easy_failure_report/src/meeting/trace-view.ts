@@ -19,8 +19,18 @@ import {
 
 const ROLE_ORDER = ["system", "planner", "reasoner", "engineer", "executor", "critic"];
 
+function displayRole(role: string): string {
+  if (role.toLowerCase() === "executor") {
+    return "tool runtime (legacy executor label)";
+  }
+  if (role.toLowerCase() === "planner") {
+    return "planner (legacy)";
+  }
+  return role;
+}
+
 function eventLabel(event: DashboardEvent): string {
-  return event.text || event.phase || `${event.role} ${event.kind}`;
+  return event.text || event.phase || `${displayRole(event.role)} ${event.kind}`;
 }
 
 function eventHref(trial: DashboardTrial, event: DashboardEvent, view: ViewId): string {
@@ -53,7 +63,7 @@ function renderEventDetail(trial: DashboardTrial, event: DashboardEvent | undefi
       <header class="event-inspector-head">
         <div>
           <p class="kicker">Selected event</p>
-          <h3>#${escapeHtml(event.seq)} | ${escapeHtml(event.role)} | ${escapeHtml(event.kind)}</h3>
+          <h3>#${escapeHtml(event.seq)} | ${escapeHtml(displayRole(event.role))} | ${escapeHtml(event.kind)}</h3>
         </div>
         <span class="event-time">${escapeHtml(formatTimestamp(event.timestamp))}</span>
       </header>
@@ -170,7 +180,7 @@ export function renderTraceTimeline(
                     <summary class="event-row role-${escapeAttribute(event.role)}${active ? " is-selected" : ""}" aria-current="${active ? "true" : "false"}">
                       <span class="event-seq">#${escapeHtml(event.seq)}</span>
                       <span class="event-row-body">
-                        <span class="event-row-meta"><strong>${escapeHtml(event.role)}</strong> ${escapeHtml(event.kind)}${event.phase ? ` | ${escapeHtml(event.phase)}` : ""}</span>
+                        <span class="event-row-meta"><strong>${escapeHtml(displayRole(event.role))}</strong> ${escapeHtml(event.kind)}${event.phase ? ` | ${escapeHtml(event.phase)}` : ""}</span>
                         <span class="event-row-copy">${escapeHtml(compactText(eventLabel(event), 150) || "No text recorded")}</span>
                       </span>
                       ${evidence.length ? `<span class="evidence-dot" aria-label="Classification evidence"></span>` : ""}
@@ -274,7 +284,7 @@ export function renderRoleGraph(
       const y = top + index * laneGap;
       return `
         <g class="role-lane">
-          <text x="10" y="${y + 5}">${escapeHtml(role)}</text>
+          <text x="10" y="${y + 5}">${escapeHtml(displayRole(role))}</text>
           <line x1="100" y1="${y}" x2="${width - 30}" y2="${y}" />
         </g>
       `;
@@ -287,7 +297,7 @@ export function renderRoleGraph(
         return "";
       }
       const active = selected?.seq === node.seq;
-      const label = `Event ${node.seq}, ${node.role}, ${node.kind}. ${compactText(node.label, 100)}`;
+      const label = `Event ${node.seq}, ${displayRole(node.role)}, ${node.kind}. ${compactText(node.label, 100)}`;
       return `
         <a
           href="${escapeAttribute(routeHref(trial.trialId, node.seq, "graph"))}"

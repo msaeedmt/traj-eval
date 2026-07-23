@@ -49,7 +49,7 @@ export const MEETING_EXPERIMENTS = Object.freeze([
       },
     },
     metricProfile: "validated-target",
-    rawDir: "data/batch",
+    rawDir: "data/batch/version_1_trial_traces",
     analysisPath:
       "docs/lean_easy_failure_report/public/data/lean_easy_failure_traces.json",
     capabilities: ["role_graph", "exact_json", "compiler_checks"],
@@ -64,8 +64,8 @@ export const MEETING_EXPERIMENTS = Object.freeze([
     enrichers: ["subgoal-ledger-replay", "meeting-taxonomy"],
     enricherOptions: {},
     metricProfile: "subgoal-ledger",
-    rawDir: "data/experiments/qwen_medium_subgoals_v1",
-    summaryPath: "data/experiments/qwen_medium_subgoals_v1/summary.json",
+    rawDir: "data/batch/qwen_medium_subgoals_v1",
+    summaryPath: "data/analysis/qwen_medium_subgoals_v1/summary.json",
     capabilities: [
       "role_graph",
       "exact_json",

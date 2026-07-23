@@ -183,8 +183,8 @@ The local evidence is in
 E1 ran three live Qwen trials on `easy_fatem_115` with 80 routing decisions,
 three failed proof compiles per forced recovery, and at most two forced
 replans. This analysis is grounded in the NLP Lab proposal, the role/global
-analysis contract in `docs/LEAN_FAILURE_ANALYSIS_GUIDE.md`, and the typed-
-evidence authority model in `docs/HAN_LEAN_ANCHOR_MERGE.md`.
+analysis contract in `docs/guides/LEAN_FAILURE_ANALYSIS_GUIDE.md`, and the typed-
+evidence authority model in `docs/archive/2026-07/HAN_LEAN_ANCHOR_MERGE.md`.
 
 | Trial | Recovery behavior | Critic behavior | Offline outcome |
 | --- | --- | --- | --- |
@@ -287,7 +287,7 @@ shared proof memory.
 ## E1.1 Medium Slice
 
 The next authorized run is specified in
-`docs/QWEN_MEDIUM_SUBGOAL_EXPERIMENT.md`: two pre-registered medium tasks, ten
+`docs/reports/QWEN_MEDIUM_SUBGOAL_EXPERIMENT.md`: two pre-registered medium tasks, ten
 trials each, with Codex Ultra outside the measured trial and low-token Qwen
 specialists inside it. Each new trace persists the controller's reasoner-owned
 plan and revision history, while `summary.json` exposes compact graph and plan

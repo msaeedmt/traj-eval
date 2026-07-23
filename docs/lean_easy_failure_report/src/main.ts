@@ -214,6 +214,16 @@ function escapeHtml(value: unknown): string {
     .replaceAll("'", "&#039;");
 }
 
+function displayRole(role: string): string {
+  if (role.toLowerCase() === "executor") {
+    return "tool runtime (legacy executor label)";
+  }
+  if (role.toLowerCase() === "planner") {
+    return "planner (legacy)";
+  }
+  return role;
+}
+
 function cls(value: string): string {
   return value.replaceAll("_", "-").replaceAll("/", "-");
 }
@@ -436,7 +446,7 @@ function renderTraceGraph(trace: TraceDoc): string {
       const y = top + index * laneHeight;
       return `
         <g class="graph-lane">
-          <text x="8" y="${y + 4}">${escapeHtml(role)}</text>
+          <text x="8" y="${y + 4}">${escapeHtml(displayRole(role))}</text>
           <line x1="54" y1="${y}" x2="${width - 32}" y2="${y}" />
         </g>
       `;
@@ -450,7 +460,7 @@ function renderTraceGraph(trace: TraceDoc): string {
         return "";
       }
       const active = current?.id === node.id ? " active" : "";
-      const label = `${node.seq} ${node.role} ${node.type}`;
+      const label = `${node.seq} ${displayRole(node.role)} ${node.type}`;
       return `
         <g class="graph-node ${cls(node.role)} ${cls(node.status)}${active}" data-node-id="${escapeHtml(node.id)}" tabindex="0" role="button" aria-label="${escapeHtml(label)}">
           <circle cx="${pos.x}" cy="${pos.y}" r="13"></circle>
@@ -490,7 +500,7 @@ function renderNodeDetail(trace: TraceDoc): string {
         <span class="outcome-badge">${escapeHtml(node.status)}</span>
       </div>
       <dl class="node-fields">
-        <div><dt>Role</dt><dd>${escapeHtml(node.role)}</dd></div>
+        <div><dt>Role</dt><dd>${escapeHtml(displayRole(node.role))}</dd></div>
         <div><dt>Type</dt><dd>${escapeHtml(node.type)}</dd></div>
         <div><dt>Tool</dt><dd>${escapeHtml(node.tool ?? "none")}</dd></div>
         <div><dt>Decision</dt><dd>${escapeHtml(node.decision ?? "none")}</dd></div>
@@ -577,7 +587,7 @@ function renderLeanReader(): string {
         <details class="timeline-step ${cls(step.role)}" ${state.selectedNodeId === step.event_id ? "open" : ""}>
           <summary>
             <span class="seq">#${escapeHtml(step.seq)}</span>
-            <strong>${escapeHtml(step.role)}</strong>
+            <strong>${escapeHtml(displayRole(step.role))}</strong>
             <span>${escapeHtml(step.type)}</span>
             ${step.tool ? `<span class="tool-name">${escapeHtml(step.tool)}</span>` : ""}
             ${step.decision ? `<span class="decision">${escapeHtml(step.decision)}</span>` : ""}
@@ -946,13 +956,13 @@ function renderReproducibility(snapshot: SnapshotDoc): string {
         <p class="section-note">Layout follows docs/REPO_LAYOUT_RULES.md.</p>
       </div>
       <div class="terminal-panel">
-        <p><span>Raw traces</span> data/batch/*.jsonl</p>
+        <p><span>Raw traces</span> data/batch/version_1_trial_traces/*.jsonl</p>
         <p><span>Canonical CSV</span> data/analysis/lean_easy_failure_patterns.csv</p>
         <p><span>Report CSV copy</span> docs/lean_easy_failure_report/public/data/lean_easy_failure_patterns.csv</p>
         <p><span>Trace JSON copy</span> docs/lean_easy_failure_report/public/data/lean_easy_failure_traces.json</p>
         <p><span>Snapshot manifest</span> docs/lean_easy_failure_report/public/data/report_snapshot.json</p>
         <p><span>Snapshot SHA-256</span> ${escapeHtml(snapshot.snapshot_sha256)}</p>
-        <p><span>Generate</span> python scripts/analyze_lean_easy_failures.py --input-dir data/batch --dataset-root dataset/Lean</p>
+        <p><span>Generate</span> python scripts/analyze_lean_easy_failures.py --input-dir data/batch/version_1_trial_traces --dataset-root dataset/Lean</p>
         <p><span>Build both exports</span> cd docs/lean_easy_failure_report && npm.cmd run build:mobile</p>
       </div>
     </section>

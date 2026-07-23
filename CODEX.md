@@ -114,3 +114,7 @@ status. `README.md` is the implementation entry point.
 - Use `han-lean-anchors-merge` only for gated changes promoted from `Han`
   after the user has discussed them with teammates and explicitly approved
   the promotion.
+- Documentation exception: `docs/` in the merge worktree is an untracked
+  drafting area. Draft or revise documentation there when useful, then copy it
+  to the corresponding `Han` path for review, commit, and push. Never commit
+  documentation changes on the merge branch.

@@ -308,7 +308,7 @@ const markdown = [
     .join("\n"),
   "## Reproducibility",
   "",
-  "- Raw traces: `data/batch/*.jsonl`",
+  "- Raw traces: `data/batch/version_1_trial_traces/*.jsonl`",
   "- Canonical CSV: `data/analysis/lean_easy_failure_patterns.csv`",
   "- HTML export: `docs/lean_easy_failure_report/lean_easy_failure_report_standalone.html`",
   "- Markdown export: `docs/lean_easy_failure_report/lean_easy_failure_report_mobile.md`",

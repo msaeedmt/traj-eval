@@ -195,7 +195,7 @@ function countValues(rows, candidates) {
 export function loadAndValidateSnapshot({ reportRoot, repoRoot }) {
   const csvPath = resolve(reportRoot, "public", "data", "lean_easy_failure_patterns.csv");
   const tracesPath = resolve(reportRoot, "public", "data", "lean_easy_failure_traces.json");
-  const rawDir = resolve(repoRoot, "data", "batch");
+  const rawDir = resolve(repoRoot, "data", "batch", "version_1_trial_traces");
   if (!existsSync(csvPath) || !existsSync(tracesPath)) {
     throw new Error("Report CSV or trace JSON is missing; run the analyzer first");
   }
