@@ -1,0 +1,37 @@
+{
+  "baseline": "upstream_free",
+  "central_routing_cost_effective": false,
+  "claim_boundary": "two selected tasks and one Qwen model",
+  "comparisons": {
+    "central_total_call_matched_vs_upstream_free": {
+      "baseline_only_solved": 0,
+      "baseline_solved": 0,
+      "candidate_only_solved": 0,
+      "candidate_solved": 0,
+      "mcnemar_exact_two_sided_p": 1.0,
+      "paired_rate_delta": 0.0,
+      "paired_slots": 2
+    },
+    "central_worker_matched_vs_upstream_free": {
+      "baseline_only_solved": 0,
+      "baseline_solved": 0,
+      "candidate_only_solved": 0,
+      "candidate_solved": 0,
+      "mcnemar_exact_two_sided_p": 1.0,
+      "paired_rate_delta": 0.0,
+      "paired_slots": 2
+    },
+    "legacy_deterministic_vs_upstream_free": {
+      "baseline_only_solved": 0,
+      "baseline_solved": 0,
+      "candidate_only_solved": 1,
+      "candidate_solved": 1,
+      "mcnemar_exact_two_sided_p": 1.0,
+      "paired_rate_delta": 0.5,
+      "paired_slots": 2
+    }
+  },
+  "cost_effective_rule": "true only if central_total_call_matched has more paired solved slots than upstream_free",
+  "schema": "han_lean_routing_preplanned_comparison_v4",
+  "success_definition": "external kernel-validated outcome == solved"
+}
