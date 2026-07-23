@@ -106,3 +106,11 @@ status. `README.md` is the implementation entry point.
   detector label, or metric meaning changes.
 - Keep private Science-Work-Flow paths, local provider settings, secrets, raw
   archives, and bulky outputs out of this public repository.
+
+## Standards
+
+- Never modify the `lean-anchors` branch. It belongs to a teammate.
+- Keep experiments and work-in-progress changes on the `Han` branch.
+- Use `han-lean-anchors-merge` only for gated changes promoted from `Han`
+  after the user has discussed them with teammates and explicitly approved
+  the promotion.
