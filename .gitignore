@@ -29,10 +29,21 @@ build/
 !/data/batch/version_4_routing_ablation/**/*.jsonl
 !/data/analysis/
 !/data/analysis/lean_easy_failure_reviews.jsonl
+!/data/analysis/presentations/
+!/data/analysis/presentations/**
 
 # Secrets — never commit API keys
 .env
 *.key
+/configs/*.env
+!/configs/*.example.env
+
+# Local scratch and transient desktop files
+/outputs/
+~$*
+*:Zone.Identifier
+*.Zone.Identifier
+Zone.Identifier
 
 # OS / editor
 .DS_Store

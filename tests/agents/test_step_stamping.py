@@ -94,3 +94,74 @@ def test_no_context_means_no_stamp(tmp_path):
 
     _, events = read_trial(path)
     assert "step_idx" not in events[0].payload
+
+
+def test_routing_reason_is_stamped_with_causal_parent(tmp_path):
+    from traj_eval.agents.observer import make_trial_meta
+    from traj_eval.agents.routing import RoutingLedger
+    from traj_eval.trace_core.storage import TrialLogWriter
+
+    path = tmp_path / "t.jsonl"
+    meta = make_trial_meta("t", task_id="x", backbone="dummy", testbed="lean")
+    ledger = RoutingLedger()
+    ledger.record_emit(AgentRole.EXECUTOR, "compile-result")
+    ledger.record_routing(
+        AgentRole.REASONER,
+        ["compile-result"],
+        reason="failed_compile_recovery",
+    )
+    writer = TrialLogWriter(path, meta)
+    obs = TraceObserver(writer, trial_id="t", ledger=ledger)
+
+    _emit(obs, AgentRole.REASONER, "revise the blocked strategy")
+    writer.close()
+
+    _, events = read_trial(path)
+    assert events[0].caused_by == ["compile-result"]
+    assert events[0].payload["route_reason"] == "failed_compile_recovery"
+
+
+def test_termination_is_a_visible_causal_system_event(tmp_path):
+    from traj_eval.agents.observer import make_trial_meta
+    from traj_eval.trace_core.storage import TrialLogWriter
+
+    path = tmp_path / "t.jsonl"
+    meta = make_trial_meta("t", task_id="x", backbone="dummy", testbed="lean")
+    writer = TrialLogWriter(path, meta)
+    observer = TraceObserver(writer, trial_id="t")
+    observer.record_task("task")
+
+    observer.record_termination("framework_stop", turns=2)
+    writer.close()
+
+    _, events = read_trial(path)
+    assert events[-1].agent_role is AgentRole.SYSTEM
+    assert events[-1].payload["termination_reason"] == "framework_stop"
+    assert events[-1].caused_by == [events[-2].event_id]
+
+
+def test_controller_plan_error_and_termination_form_one_causal_chain(tmp_path):
+    from traj_eval.agents.observer import make_trial_meta
+    from traj_eval.trace_core.schema import EventType
+    from traj_eval.trace_core.storage import TrialLogWriter
+
+    path = tmp_path / "t.jsonl"
+    meta = make_trial_meta("t", task_id="x", backbone="dummy", testbed="lean")
+    writer = TrialLogWriter(path, meta)
+    observer = TraceObserver(writer, trial_id="t")
+    observer.record_task("task")
+    observer.record_controller_plan({"owner_role": "reasoner", "history": []})
+    observer.record_infrastructure_error(RuntimeError("provider unavailable"))
+    observer.record_termination("framework_stop", turns=2)
+    writer.close()
+
+    _, events = read_trial(path)
+    assert [event.payload.get("phase") for event in events[1:]] == [
+        "controller_plan",
+        "infrastructure_error",
+        "termination",
+    ]
+    assert events[2].event_type is EventType.EXECUTION_RESULT
+    assert events[1].caused_by == [events[0].event_id]
+    assert events[2].caused_by == [events[1].event_id]
+    assert events[3].caused_by == [events[2].event_id]

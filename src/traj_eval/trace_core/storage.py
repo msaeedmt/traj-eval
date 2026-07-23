@@ -31,6 +31,7 @@ class TrialLogWriter:
     def _write(self, obj: dict) -> None:
         self._fh.write(orjson.dumps(obj))
         self._fh.write(b"\n")
+        self._fh.flush()
 
     def append(self, event: TraceEvent) -> None:
         self._write(event.model_dump(mode="json"))

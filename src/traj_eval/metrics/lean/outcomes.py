@@ -41,13 +41,16 @@ IMPORT_ERROR_MARKERS = (
 
 
 def looks_like_import_error(events: list[Any]) -> bool:
-    """True if any failed compile in the trace looks environment/import-related."""
+    """True only for explicitly identified infrastructure import failures.
+
+    An agent can hallucinate an import. Its resulting ``unknown module`` is an
+    engineer failure, not evidence that the benchmark environment is broken.
+    """
     for event in events:
         if event.event_type is not EventType.EXECUTION_RESULT:
             continue
         text = (event.payload.get("text", "") or "").lower()
-        normalized = text.replace('"', "'")
-        if "compiled': false" in normalized and any(
+        if event.payload.get("phase") == "infrastructure_error" and any(
             marker in text for marker in IMPORT_ERROR_MARKERS
         ):
             return True

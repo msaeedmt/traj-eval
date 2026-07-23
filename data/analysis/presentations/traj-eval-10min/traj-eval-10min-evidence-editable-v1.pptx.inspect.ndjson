@@ -1,0 +1,257 @@
+{"kind":"deck","id":"pr/n9ge9e","name":"Deck"}
+{"kind":"layout","layoutId":"/ppt/slideMasters/slideMaster1.xml","name":"","type":"master"}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout1.xml","name":"DEFAULT"}
+{"kind":"slide","id":"sl/y90nupkv","slide":1,"title":"λ","textShapes":12}
+{"kind":"shape","id":"sh/547294r6","slide":1,"name":"Shape 0","bbox":[86.4,148.8,52.8,52.8]}
+{"kind":"textbox","id":"sh/k3yl0zql","slide":1,"name":"Text 1","text":"λ","textPreview":"λ","textChars":1,"textLines":1,"bbox":[86.4,148.8,52.8,52.8]}
+{"kind":"textbox","id":"sh/7qp4be9c","slide":1,"name":"Text 2","text":"traj-eval","textPreview":"traj-eval","textChars":9,"textLines":1,"bbox":[158.4,144,768,67.2]}
+{"kind":"textbox","id":"sh/65g3298r","slide":1,"name":"Text 3","text":"Scientific agents can pass—and still fail","textPreview":"Scientific agents can pass—and still fail","textChars":41,"textLines":1,"bbox":[86.4,225.6,1056,48]}
+{"kind":"textbox","id":"sh/ts7md4r2","slide":1,"name":"Text 4","text":"Architecture + hand-reviewed Lean evidence · 5 + 5 minutes","textPreview":"Architecture + hand-reviewed Lean evidence · 5 + 5 minutes","textChars":58,"textLines":1,"bbox":[86.4,278.4,1056,38.4]}
+{"kind":"shape","id":"sh/sryl4zqx","slide":1,"name":"Shape 5","bbox":[86.4,384,340.8,96]}
+{"kind":"textbox","id":"sh/fu94fe98","slide":1,"name":"Text 6","text":"Sci-Agent architecture","textPreview":"Sci-Agent architecture","textChars":22,"textLines":1,"bbox":[107.52,401.28,297.6,28.8]}
+{"kind":"textbox","id":"sh/utg3698n","slide":1,"name":"Text 7","text":"PART 1 · 5 MIN","textPreview":"PART 1 · 5 MIN","textChars":14,"textLines":1,"bbox":[107.52,433.92,297.6,28.8]}
+{"kind":"shape","id":"sh/wn6dc7eh","slide":1,"name":"Shape 8","bbox":[460.8,384,340.8,96]}
+{"kind":"textbox","id":"sh/hofulsf2","slide":1,"name":"Text 9","text":"Trace failure analysis","textPreview":"Trace failure analysis","textChars":22,"textLines":1,"bbox":[481.92,401.28,297.6,28.8]}
+{"kind":"textbox","id":"sh/ul4vaxgb","slide":1,"name":"Text 10","text":"PART 2 · 5 MIN","textPreview":"PART 2 · 5 MIN","textChars":14,"textLines":1,"bbox":[481.92,433.92,297.6,28.8]}
+{"kind":"shape","id":"sh/vmdcj2xw","slide":1,"name":"Shape 11","bbox":[835.2,384,340.8,96]}
+{"kind":"textbox","id":"sh/4r6dg7et","slide":1,"name":"Text 12","text":"Evidence base","textPreview":"Evidence base","textChars":13,"textLines":1,"bbox":[856.32,401.28,297.6,28.8]}
+{"kind":"textbox","id":"sh/5sfepcfe","slide":1,"name":"Text 13","text":"100 LEAN RUNS","textPreview":"100 LEAN RUNS","textChars":13,"textLines":1,"bbox":[856.32,433.92,297.6,28.8]}
+{"kind":"textbox","id":"sh/ipovexwn","slide":1,"name":"Text 14","text":"Jiadong Han · Mohammad Saeed Motevali Amin","textPreview":"Jiadong Han · Mohammad Saeed Motevali Amin","textChars":42,"textLines":1,"bbox":[86.4,547.2,768,28.8]}
+{"kind":"textbox","id":"sh/3qxwn2x8","slide":1,"name":"Text 15","text":"CAISA Lab · University of Bonn · Summer Semester 2026","textPreview":"CAISA Lab · University of Bonn · Summer Semester 2026","textChars":53,"textLines":1,"bbox":[86.4,580.8,768,28.8]}
+{"kind":"notes","id":"nt/y90nupkv","slide":1,"text":"0:00–0:45 · Speaker 1\nOpening claim: a correct-looking final answer is not enough to evaluate a scientific agent.\nPreview the split: five minutes on the architecture and evidence model, five minutes on hand-reviewed Lean traces."}
+{"kind":"slide","id":"sl/hwbqtkby","slide":2,"title":"Part 1 · Scientific-agent architecture","textShapes":36}
+{"kind":"textbox","id":"sh/9072xkry","slide":2,"name":"Text 0","text":"Part 1 · Scientific-agent architecture","textPreview":"Part 1 · Scientific-agent architecture","textChars":38,"textLines":1,"bbox":[57.6,40.32,1161.6,67.2]}
+{"kind":"textbox","id":"sh/ozy1ofad","slide":2,"name":"Text 1","text":"Roles generate proposals; tools and validators supply evidence","textPreview":"Roles generate proposals; tools and validators supply evidence","textChars":62,"textLines":1,"bbox":[57.6,107.52,1161.6,36.48]}
+{"kind":"shape","id":"sh/b29kza94","slide":2,"name":"Shape 2","bbox":[57.6,155.52,796.8,436.8]}
+{"kind":"shape","id":"sh/a10jqpsj","slide":2,"name":"Shape 3","bbox":[96,225.6,177.6,59.52]}
+{"kind":"textbox","id":"sh/x4r21kru","slide":2,"name":"Text 4","text":"Reasoner","textPreview":"Reasoner","textChars":8,"textLines":1,"bbox":[96,225.6,177.6,59.52]}
+{"kind":"shape","id":"sh/w3i1sfa9","slide":2,"name":"Shape 5","bbox":[340.8,225.6,177.6,59.52]}
+{"kind":"textbox","id":"sh/r65knqtk","slide":2,"name":"Text 6","text":"Engineer","textPreview":"Engineer","textChars":8,"textLines":1,"bbox":[340.8,225.6,177.6,59.52]}
+{"kind":"shape","id":"sh/q5wjelsz","slide":2,"name":"Shape 7","bbox":[585.6,225.6,177.6,59.52]}
+{"kind":"textbox","id":"sh/ove9o7yd","slide":2,"name":"Text 8","text":"Critic","textPreview":"Critic","textChars":6,"textLines":1,"bbox":[585.6,225.6,177.6,59.52]}
+{"kind":"textbox","id":"sh/9wnqhczy","slide":2,"name":"Text 9","text":"retrieves + plans","textPreview":"retrieves + plans","textChars":17,"textLines":1,"bbox":[96,288,177.6,42.24]}
+{"kind":"textbox","id":"sh/mtwrmxg7","slide":2,"name":"Text 10","text":"formalizes + checks","textPreview":"formalizes + checks","textChars":19,"textLines":1,"bbox":[340.8,288,177.6,42.24]}
+{"kind":"textbox","id":"sh/nu58f2hs","slide":2,"name":"Text 11","text":"checks the contract","textPreview":"checks the contract","textChars":19,"textLines":1,"bbox":[585.6,288,177.6,42.24]}
+{"kind":"shape","id":"sh/wjy9sry9","slide":2,"name":"Shape 12","bbox":[277.04,247.74,59.52,0]}
+{"kind":"shape","id":"sh/xk7qlczu","slide":2,"name":"Shape 13","bbox":[521.84,247.74,59.52,0]}
+{"kind":"textbox","id":"sh/ahwrqhgj","slide":2,"name":"Text 14","text":"handoff","textPreview":"handoff","textChars":7,"textLines":1,"bbox":[261.12,199.68,91.2,19.2]}
+{"kind":"textbox","id":"sh/bip8jmho","slide":2,"name":"Text 15","text":"candidate","textPreview":"candidate","textChars":9,"textLines":1,"bbox":[508.8,199.68,86.4,19.2]}
+{"kind":"textbox","id":"sh/do3q9szq","slide":2,"name":"Text 17","text":"return with failing evidence","textPreview":"return with failing evidence","textChars":28,"textLines":1,"bbox":[496.3,269.47,117.49,87.77]}
+{"kind":"textbox","id":"sh/s72xofmh","slide":2,"name":"Text 19","text":"request a new plan","textPreview":"request a new plan","textChars":18,"textLines":1,"bbox":[248.46,290.16,115.96,47.39]}
+{"kind":"shape","id":"sh/76twva5c","slide":2,"name":"Shape 20","bbox":[585.6,345.6,177.6,48]}
+{"kind":"textbox","id":"sh/65kfmpor","slide":2,"name":"Text 21","text":"approve latest checked target","textPreview":"approve latest checked target","textChars":29,"textLines":1,"bbox":[585.6,345.6,177.6,48]}
+{"kind":"shape","id":"sh/hcvy14ne","slide":2,"name":"Shape 22","bbox":[673.92,289.92,0,49.92]}
+{"kind":"shape","id":"sh/gbmxszmt","slide":2,"name":"Shape 23","bbox":[96,417.6,667.2,100.8]}
+{"kind":"textbox","id":"sh/fadgzu58","slide":2,"name":"Text 24","text":"Tools, run on request by a mechanical executor","textPreview":"Tools, run on request by a mechanical executor","textChars":46,"textLines":1,"bbox":[110.4,426.24,633.6,21.12]}
+{"kind":"shape","id":"sh/u94fqp4n","slide":2,"name":"Shape 25","bbox":[110.4,451.2,148.8,52.8]}
+{"kind":"textbox","id":"sh/p0vy54na","slide":2,"name":"Text 26","text":"proof checker","textPreview":"proof checker","textChars":13,"textLines":1,"bbox":[110.4,456.96,148.8,23.04]}
+{"kind":"textbox","id":"sh/4zmxwzmp","slide":2,"name":"Text 27","text":"E  C","textPreview":"E  C","textChars":4,"textLines":1,"bbox":[110.4,479.04,148.8,19.2]}
+{"kind":"shape","id":"sh/mlgvq147","slide":2,"name":"Shape 28","bbox":[273.6,451.2,148.8,52.8]}
+{"kind":"textbox","id":"sh/nmpcj6ls","slide":2,"name":"Text 29","text":"lemma search","textPreview":"lemma search","textChars":12,"textLines":1,"bbox":[273.6,456.96,148.8,23.04]}
+{"kind":"textbox","id":"sh/onydsbmd","slide":2,"name":"Text 30","text":"R  E","textPreview":"R  E","textChars":4,"textLines":1,"bbox":[273.6,479.04,148.8,19.2]}
+{"kind":"shape","id":"sh/9o7ulg3y","slide":2,"name":"Shape 31","bbox":[436.8,451.2,148.8,52.8]}
+{"kind":"textbox","id":"sh/a9gvulkj","slide":2,"name":"Text 32","text":"tactic finder","textPreview":"tactic finder","textChars":13,"textLines":1,"bbox":[436.8,456.96,148.8,23.04]}
+{"kind":"textbox","id":"sh/ba9cn6l4","slide":2,"name":"Text 33","text":"E","textPreview":"E","textChars":1,"textLines":1,"bbox":[436.8,479.04,148.8,19.2]}
+{"kind":"shape","id":"sh/wbidwb29","slide":2,"name":"Shape 34","bbox":[600,451.2,148.8,52.8]}
+{"kind":"textbox","id":"sh/xcrupg3u","slide":2,"name":"Text 35","text":"goal viewer","textPreview":"goal viewer","textChars":11,"textLines":1,"bbox":[600,456.96,148.8,23.04]}
+{"kind":"textbox","id":"sh/id0vylkf","slide":2,"name":"Text 36","text":"E","textPreview":"E","textChars":1,"textLines":1,"bbox":[600,479.04,148.8,19.2]}
+{"kind":"textbox","id":"sh/je9crql0","slide":2,"name":"Text 37","text":"R = Reasoner   E = Engineer   C = Critic","textPreview":"R = Reasoner   E = Engineer   C = Critic","textChars":40,"textLines":1,"bbox":[110.4,523.2,633.6,19.2]}
+{"kind":"shape","id":"sh/ru5cbqd4","slide":2,"name":"Shape 38","bbox":[184.32,393.6,0,23.04]}
+{"kind":"shape","id":"sh/69wbilcj","slide":2,"name":"Shape 39","bbox":[429.12,289.92,0,126.72]}
+{"kind":"shape","id":"sh/tw7ud0va","slide":2,"name":"Shape 40","bbox":[673.92,401.28,0,15.36]}
+{"kind":"textbox","id":"sh/svedkvup","slide":2,"name":"Text 41","text":"Design rule: a failed check must change who acts next—or why the run ends.","textPreview":"Design rule: a failed check must change who acts next—or why the run ends.","textChars":74,"textLines":1,"bbox":[96,547.2,729.6,38.4]}
+{"kind":"shape","id":"sh/fypcfqdg","slide":2,"name":"Shape 42","bbox":[883.2,155.52,336,196.8]}
+{"kind":"textbox","id":"sh/exgvmlcv","slide":2,"name":"Text 43","text":"Control contract","textPreview":"Control contract","textChars":16,"textLines":1,"bbox":[904.32,168.96,297.6,26.88]}
+{"kind":"textbox","id":"sh/107uh0v6","slide":2,"name":"Text 44","text":"Agents choose a tool or next role. The executor runs tools; the recorder preserves every returned result.","textPreview":"Agents choose a tool or next role. The executor runs tools; the recorder preserves every returned result.","textChars":105,"textLines":1,"bbox":[904.32,201.6,297.6,134.4]}
+{"kind":"shape","id":"sh/gzydovul","slide":2,"name":"Shape 45","bbox":[883.2,369.6,336,222.72]}
+{"kind":"textbox","id":"sh/v2lc36dw","slide":2,"name":"Text 46","text":"Observed canonical routing","textPreview":"Observed canonical routing","textChars":26,"textLines":1,"bbox":[904.32,383.04,297.6,26.88]}
+{"kind":"shape","id":"sh/a1cba1wb","slide":2,"name":"Shape 47","bbox":[904.32,423.36,14.4,14.4]}
+{"kind":"textbox","id":"sh/0vq1o36x","slide":2,"name":"Text 48","text":"59 forward handoffs","textPreview":"59 forward handoffs","textChars":19,"textLines":1,"bbox":[929.28,416.64,268.8,23.04]}
+{"kind":"textbox","id":"sh/1wzix87i","slide":2,"name":"Text 49","text":"Engineer → Critic","textPreview":"Engineer → Critic","textChars":17,"textLines":1,"bbox":[929.28,437.76,268.8,30.72]}
+{"kind":"shape","id":"sh/et8zmto7","slide":2,"name":"Shape 50","bbox":[904.32,471.36,14.4,14.4]}
+{"kind":"textbox","id":"sh/zuh0vypc","slide":2,"name":"Text 51","text":"0 return handoffs","textPreview":"0 return handoffs","textChars":17,"textLines":1,"bbox":[929.28,464.64,268.8,23.04]}
+{"kind":"textbox","id":"sh/c76hk361","slide":2,"name":"Text 52","text":"Critic → Engineer","textPreview":"Critic → Engineer","textChars":17,"textLines":1,"bbox":[929.28,485.76,268.8,30.72]}
+{"kind":"shape","id":"sh/d8zit87m","slide":2,"name":"Shape 53","bbox":[904.32,519.36,14.4,14.4]}
+{"kind":"textbox","id":"sh/q5ozitov","slide":2,"name":"Text 54","text":"97 connected-linear","textPreview":"97 connected-linear","textChars":19,"textLines":1,"bbox":[929.28,512.64,268.8,23.04]}
+{"kind":"textbox","id":"sh/r6x0rypg","slide":2,"name":"Text 55","text":"recorded event graphs","textPreview":"recorded event graphs","textChars":21,"textLines":1,"bbox":[929.28,533.76,268.8,30.72]}
+{"kind":"textbox","id":"sh/w3a1wn65","slide":2,"name":"Text 56","text":"The architecture can express a loop; the observed routing realizes a pipeline.","textPreview":"The architecture can express a loop; the observed routing realizes a pipeline.","textChars":78,"textLines":1,"bbox":[904.32,561.6,297.6,24.96]}
+{"kind":"textbox","id":"sh/xoji5s7q","slide":2,"name":"Text 57","text":"traj-eval  ·  NLP Lab SS2026","textPreview":"traj-eval  ·  NLP Lab SS2026","textChars":28,"textLines":1,"bbox":[57.6,667.2,576,28.8]}
+{"kind":"textbox","id":"sh/5kfipszu","slide":2,"name":"Text 58","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[1161.6,667.2,57.6,28.8]}
+{"kind":"shape","id":"sh/uts3698n","slide":2,"name":"Straight Arrow Connector 62","bbox":[279.05,261.71,55.62,0.19]}
+{"kind":"shape","id":"sh/vulkfep8","slide":2,"name":"Straight Arrow Connector 63","bbox":[522.1,260.95,55.62,0.19]}
+{"kind":"notes","id":"nt/hwbqtkby","slide":2,"text":"0:45–3:00 · Speaker 1\nExplain the three roles and separate agent proposals from executor/tool evidence.\nImportant wording: the canonical Critic made zero return handoffs to the Engineer; Engineers did revise their own code.\nThe 97/100 number describes recorded causal-graph topology, not hidden cognition."}
+{"kind":"slide","id":"sl/ofy9wn61","slide":3,"title":"JSON turns a run into testable evidence","textShapes":21}
+{"kind":"textbox","id":"sh/cza94vmx","slide":3,"name":"Text 0","text":"JSON turns a run into testable evidence","textPreview":"JSON turns a run into testable evidence","textChars":39,"textLines":1,"bbox":[57.6,40.32,1161.6,67.2]}
+{"kind":"textbox","id":"sh/d0jax03i","slide":3,"name":"Text 1","text":"Record what happened first; infer why it failed only afterwards","textPreview":"Record what happened first; infer why it failed only afterwards","textChars":63,"textLines":1,"bbox":[57.6,107.52,1161.6,36.48]}
+{"kind":"shape","id":"sh/298ryl4v","slide":3,"name":"Shape 2","bbox":[57.6,161.28,528,384]}
+{"kind":"textbox","id":"sh/3ah8rqlg","slide":3,"name":"Text 3","text":"One event per JSONL line","textPreview":"One event per JSONL line","textChars":24,"textLines":1,"bbox":[81.6,178.56,480,28.8]}
+{"kind":"textbox","id":"sh/obq90bml","slide":3,"name":"Text 4","text":"agent_role","textPreview":"agent_role","textChars":10,"textLines":1,"bbox":[81.6,220.8,480,24.96]}
+{"kind":"textbox","id":"sh/pcjqtg36","slide":3,"name":"Text 5","text":"who acted: Reasoner, Engineer, Critic, or Executor","textPreview":"who acted: Reasoner, Engineer, Critic, or Executor","textChars":50,"textLines":1,"bbox":[81.6,245.76,480,48]}
+{"kind":"textbox","id":"sh/m5cra54z","slide":3,"name":"Text 6","text":"event_type","textPreview":"event_type","textChars":10,"textLines":1,"bbox":[81.6,299.52,480,24.96]}
+{"kind":"textbox","id":"sh/n6ls3alk","slide":3,"name":"Text 7","text":"message · tool_call · execution_result","textPreview":"message · tool_call · execution_result","textChars":38,"textLines":1,"bbox":[81.6,324.48,480,48]}
+{"kind":"textbox","id":"sh/n2l4fq98","slide":3,"name":"Text 8","text":"payload","textPreview":"payload","textChars":7,"textLines":1,"bbox":[81.6,378.24,480,24.96]}
+{"kind":"textbox","id":"sh/m1c3mlsn","slide":3,"name":"Text 9","text":"full prompt, proof candidate, tool arguments, and diagnostics","textPreview":"full prompt, proof candidate, tool arguments, and diagnostics","textChars":61,"textLines":1,"bbox":[81.6,403.2,480,48]}
+{"kind":"textbox","id":"sh/943mhgre","slide":3,"name":"Text 10","text":"caused_by","textPreview":"caused_by","textChars":9,"textLines":1,"bbox":[81.6,456.96,480,24.96]}
+{"kind":"textbox","id":"sh/83ulovat","slide":3,"name":"Text 11","text":"the explicit parent event—so the recorded chain is inspectable","textPreview":"the explicit parent event—so the recorded chain is inspectable","textChars":62,"textLines":1,"bbox":[81.6,481.92,480,48]}
+{"kind":"textbox","id":"sh/v6l4jq94","slide":3,"name":"Text 12","text":"Observed evidence is immutable; causal labels remain reviewable.","textPreview":"Observed evidence is immutable; causal labels remain reviewable.","textChars":64,"textLines":1,"bbox":[81.6,510.72,480,28.8]}
+{"kind":"textbox","id":"sh/a5c3ql8z","slide":3,"name":"Text 13","text":"Two independent passes","textPreview":"Two independent passes","textChars":22,"textLines":1,"bbox":[614.4,178.56,604.8,28.8]}
+{"kind":"shape","id":"sh/x8nml0ra","slide":3,"name":"Shape 14","bbox":[614.4,218.88,604.8,148.8]}
+{"kind":"textbox","id":"sh/w7ulsvqp","slide":3,"name":"Text 15","text":"During the run","textPreview":"During the run","textChars":14,"textLines":1,"bbox":[638.4,230.4,556.8,26.88]}
+{"kind":"textbox","id":"sh/ja54na9g","slide":3,"name":"Text 16","text":"Agents call tools. The Executor records the exact request and returned evidence without judging it.","textPreview":"Agents call tools. The Executor records the exact request and returned evidence without judging it.","textChars":99,"textLines":1,"bbox":[638.4,259.2,556.8,100.8]}
+{"kind":"shape","id":"sh/i9w3u58v","slide":3,"name":"Shape 17","bbox":[614.4,382.08,604.8,163.2]}
+{"kind":"textbox","id":"sh/e10f2twf","slide":3,"name":"Text 18","text":"After the run","textPreview":"After the run","textChars":13,"textLines":1,"bbox":[638.4,393.6,556.8,26.88]}
+{"kind":"textbox","id":"sh/f29gbyx0","slide":3,"name":"Text 19","text":"An independent validator checks exact target, Lean compilation, sorry-freedom, and statement preservation. Reviewers then label behavior.","textPreview":"An independent validator checks exact target, Lean compilation, sorry-freedom, and statement preservation. Reviewers then label behavior.","textChars":137,"textLines":1,"bbox":[638.4,422.4,556.8,115.2]}
+{"kind":"shape","id":"sh/03ix43e5","slide":3,"name":"Shape 20","bbox":[57.6,568.32,1161.6,74.88]}
+{"kind":"textbox","id":"sh/14ryd8fq","slide":3,"name":"Text 21","text":"Why it matters","textPreview":"Why it matters","textChars":14,"textLines":1,"bbox":[81.6,577.92,384,24.96]}
+{"kind":"textbox","id":"sh/6d0fytg3","slide":3,"name":"Text 22","text":"The same final verdict can hide very different processes: productive repair, search loops, statement drift, or critic masking.","textPreview":"The same final verdict can hide very different processes: productive repair, search loops, statement drift, or critic masking.","textChars":126,"textLines":1,"bbox":[81.6,602.88,1113.6,38.4]}
+{"kind":"textbox","id":"sh/re9g7yxo","slide":3,"name":"Text 23","text":"traj-eval  ·  NLP Lab SS2026","textPreview":"traj-eval  ·  NLP Lab SS2026","textChars":28,"textLines":1,"bbox":[57.6,667.2,576,28.8]}
+{"kind":"textbox","id":"sh/sfix03y9","slide":3,"name":"Text 24","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[1161.6,667.2,57.6,28.8]}
+{"kind":"notes","id":"nt/ofy9wn61","slide":3,"text":"3:00–5:00 · Speaker 1\nUse the four JSON fields to explain why this is more than a final-answer benchmark.\nStress the concept rule: observed facts and inferred causes are separate layers.\nHandoff to Speaker 2: now use the same evidence model on the canonical Lean runs."}
+{"kind":"slide","id":"sl/jyx0ra1s","slide":4,"title":"Part 2 · What happened in 100 Lean runs?","textShapes":26}
+{"kind":"textbox","id":"sh/1cj2d8b6","slide":4,"name":"Text 0","text":"Part 2 · What happened in 100 Lean runs?","textPreview":"Part 2 · What happened in 100 Lean runs?","textChars":40,"textLines":1,"bbox":[57.6,40.32,1161.6,67.2]}
+{"kind":"textbox","id":"sh/0ba143al","slide":4,"name":"Text 1","text":"Canonical easy cohort · Qwen3.5-27B · four-role multi-agent","textPreview":"Canonical easy cohort · Qwen3.5-27B · four-role multi-agent","textChars":59,"textLines":1,"bbox":[57.6,107.52,1161.6,36.48]}
+{"kind":"shape","id":"sh/rm1k7yt4","slide":4,"name":"Shape 2","bbox":[57.6,163.2,576,206.4]}
+{"kind":"textbox","id":"sh/ql8jytsj","slide":4,"name":"Text 3","text":"Independent outcomes","textPreview":"Independent outcomes","textChars":20,"textLines":1,"bbox":[86.4,180.48,518.4,30.72]}
+{"kind":"textbox","id":"sh/doj29oba","slide":4,"name":"Text 4","text":"100 runs · 10 tasks · 10 trials each","textPreview":"100 runs · 10 tasks · 10 trials each","textChars":36,"textLines":1,"bbox":[86.4,211.2,518.4,23.04]}
+{"kind":"textbox","id":"sh/sna103ap","slide":4,"name":"Text 5","text":"56","textPreview":"56","textChars":2,"textLines":1,"bbox":[86.4,243.84,158.4,48]}
+{"kind":"textbox","id":"sh/3ihk3et8","slide":4,"name":"Text 6","text":"solved","textPreview":"solved","textChars":6,"textLines":1,"bbox":[86.4,291.84,158.4,23.04]}
+{"kind":"textbox","id":"sh/ih8ju9sn","slide":4,"name":"Text 7","text":"40","textPreview":"40","textChars":2,"textLines":1,"bbox":[262.08,243.84,158.4,48]}
+{"kind":"textbox","id":"sh/kbm987y5","slide":4,"name":"Text 8","text":"unsolved","textPreview":"unsolved","textChars":8,"textLines":1,"bbox":[262.08,291.84,158.4,23.04]}
+{"kind":"textbox","id":"sh/5cva1cfq","slide":4,"name":"Text 9","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[437.76,243.84,158.4,48]}
+{"kind":"textbox","id":"sh/i94r6xgz","slide":4,"name":"Text 10","text":"silent failures","textPreview":"silent failures","textChars":15,"textLines":1,"bbox":[437.76,291.84,158.4,23.04]}
+{"kind":"textbox","id":"sh/jadsz2xk","slide":4,"name":"Text 11","text":"No matched strong-model Lean arm: these are behavioral findings, not a causal model comparison.","textPreview":"No matched strong-model Lean arm: these are behavioral findings, not a causal model comparison.","textChars":95,"textLines":1,"bbox":[86.4,326.4,518.4,23.04]}
+{"kind":"shape","id":"sh/w72947yt","slide":4,"name":"Shape 12","bbox":[57.6,388.8,576,172.8]}
+{"kind":"textbox","id":"sh/x8vaxsfe","slide":4,"name":"Text 13","text":"Recorded trace topology","textPreview":"Recorded trace topology","textChars":23,"textLines":1,"bbox":[86.4,403.2,518.4,28.8]}
+{"kind":"textbox","id":"sh/a5kr2xg3","slide":4,"name":"Text 14","text":"97 connected-linear · 3 disconnected · 0 branching\n\nTopology describes stored causal links—not the model's hidden reasoning.","textPreview":"97 connected-linear · 3 disconnected · 0 branching |  | Topology describes stored causal links—not the model's hidden reasoning.","textChars":124,"textLines":3,"bbox":[86.4,435.84,518.4,105.6]}
+{"kind":"shape","id":"sh/v6tsv2xo","slide":4,"name":"Shape 15","bbox":[662.4,163.2,556.8,398.4]}
+{"kind":"textbox","id":"sh/g36tgryd","slide":4,"name":"Text 16","text":"How every run is classified","textPreview":"How every run is classified","textChars":27,"textLines":1,"bbox":[686.4,180.48,508.8,28.8]}
+{"kind":"textbox","id":"sh/h4fa9wfy","slide":4,"name":"Text 17","text":"exact target · Lean compile · sorry-free · statement preserved","textPreview":"exact target · Lean compile · sorry-free · statement preserved","textChars":62,"textLines":1,"bbox":[686.4,211.2,508.8,23.04]}
+{"kind":"shape","id":"sh/p0batw72","slide":4,"name":"Shape 18","bbox":[686.4,252.48,17.28,17.28]}
+{"kind":"textbox","id":"sh/oz29krqh","slide":4,"name":"Text 19","text":"0 · Environment fault","textPreview":"0 · Environment fault","textChars":21,"textLines":1,"bbox":[718.08,245.76,470.4,24.96]}
+{"kind":"textbox","id":"sh/3ytsrmpw","slide":4,"name":"Text 20","text":"separated from agent behavior","textPreview":"separated from agent behavior","textChars":29,"textLines":1,"bbox":[718.08,270.72,470.4,40.32]}
+{"kind":"shape","id":"sh/2xkrih8b","slide":4,"name":"Shape 21","bbox":[686.4,325.44,17.28,17.28]}
+{"kind":"textbox","id":"sh/1wbapc7q","slide":4,"name":"Text 22","text":"56 · Solved","textPreview":"56 · Solved","textChars":11,"textLines":1,"bbox":[718.08,318.72,470.4,24.96]}
+{"kind":"textbox","id":"sh/gv29g7q5","slide":4,"name":"Text 23","text":"accepted by independent validation","textPreview":"accepted by independent validation","textChars":34,"textLines":1,"bbox":[718.08,343.68,470.4,40.32]}
+{"kind":"shape","id":"sh/fu9sn2p0","slide":4,"name":"Shape 24","bbox":[686.4,398.4,17.28,17.28]}
+{"kind":"textbox","id":"sh/et0reh8f","slide":4,"name":"Text 25","text":"4 · Silent failure","textPreview":"4 · Silent failure","textChars":18,"textLines":1,"bbox":[718.08,391.68,470.4,24.96]}
+{"kind":"textbox","id":"sh/tsrqlc7u","slide":4,"name":"Text 26","text":"team approved; independent check rejected","textPreview":"team approved; independent check rejected","textChars":41,"textLines":1,"bbox":[718.08,416.64,470.4,40.32]}
+{"kind":"shape","id":"sh/sri9s7q9","slide":4,"name":"Shape 27","bbox":[686.4,471.36,17.28,17.28]}
+{"kind":"textbox","id":"sh/ilwf69kv","slide":4,"name":"Text 28","text":"40 · Unsolved","textPreview":"40 · Unsolved","textChars":13,"textLines":1,"bbox":[718.08,464.64,470.4,24.96]}
+{"kind":"textbox","id":"sh/jm5gze1g","slide":4,"name":"Text 29","text":"no independently valid final target","textPreview":"no independently valid final target","textChars":35,"textLines":1,"bbox":[718.08,489.6,470.4,40.32]}
+{"kind":"shape","id":"sh/knex8j21","slide":4,"name":"Shape 30","bbox":[57.6,580.8,1161.6,65.28]}
+{"kind":"textbox","id":"sh/5ony1oj6","slide":4,"name":"Text 31","text":"Final answers alone would hide the 4 silent failures—and the processes behind the other 40.","textPreview":"Final answers alone would hide the 4 silent failures—and the processes behind the other 40.","textChars":91,"textLines":1,"bbox":[81.6,580.8,1113.6,65.28]}
+{"kind":"textbox","id":"sh/axcf29kj","slide":4,"name":"Text 32","text":"traj-eval  ·  NLP Lab SS2026","textPreview":"traj-eval  ·  NLP Lab SS2026","textChars":28,"textLines":1,"bbox":[57.6,667.2,576,28.8]}
+{"kind":"textbox","id":"sh/vy5gbe14","slide":4,"name":"Text 33","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1161.6,667.2,57.6,28.8]}
+{"kind":"notes","id":"nt/jyx0ra1s","slide":4,"text":"5:00–6:00 · Speaker 2\nLead with 56 / 40 / 4. The four silent failures are the strongest reason to inspect trajectories.\nMention the topology cautiously: 97 connected-linear, 3 disconnected, 0 branching in the recorded graph."}
+{"kind":"slide","id":"sl/i107q5of","slide":5,"title":"Healthy control: evidence drives revision","textShapes":21}
+{"kind":"textbox","id":"sh/dgbulwnm","slide":5,"name":"Text 0","text":"Healthy control: evidence drives revision","textPreview":"Healthy control: evidence drives revision","textChars":41,"textLines":1,"bbox":[57.6,40.32,1161.6,67.2]}
+{"kind":"textbox","id":"sh/cf2tcr61","slide":5,"name":"Text 1","text":"Hand-reviewed easy_fatem_012_t3 · exact theorem statement preserved","textPreview":"Hand-reviewed easy_fatem_012_t3 · exact theorem statement preserved","textChars":67,"textLines":1,"bbox":[57.6,107.52,1161.6,36.48]}
+{"kind":"shape","id":"sh/z2tcnm5s","slide":5,"name":"Shape 2","bbox":[57.6,165.12,1161.6,105.6]}
+{"kind":"shape","id":"sh/yhkbe1o7","slide":5,"name":"Shape 3","bbox":[81.6,197.76,38.4,38.4]}
+{"kind":"textbox","id":"sh/l4bupwny","slide":5,"name":"Text 4","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[81.6,197.76,38.4,38.4]}
+{"kind":"textbox","id":"sh/032tgr6d","slide":5,"name":"Text 5","text":"Check #1 · API misuse","textPreview":"Check #1 · API misuse","textChars":21,"textLines":1,"bbox":[136.32,178.56,249.6,28.8]}
+{"kind":"textbox","id":"sh/n6dcr65o","slide":5,"name":"Text 6","text":"`subsingleton_ringHom` was applied as if it were a function.","textPreview":"`subsingleton_ringHom` was applied as if it were a function.","textChars":60,"textLines":1,"bbox":[136.32,209.28,595.2,53.76]}
+{"kind":"textbox","id":"sh/m5kbi1oj","slide":5,"name":"Text 7","text":"seq 6–7\ncompiled = false","textPreview":"seq 6–7 | compiled = false","textChars":24,"textLines":2,"bbox":[763.2,182.4,432,74.88]}
+{"kind":"shape","id":"sh/w32dkbuh","slide":5,"name":"Shape 8","bbox":[57.6,283.2,1161.6,105.6]}
+{"kind":"shape","id":"sh/x4vedgvm","slide":5,"name":"Shape 9","bbox":[81.6,315.84,38.4,38.4]}
+{"kind":"textbox","id":"sh/ahkvi1cb","slide":5,"name":"Text 10","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[81.6,315.84,38.4,38.4]}
+{"kind":"textbox","id":"sh/v2twb6dw","slide":5,"name":"Text 11","text":"Checks #2–3 · type mismatch","textPreview":"Checks #2–3 · type mismatch","textChars":27,"textLines":1,"bbox":[136.32,296.64,249.6,28.8]}
+{"kind":"textbox","id":"sh/k7mxovud","slide":5,"name":"Text 12","text":"Wrong argument type, then the final equality faced the wrong direction.","textPreview":"Wrong argument type, then the final equality faced the wrong direction.","textChars":71,"textLines":1,"bbox":[136.32,327.36,595.2,53.76]}
+{"kind":"textbox","id":"sh/58vehgvy","slide":5,"name":"Text 13","text":"seq 8–11\ncompiled = false","textPreview":"seq 8–11 | compiled = false","textChars":25,"textLines":2,"bbox":[763.2,300.48,432,74.88]}
+{"kind":"shape","id":"sh/i54fmlc7","slide":5,"name":"Shape 14","bbox":[57.6,401.28,1161.6,105.6]}
+{"kind":"shape","id":"sh/j6dwfqds","slide":5,"name":"Shape 15","bbox":[81.6,433.92,38.4,38.4]}
+{"kind":"textbox","id":"sh/sb6xsvu9","slide":5,"name":"Text 16","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[81.6,433.92,38.4,38.4]}
+{"kind":"textbox","id":"sh/tcfel0vu","slide":5,"name":"Text 17","text":"Engineer revises the exact proof","textPreview":"Engineer revises the exact proof","textChars":32,"textLines":1,"bbox":[136.32,414.72,249.6,28.8]}
+{"kind":"textbox","id":"sh/hgrmpwj2","slide":5,"name":"Text 18","text":"Adds equality symmetry; the theorem header remains unchanged.","textPreview":"Adds equality symmetry; the theorem header remains unchanged.","textChars":61,"textLines":1,"bbox":[136.32,445.44,595.2,53.76]}
+{"kind":"textbox","id":"sh/gfi5grih","slide":5,"name":"Text 19","text":"seq 12–15\ncompiled = true","textPreview":"seq 12–15 | compiled = true","textChars":25,"textLines":2,"bbox":[763.2,418.56,432,74.88]}
+{"kind":"shape","id":"sh/fe94nm1w","slide":5,"name":"Shape 20","bbox":[57.6,519.36,1161.6,105.6]}
+{"kind":"shape","id":"sh/ud0ne10b","slide":5,"name":"Shape 21","bbox":[81.6,552,38.4,38.4]}
+{"kind":"textbox","id":"sh/pkr6tgjy","slide":5,"name":"Text 22","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[81.6,552,38.4,38.4]}
+{"kind":"textbox","id":"sh/4ji5kbid","slide":5,"name":"Text 23","text":"Critic independently rechecks","textPreview":"Critic independently rechecks","textChars":29,"textLines":1,"bbox":[136.32,532.8,249.6,28.8]}
+{"kind":"textbox","id":"sh/3i94r61s","slide":5,"name":"Text 24","text":"The same exact-target candidate passes again; approval then follows.","textPreview":"The same exact-target candidate passes again; approval then follows.","textChars":68,"textLines":1,"bbox":[136.32,563.52,595.2,53.76]}
+{"kind":"textbox","id":"sh/2h0ni107","slide":5,"name":"Text 25","text":"seq 17–19\nfresh check ✓","textPreview":"seq 17–19 | fresh check ✓","textChars":23,"textLines":2,"bbox":[763.2,536.64,432,74.88]}
+{"kind":"textbox","id":"sh/5o7mhcju","slide":5,"name":"Text 26","text":"Lean evidence →","textPreview":"Lean evidence →","textChars":15,"textLines":1,"bbox":[763.2,138.24,211.2,23.04]}
+{"kind":"textbox","id":"sh/kny587i9","slide":5,"name":"Text 27","text":"traj-eval  ·  NLP Lab SS2026","textPreview":"traj-eval  ·  NLP Lab SS2026","textChars":28,"textLines":1,"bbox":[57.6,667.2,576,28.8]}
+{"kind":"textbox","id":"sh/atcjidg7","slide":5,"name":"Text 28","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1161.6,667.2,57.6,28.8]}
+{"kind":"notes","id":"nt/i107q5of","slide":5,"text":"6:00–7:15 · Speaker 2\nThis is the healthy control: three failed checks, a repaired exact target, then a fresh Critic compile and approval.\nThe user's selected easy_fatem_012_t2 event 9 is also a successful recovery, but its Critic did not recompile; t3 is the cleaner positive control."}
+{"kind":"slide","id":"sl/x8f69ofe","slide":6,"title":"Two failures hidden by the final answer","textShapes":23}
+{"kind":"textbox","id":"sh/yhg7epsj","slide":6,"name":"Text 0","text":"Two failures hidden by the final answer","textPreview":"Two failures hidden by the final answer","textChars":39,"textLines":1,"bbox":[57.6,40.32,1161.6,67.2]}
+{"kind":"textbox","id":"sh/zi98nu94","slide":6,"name":"Text 1","text":"Hand-reviewed traces separate control-flow failure from validation failure","textPreview":"Hand-reviewed traces separate control-flow failure from validation failure","textChars":74,"textLines":1,"bbox":[57.6,107.52,1161.6,36.48]}
+{"kind":"shape","id":"sh/87ipkzal","slide":6,"name":"Shape 2","bbox":[57.6,165.12,552,187.2]}
+{"kind":"textbox","id":"sh/98rqt4r6","slide":6,"name":"Text 3","text":"CASE A · easy_fatem_019_t5","textPreview":"CASE A · easy_fatem_019_t5","textChars":26,"textLines":1,"bbox":[81.6,178.56,499.2,23.04]}
+{"kind":"textbox","id":"sh/ml07i9sv","slide":6,"name":"Text 4","text":"Retrieval without commitment","textPreview":"Retrieval without commitment","textChars":28,"textLines":1,"bbox":[81.6,201.6,499.2,28.8]}
+{"kind":"textbox","id":"sh/7m98ru9g","slide":6,"name":"Text 5","text":"12 lemma searches—including repeated queries—but no plan handoff and no Lean target check.","textPreview":"12 lemma searches—including repeated queries—but no plan handoff and no Lean target check.","textChars":90,"textLines":1,"bbox":[81.6,234.24,499.2,105.6]}
+{"kind":"shape","id":"sh/oryp8fah","slide":6,"name":"Shape 6","bbox":[331.2,360,0,33.6]}
+{"kind":"shape","id":"sh/pc76hkr2","slide":6,"name":"Shape 7","bbox":[57.6,401.28,552,235.2]}
+{"kind":"textbox","id":"sh/h4bupgn6","slide":6,"name":"Text 8","text":"OBSERVED END STATE · seq 25","textPreview":"OBSERVED END STATE · seq 25","textChars":27,"textLines":1,"bbox":[81.6,412.8,499.2,21.12]}
+{"kind":"textbox","id":"sh/w32twb6l","slide":6,"name":"Text 9","text":"The target was never attempted","textPreview":"The target was never attempted","textChars":30,"textLines":1,"bbox":[81.6,437.76,499.2,28.8]}
+{"kind":"textbox","id":"sh/v2tcn650","slide":6,"name":"Text 10","text":"The trace ends with an empty Reasoner message:","textPreview":"The trace ends with an empty Reasoner message:","textChars":46,"textLines":1,"bbox":[81.6,470.4,499.2,24.96]}
+{"kind":"shape","id":"sh/u1kbu1ov","slide":6,"name":"Shape 11","bbox":[86.4,507.84,11.52,11.52]}
+{"kind":"textbox","id":"sh/5svutgni","slide":6,"name":"Text 12","text":"12 search_lemmas calls","textPreview":"12 search_lemmas calls","textChars":22,"textLines":1,"bbox":[110.4,501.12,480,26.88]}
+{"kind":"shape","id":"sh/47mt0b6x","slide":6,"name":"Shape 13","bbox":[86.4,539.52,11.52,11.52]}
+{"kind":"textbox","id":"sh/j6dcr65c","slide":6,"name":"Text 14","text":"0 Engineer handoffs","textPreview":"0 Engineer handoffs","textChars":19,"textLines":1,"bbox":[110.4,532.8,480,26.88]}
+{"kind":"shape","id":"sh/i54bylor","slide":6,"name":"Shape 15","bbox":[86.4,571.2,11.52,11.52]}
+{"kind":"textbox","id":"sh/twfux0ne","slide":6,"name":"Text 16","text":"0 check_lean calls","textPreview":"0 check_lean calls","textChars":18,"textLines":1,"bbox":[110.4,564.48,480,26.88]}
+{"kind":"shape","id":"sh/svmt4v6t","slide":6,"name":"Shape 17","bbox":[86.4,602.88,11.52,11.52]}
+{"kind":"textbox","id":"sh/cbe5g3ih","slide":6,"name":"Text 18","text":"0 Critic events","textPreview":"0 Critic events","textChars":15,"textLines":1,"bbox":[110.4,596.16,480,26.88]}
+{"kind":"shape","id":"sh/dcnm98zm","slide":6,"name":"Shape 19","bbox":[652.8,165.12,566.4,235.2]}
+{"kind":"textbox","id":"sh/qpwnet0b","slide":6,"name":"Text 20","text":"CASE B · easy_fatem_115_t2","textPreview":"CASE B · easy_fatem_115_t2","textChars":26,"textLines":1,"bbox":[681.6,184.32,508.8,34.56]}
+{"kind":"textbox","id":"sh/bq547yhw","slide":6,"name":"Text 21","text":"Critic masking after statement drift","textPreview":"Critic masking after statement drift","textChars":36,"textLines":1,"bbox":[681.6,218.88,508.8,23.04]}
+{"kind":"shape","id":"sh/0fy5k3id","slide":6,"name":"Shape 22","bbox":[681.6,261.12,13.44,13.44]}
+{"kind":"textbox","id":"sh/lg76d8zy","slide":6,"name":"Text 23","text":"seq 22 · changed IsTrans target  ✓","textPreview":"seq 22 · changed IsTrans target  ✓","textChars":34,"textLines":1,"bbox":[708.48,255.36,480,28.8]}
+{"kind":"shape","id":"sh/ydgnit07","slide":6,"name":"Shape 24","bbox":[681.6,299.52,13.44,13.44]}
+{"kind":"textbox","id":"sh/zep4byhs","slide":6,"name":"Text 25","text":"seq 24 · exact Transitive target  ✕","textPreview":"seq 24 · exact Transitive target  ✕","textChars":35,"textLines":1,"bbox":[708.48,293.76,480,28.8]}
+{"kind":"shape","id":"sh/gju58ji9","slide":6,"name":"Shape 26","bbox":[681.6,337.92,13.44,13.44]}
+{"kind":"textbox","id":"sh/1k3mhozu","slide":6,"name":"Text 27","text":"seq 25 · VERDICT: APPROVE","textPreview":"seq 25 · VERDICT: APPROVE","textChars":25,"textLines":1,"bbox":[708.48,332.16,480,28.8]}
+{"kind":"textbox","id":"sh/jet8nm1c","slide":6,"name":"Text 28","text":"Structured Lean evidence and Critic prose disagree.","textPreview":"Structured Lean evidence and Critic prose disagree.","textChars":51,"textLines":1,"bbox":[681.6,366.72,508.8,28.8]}
+{"kind":"shape","id":"sh/idk7ehkr","slide":6,"name":"Shape 29","bbox":[652.8,422.4,566.4,214.08]}
+{"kind":"textbox","id":"sh/50bqpcj2","slide":6,"name":"Text 30","text":"What failed","textPreview":"What failed","textChars":11,"textLines":1,"bbox":[681.6,435.84,508.8,26.88]}
+{"kind":"textbox","id":"sh/4f2pgr2h","slide":6,"name":"Text 31","text":"The Critic validated a changed contract, failed to validate the requested contract, then approved anyway.","textPreview":"The Critic validated a changed contract, failed to validate the requested contract, then approved anyway.","textChars":105,"textLines":1,"bbox":[681.6,468.48,508.8,120]}
+{"kind":"textbox","id":"sh/va98j210","slide":6,"name":"Text 32","text":"No successful exact-target validation preceded approval.","textPreview":"No successful exact-target validation preceded approval.","textChars":56,"textLines":1,"bbox":[681.6,595.2,508.8,24.96]}
+{"kind":"textbox","id":"sh/u907axkf","slide":6,"name":"Text 33","text":"traj-eval  ·  NLP Lab SS2026","textPreview":"traj-eval  ·  NLP Lab SS2026","textChars":28,"textLines":1,"bbox":[57.6,667.2,576,28.8]}
+{"kind":"textbox","id":"sh/hcrqlcj6","slide":6,"name":"Text 34","text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1161.6,667.2,57.6,28.8]}
+{"kind":"notes","id":"nt/x8f69ofe","slide":6,"text":"7:15–9:15 · Speaker 2\nCase A: say 'ended without a handoff or target attempt'—the legacy trace has no explicit budget terminal event.\nCase B: walk the three structured events in order. The changed statement compiled; the exact requested statement failed; approval still followed.\nThis is the clearest trace-internal Critic masking case in the canonical cohort."}
+{"kind":"slide","id":"sl/gnmp4jqx","slide":7,"title":"Small changes with the largest payoff","textShapes":29}
+{"kind":"textbox","id":"sh/cb2tkvap","slide":7,"name":"Text 0","text":"Small changes with the largest payoff","textPreview":"Small changes with the largest payoff","textChars":37,"textLines":1,"bbox":[57.6,32.64,1161.6,49.92]}
+{"kind":"textbox","id":"sh/dcbud0ra","slide":7,"name":"Text 1","text":"Bind progress and approval to evidence—not agent confidence","textPreview":"Bind progress and approval to evidence—not agent confidence","textChars":59,"textLines":1,"bbox":[57.6,84.48,1161.6,28.8]}
+{"kind":"shape","id":"sh/ydkbm5sv","slide":7,"name":"Shape 2","bbox":[57.6,126.72,1161.6,96]}
+{"kind":"textbox","id":"sh/zedcfa9g","slide":7,"name":"Text 3","text":"Build first","textPreview":"Build first","textChars":11,"textLines":1,"bbox":[84.48,138.24,230.4,23.04]}
+{"kind":"shape","id":"sh/kzmdova1","slide":7,"name":"Shape 4","bbox":[84.48,171.84,14.4,14.4]}
+{"kind":"textbox","id":"sh/l0vuh0rm","slide":7,"name":"Text 5","text":"Return route","textPreview":"Return route","textChars":12,"textLines":1,"bbox":[111.36,163.2,336,21.12]}
+{"kind":"textbox","id":"sh/eh0ba1sr","slide":7,"name":"Text 6","text":"failed check → owner","textPreview":"failed check → owner","textChars":20,"textLines":1,"bbox":[111.36,187.2,336,23.04]}
+{"kind":"shape","id":"sh/fi9c369c","slide":7,"name":"Shape 7","bbox":[463.68,171.84,14.4,14.4]}
+{"kind":"textbox","id":"sh/baxkjqlk","slide":7,"name":"Text 8","text":"Progress guard","textPreview":"Progress guard","textChars":14,"textLines":1,"bbox":[490.56,163.2,336,21.12]}
+{"kind":"textbox","id":"sh/a9ojq5kz","slide":7,"name":"Text 9","text":"repeated search → commit","textPreview":"repeated search → commit","textChars":24,"textLines":1,"bbox":[490.56,187.2,336,23.04]}
+{"kind":"shape","id":"sh/xcz2l03q","slide":7,"name":"Shape 10","bbox":[842.88,171.84,14.4,14.4]}
+{"kind":"textbox","id":"sh/cbq1sv25","slide":7,"name":"Text 11","text":"Approval gate","textPreview":"Approval gate","textChars":13,"textLines":1,"bbox":[869.76,163.2,336,21.12]}
+{"kind":"textbox","id":"sh/n6x0fqlo","slide":7,"name":"Text 12","text":"latest exact target must pass","textPreview":"latest exact target must pass","textChars":29,"textLines":1,"bbox":[869.76,187.2,336,23.04]}
+{"kind":"textbox","id":"sh/25ojml43","slide":7,"name":"Text 13","text":"Evidence-bound control loop","textPreview":"Evidence-bound control loop","textChars":27,"textLines":1,"bbox":[57.6,238.08,316.8,26.88]}
+{"kind":"textbox","id":"sh/p8fih03e","slide":7,"name":"Text 14","text":"Small, testable safeguards for the next experiment","textPreview":"Small, testable safeguards for the next experiment","textChars":50,"textLines":1,"bbox":[388.8,241.92,830.4,23.04]}
+{"kind":"shape","id":"sh/o761ov2t","slide":7,"name":"Shape 15","bbox":[57.6,276.48,571.2,149.76]}
+{"kind":"shape","id":"sh/f2d0b6lc","slide":7,"name":"Shape 16","bbox":[82.56,295.68,36.48,36.48]}
+{"kind":"textbox","id":"sh/eh4jil4r","slide":7,"name":"Text 17","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[82.56,295.68,36.48,36.48]}
+{"kind":"textbox","id":"sh/id4ju1oz","slide":7,"name":"Text 18","text":"A failed check has an owner","textPreview":"A failed check has an owner","textChars":27,"textLines":1,"bbox":[132.48,292.8,475.2,24.96]}
+{"kind":"textbox","id":"sh/jedkn654","slide":7,"name":"Text 19","text":"Return the exact candidate + diagnostic","textPreview":"Return the exact candidate + diagnostic","textChars":39,"textLines":1,"bbox":[132.48,318.72,475.2,23.04]}
+{"kind":"textbox","id":"sh/4fm1wb6p","slide":7,"name":"Text 20","text":"Route Critic or validator failures back to the role that can revise the artifact.","textPreview":"Route Critic or validator failures back to the role that can revise the artifact.","textChars":81,"textLines":1,"bbox":[132.48,345.6,475.2,69.12]}
+{"kind":"shape","id":"sh/50v2pgna","slide":7,"name":"Shape 21","bbox":[648,276.48,571.2,149.76]}
+{"kind":"shape","id":"sh/q143ylov","slide":7,"name":"Shape 22","bbox":[672.96,295.68,36.48,36.48]}
+{"kind":"textbox","id":"sh/r2dkrq5g","slide":7,"name":"Text 23","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[672.96,295.68,36.48,36.48]}
+{"kind":"textbox","id":"sh/s3ml0v61","slide":7,"name":"Text 24","text":"Approval is a predicate","textPreview":"Approval is a predicate","textChars":23,"textLines":1,"bbox":[722.88,292.8,475.2,24.96]}
+{"kind":"textbox","id":"sh/d4f2t0nm","slide":7,"name":"Text 25","text":"not a persuasive paragraph","textPreview":"not a persuasive paragraph","textChars":26,"textLines":1,"bbox":[722.88,318.72,475.2,23.04]}
+{"kind":"textbox","id":"sh/e5o32lor","slide":7,"name":"Text 26","text":"Require: exact statement ∧ latest candidate compiled ∧ sorry-free ∧ validator accepted.","textPreview":"Require: exact statement ∧ latest candidate compiled ∧ sorry-free ∧ validator accepted.","textChars":87,"textLines":1,"bbox":[722.88,345.6,475.2,69.12]}
+{"kind":"shape","id":"sh/f6xkvq5c","slide":7,"name":"Shape 27","bbox":[57.6,441.6,571.2,149.76]}
+{"kind":"shape","id":"sh/p0zmlk7u","slide":7,"name":"Shape 28","bbox":[82.56,460.8,36.48,36.48]}
+{"kind":"textbox","id":"sh/ozq5szq9","slide":7,"name":"Text 29","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[82.56,460.8,36.48,36.48]}
+{"kind":"textbox","id":"sh/nyh4jupo","slide":7,"name":"Text 30","text":"Retrieval must commit","textPreview":"Retrieval must commit","textChars":21,"textLines":1,"bbox":[132.48,457.92,475.2,24.96]}
+{"kind":"textbox","id":"sh/2x8nqp83","slide":7,"name":"Text 31","text":"plan, handoff, or typed stop","textPreview":"plan, handoff, or typed stop","textChars":28,"textLines":1,"bbox":[132.48,483.84,475.2,23.04]}
+{"kind":"textbox","id":"sh/x4j6p47q","slide":7,"name":"Text 32","text":"After repeated similar searches, force an explicit next action instead of another paraphrase.","textPreview":"After repeated similar searches, force an explicit next action instead of another paraphrase.","textChars":93,"textLines":1,"bbox":[132.48,510.72,475.2,69.12]}
+{"kind":"shape","id":"sh/c3a5wzq5","slide":7,"name":"Shape 33","bbox":[648,441.6,571.2,149.76]}
+{"kind":"shape","id":"sh/b2h4nupk","slide":7,"name":"Shape 34","bbox":[672.96,460.8,36.48,36.48]}
+{"kind":"textbox","id":"sh/a18nup8z","slide":7,"name":"Text 35","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[672.96,460.8,36.48,36.48]}
+{"kind":"textbox","id":"sh/lsj6t47m","slide":7,"name":"Text 36","text":"Validation stays outside the team","textPreview":"Validation stays outside the team","textChars":33,"textLines":1,"bbox":[722.88,457.92,475.2,24.96]}
+{"kind":"textbox","id":"sh/kra50jqh","slide":7,"name":"Text 37","text":"independent evidence, durable claims","textPreview":"independent evidence, durable claims","textChars":36,"textLines":1,"bbox":[722.88,483.84,475.2,23.04]}
+{"kind":"textbox","id":"sh/wneps3ap","slide":7,"name":"Text 38","text":"Keep the final validator separate from the shared model context and agent self-reports.","textPreview":"Keep the final validator separate from the shared model context and agent self-reports.","textChars":87,"textLines":1,"bbox":[722.88,510.72,475.2,69.12]}
+{"kind":"shape","id":"sh/honq18ru","slide":7,"name":"Shape 39","bbox":[57.6,616.32,1161.6,57.6]}
+{"kind":"textbox","id":"sh/ulc7qdsj","slide":7,"name":"Text 40","text":"Evidence:","textPreview":"Evidence:","textChars":9,"textLines":1,"bbox":[84.48,616.32,153.6,57.6]}
+{"kind":"textbox","id":"sh/vm58zi94","slide":7,"name":"Text 41","text":"5 drift traces · 4 silent failures · 30/56 solved approvals without a fresh Critic compile","textPreview":"5 drift traces · 4 silent failures · 30/56 solved approvals without a fresh Critic compile","textChars":90,"textLines":1,"bbox":[244.8,616.32,950.4,57.6]}
+{"kind":"notes","id":"nt/gnmp4jqx","slide":7,"text":"9:15–10:00 · Speaker 2\nClose with the two smallest high-value changes: an evidence-carrying return route and a structured approval gate.\nThe retrieval guard is the next small experiment; independent validation remains the non-negotiable outer layer.\nFinal sentence: trajectory evidence turns 'the agent failed' into a concrete, testable system diagnosis."}

@@ -32,6 +32,7 @@ import argparse
 import json
 import os
 import sys
+from collections.abc import Iterable
 from collections import Counter
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -46,16 +47,22 @@ from traj_eval.agents import (
 from traj_eval.agents.free_routing import finalize_run
 from traj_eval.agents.lean_team import (
     RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
+    RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
     RECOVERY_TRIANGLE_V1,
     SUPPORTED_LEAN_SETUPS,
+    TOOL_ROUTED_SUBGOALS_V1,
     build_lean_free_team,
+    resolve_stall_handoff_thresholds,
 )
+from traj_eval.agents.subgoal_state import SubgoalLedger, make_subgoal_tools
 from traj_eval.dataset.loader import ProblemRecord, load_dataset, to_lean_task
 from traj_eval.detectors.perseveration import detect_perseveration
 from traj_eval.metrics.communication import CommunicationSummary, summarize_communication
 from traj_eval.metrics.lean.artifacts import extract_artifacts
 from traj_eval.metrics.lean.outcomes import classify_outcome
-from traj_eval.metrics.lean.validator import validate
+from traj_eval.metrics.lean.validator import validate, validate_candidate
+from traj_eval.trace_core.graph import build_graph
+from traj_eval.trace_core.schema import AgentRole
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
 DATASET_ROOT = Path("dataset/Lean")
@@ -64,27 +71,109 @@ LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
 
 
-def _trial_config(setup: str) -> dict[str, object]:
-    """Build matched trial metadata for the retrieval intervention."""
+def _trial_config(
+    setup: str,
+    *,
+    tools: Iterable[str] | None = None,
+    max_turns: int = 30,
+    max_engineer_failures: int = 3,
+    max_forced_replans: int = 2,
+    outer_orchestrator: str = "external_controller",
+    worker_model: str = "gpt-4o-mini",
+    role_budgets: dict[AgentRole, int] | None = None,
+    enable_thinking: bool | None = None,
+    min_subgoals: int | None = None,
+    reasoner_search_handoff_after: int | None = None,
+    engineer_failed_compile_handoff_after: int | None = None,
+) -> dict[str, object]:
+    """Build complete, setup-specific trial metadata from resolved runtime values."""
+    if setup not in SUPPORTED_LEAN_SETUPS:
+        raise ValueError(f"Unsupported Lean team setup: {setup}")
+    (
+        reasoner_search_handoff_after,
+        engineer_failed_compile_handoff_after,
+    ) = resolve_stall_handoff_thresholds(
+        setup,
+        reasoner_search_handoff_after,
+        engineer_failed_compile_handoff_after,
+    )
+    role_budgets = role_budgets or {
+        AgentRole.REASONER: 2048,
+        AgentRole.ENGINEER: 4096,
+        AgentRole.CRITIC: 2048,
+    }
+    if tools is None:
+        tool_names = (
+            [
+                "check_lean",
+                "finish_run",
+                "plan_subgoal",
+                "read_candidate",
+                "read_subgoals",
+                "review_lean",
+                "review_subgoal",
+                "route_next_agent",
+                "search_lemmas",
+                "submit_subgoal",
+            ]
+            if setup == TOOL_ROUTED_SUBGOALS_V1
+            else ["check_lean", "search_lemmas"]
+        )
+    else:
+        tool_names = sorted(tools)
+
     return {
         "setup": setup,
-        "prompt_revision": RECOVERY_TRIANGLE_V1,
-        "routing_policy": "agent_chosen_handoffs",
+        "prompt_revision": (
+            TOOL_ROUTED_SUBGOALS_V1
+            if setup == TOOL_ROUTED_SUBGOALS_V1
+            else (
+                RECOVERY_TRIANGLE_STALL_HANDOFF_V1
+                if setup == RECOVERY_TRIANGLE_STALL_HANDOFF_V1
+                else RECOVERY_TRIANGLE_V1
+            )
+        ),
+        "routing_policy": (
+            "tool_routed_subgoal_dag"
+            if setup == TOOL_ROUTED_SUBGOALS_V1
+            else (
+                "agent_chosen_handoffs_with_stall_recovery"
+                if setup == RECOVERY_TRIANGLE_STALL_HANDOFF_V1
+                else "agent_chosen_handoffs"
+            )
+        ),
         "provider_route": "openai_compatible",
-        "tools": ["check_lean", "search_lemmas"],
-        "max_turns": 30,
+        "tools": tool_names,
+        "max_turns": max_turns,
         "retrieval_condition": (
             "disabled"
             if setup == RECOVERY_TRIANGLE_NO_RETRIEVAL_V1
             else "enabled"
         ),
+        "stall_handoff_thresholds": {
+            "reasoner_search_batches": reasoner_search_handoff_after,
+            "engineer_failed_compiles": engineer_failed_compile_handoff_after,
+        },
+        "max_engineer_failures": max_engineer_failures,
+        "max_forced_replans": max_forced_replans,
+        "min_subgoals": min_subgoals,
+        "outer_orchestrator": outer_orchestrator,
+        "worker_models": {role.value: worker_model for role in role_budgets},
+        "role_max_tokens": {
+            role.value: budget for role, budget in role_budgets.items()
+        },
+        "controller_uses_llm": False,
+        "worker_enable_thinking": enable_thinking,
+        "compiler_context": "canonical_task_prelude",
     }
 
 
 def _trial_key(task_id: str, trial: int, setup: str) -> str:
-    """Keep legacy baseline names while isolating every non-baseline arm."""
+    """Use suffixes only for retrieval/stall ablations in isolated run bundles."""
+    if setup not in SUPPORTED_LEAN_SETUPS:
+        raise ValueError(f"Unsupported Lean team setup: {setup}")
     base = f"{task_id}_t{trial}"
-    if setup == RECOVERY_TRIANGLE_V1:
+    if setup in (RECOVERY_TRIANGLE_V1, TOOL_ROUTED_SUBGOALS_V1):
         return base
     return f"{base}__{setup}"
 
@@ -95,8 +184,10 @@ def _trace_path(output_dir: Path, task_id: str, trial: int, setup: str) -> Path:
 
 
 def _summary_stem(setup: str) -> str:
-    """Keep legacy baseline summaries while isolating non-baseline reports."""
-    if setup == RECOVERY_TRIANGLE_V1:
+    """Mirror the trial naming policy for setup-isolated summary bundles."""
+    if setup not in SUPPORTED_LEAN_SETUPS:
+        raise ValueError(f"Unsupported Lean team setup: {setup}")
+    if setup in (RECOVERY_TRIANGLE_V1, TOOL_ROUTED_SUBGOALS_V1):
         return "summary"
     return f"summary__{setup}"
 
@@ -113,33 +204,203 @@ class TrialOutcome:
     communication: CommunicationSummary
 
 
-def _trace_is_valid(path: Path) -> bool:
+def _trace_is_valid(
+    path: Path,
+    *,
+    expected_trial_id: str | None = None,
+    expected_setup: str | None = None,
+    expected_task_id: str | None = None,
+) -> bool:
     if not path.exists() or path.stat().st_size == 0:
         return False
     try:
-        read_trial(path)
+        meta, events = read_trial(path)
     except Exception:  # noqa: BLE001 -- invalid traces should be regenerated
+        return False
+    if not events or events[-1].payload.get("phase") != "termination":
+        return False
+    if any(event.trial_id != meta.trial_id for event in events):
+        return False
+    if expected_trial_id is not None and meta.trial_id != expected_trial_id:
+        return False
+    if expected_setup is not None and meta.config.get("setup") != expected_setup:
+        return False
+    if expected_task_id is not None and meta.task_id != expected_task_id:
         return False
     return True
 
 
-def _task_prompt(record: ProblemRecord) -> str:
+def _trace_is_analyzable(
+    path: Path,
+    *,
+    expected_trial_id: str,
+    expected_setup: str,
+    expected_task_id: str,
+) -> bool:
+    """Accept current terminal traces or the narrowly defined legacy V1 format."""
+    if _trace_is_valid(
+        path,
+        expected_trial_id=expected_trial_id,
+        expected_setup=expected_setup,
+        expected_task_id=expected_task_id,
+    ):
+        return True
+    if not path.exists() or path.stat().st_size == 0:
+        return False
+    try:
+        meta, events = read_trial(path)
+    except Exception:  # noqa: BLE001 -- legacy analysis still requires parseable data
+        return False
+    return bool(
+        events
+        and expected_setup == RECOVERY_TRIANGLE_V1
+        and meta.schema_version == "0.2.0"
+        and meta.architecture == "four_role_multi"
+        and "setup" not in meta.config
+        and meta.trial_id == expected_trial_id
+        and meta.task_id == expected_task_id
+        and path.stem == expected_trial_id
+        and all(event.trial_id == meta.trial_id for event in events)
+    )
+
+
+def _assert_trace_path_available(
+    path: Path,
+    *,
+    trial_id: str,
+    setup: str,
+) -> None:
+    """Refuse to truncate any existing trace, especially an unsuffixed sibling arm."""
+    if not path.exists():
+        return
+    existing = "unreadable or incomplete"
+    try:
+        meta, _ = read_trial(path)
+        existing = (
+            f"trial_id={meta.trial_id!r}, setup={meta.config.get('setup')!r}"
+        )
+    except Exception:  # noqa: BLE001 -- the path must remain untouched either way
+        pass
+    raise FileExistsError(
+        f"refusing to overwrite {path} for trial_id={trial_id!r}, setup={setup!r}; "
+        f"existing trace is {existing}. Use a fresh setup-isolated output directory "
+        "or archive the existing file through the approved recovery workflow."
+    )
+
+
+def _recorded_termination(events) -> str:
+    for event in reversed(events):
+        if event.payload.get("phase") == "termination":
+            return str(event.payload.get("termination_reason") or "framework_stop")
+    return "offline_rescore"
+
+
+def _explore_trace(path: Path) -> dict:
+    """Return compact deterministic plan and causal-graph facts for one JSONL trace."""
+    meta, events = read_trial(path)
+    graph = build_graph(events)
+    plan_event = next(
+        (event for event in reversed(events) if event.payload.get("phase") == "controller_plan"),
+        None,
+    )
+    plan = plan_event.payload.get("plan", {}) if plan_event else {}
+    final_state = plan.get("final_state", {})
+    role_path = [event.agent_role.value for event in events]
+    transitions = Counter(
+        f"{left}->{right}" for left, right in zip(role_path, role_path[1:], strict=False)
+    )
+    return {
+        "trial_id": meta.trial_id,
+        "task_id": meta.task_id,
+        "path": path.name,
+        "n_events": len(events),
+        "graph": {
+            "nodes": graph.number_of_nodes(),
+            "edges": graph.number_of_edges(),
+            "roots": sum(graph.in_degree(node) == 0 for node in graph.nodes),
+            "leaves": sum(graph.out_degree(node) == 0 for node in graph.nodes),
+        },
+        "role_transitions": dict(sorted(transitions.items())),
+        "controller_plan": {
+            "present": plan_event is not None,
+            "owner_role": plan.get("owner_role"),
+            "history_length": len(plan.get("history", [])),
+            "version": final_state.get("version"),
+            "plan_ready": final_state.get("plan_ready"),
+            "active_subgoal": final_state.get("active_subgoal"),
+            "forced_recoveries": final_state.get("forced_recoveries"),
+            "strategy_revisions": final_state.get("strategy_revisions"),
+            "nodes": final_state.get("nodes", []),
+        },
+    }
+
+
+def _explore_traces(
+    output_dir: Path,
+    records: list[ProblemRecord],
+    trials: int,
+    setup: str = RECOVERY_TRIANGLE_V1,
+) -> list[dict]:
+    explored = []
+    for record in records:
+        for trial in range(trials):
+            trial_id = _trial_key(record.id, trial, setup)
+            path = _trace_path(output_dir, record.id, trial, setup)
+            if _trace_is_analyzable(
+                path,
+                expected_trial_id=trial_id,
+                expected_setup=setup,
+                expected_task_id=record.id,
+            ):
+                explored.append(_explore_trace(path))
+    return explored
+
+
+def _task_prompt(
+    record: ProblemRecord, *, setup: str = RECOVERY_TRIANGLE_V1
+) -> str:
     context_note = (
         f"\n\nThe theorem is stated in this context (already in scope; do not restate it, "
         f"and keep these when you write the proof):\n{record.context}"
         if record.context
         else ""
     )
+    medium_detail = (
+        "For this medium task, define four to six concrete compile-verifiable artifacts; "
+        "do not use vague understand/find/investigate subgoals. "
+        if record.difficulty == "medium"
+        else ""
+    )
+    coordination = (
+        "Use the typed subgoal tools to decompose, verify, review, and route. "
+        f"{medium_detail}"
+        "Build at least two work subgoals plus one final integration subgoal; "
+        "use sequential dependencies when the mathematics is sequential. "
+        "Do not use HANDOFF or VERDICT text markers."
+        if setup == TOOL_ROUTED_SUBGOALS_V1
+        else "Each role chooses its next allowed action."
+    )
     return (
         f"Prove this Lean 4 theorem (source: {record.source}, difficulty: {record.difficulty}).\n\n"
         f"Informal statement:\n{record.informal}\n\n"
         f"Formal statement to prove:\n{record.statement}{context_note}\n\n"
-        "Each role chooses its next allowed action. Use search_lemmas and check_lean "
+        f"{coordination} Use search_lemmas and compiler tools "
         "when they resolve real uncertainty. Hand off only when the receiving role can "
         "act on concrete mathematical, compiler, or review evidence. A non-linear route "
         "is allowed, but extra communication is not itself success. The final proof must "
         "compile, preserve the exact statement, and contain no sorry, admit, or added axiom."
     )
+
+
+def _resolve_worker_thinking(model: str, mode: str) -> bool | None:
+    """Map the CLI mode to the provider request; Qwen defaults to non-thinking."""
+    if mode == "enabled":
+        return True
+    if mode == "disabled":
+        return False
+    if mode != "auto":
+        raise ValueError(f"unsupported worker thinking mode: {mode}")
+    return False if "qwen" in model.casefold() else None
 
 
 def _configure_console() -> None:
@@ -183,50 +444,176 @@ def run_one_trial(
     *,
     output_dir: Path = LOG_DIR,
     setup: str = RECOVERY_TRIANGLE_V1,
+    max_turns: int = 30,
+    max_engineer_failures: int = 3,
+    max_forced_replans: int = 2,
+    worker_model: str | None = None,
+    reasoner_max_tokens: int = 2048,
+    engineer_max_tokens: int = 4096,
+    critic_max_tokens: int = 2048,
+    outer_orchestrator: str = "external_controller",
+    worker_thinking: str = "auto",
+    reasoner_search_handoff_after: int | None = None,
+    engineer_failed_compile_handoff_after: int | None = None,
 ) -> TrialOutcome:
     from traj_eval.tools.lean_search import make_search_lemmas
 
-    prompt = _task_prompt(record)
+    trial_id = _trial_key(record.id, trial, setup)
+    log_path = _trace_path(output_dir, record.id, trial, setup)
+    _assert_trace_path_available(log_path, trial_id=trial_id, setup=setup)
+    prompt = _task_prompt(record, setup=setup)
 
-    llm_config = build_llm_config()
-    ledger = RoutingLedger()
+    worker_model = worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
+    enable_thinking = _resolve_worker_thinking(worker_model, worker_thinking)
+    (
+        reasoner_search_handoff_after,
+        engineer_failed_compile_handoff_after,
+    ) = resolve_stall_handoff_thresholds(
+        setup,
+        reasoner_search_handoff_after,
+        engineer_failed_compile_handoff_after,
+    )
+    role_budgets = {
+        AgentRole.REASONER: reasoner_max_tokens,
+        AgentRole.ENGINEER: engineer_max_tokens,
+        AgentRole.CRITIC: critic_max_tokens,
+    }
+    role_llm_configs = {
+        role: build_llm_config(
+            model=worker_model,
+            max_tokens=budget,
+            enable_thinking=enable_thinking,
+        )
+        for role, budget in role_budgets.items()
+    }
+    # Speaker selection is deterministic, so the manager model is only an AG2
+    # construction requirement and receives the smallest worker budget.
+    llm_config = build_llm_config(
+        model=worker_model,
+        max_tokens=min(role_budgets.values()),
+        enable_thinking=enable_thinking,
+    )
+    routing_ledger = RoutingLedger()
     step_context = StepContext()
+    search_lemmas = make_search_lemmas(num_results=5)
+    min_subgoals: int | None = None
+    if setup == TOOL_ROUTED_SUBGOALS_V1:
+        task = to_lean_task(record)
+        subgoal_ledger = SubgoalLedger(
+            min_nodes=4 if record.difficulty == "medium" else 3,
+            max_failures=max_engineer_failures,
+            max_forced_replans=max_forced_replans,
+        )
+        min_subgoals = subgoal_ledger.min_nodes
+        tools = make_subgoal_tools(
+            compiler,
+            subgoal_ledger,
+            final_validator=lambda code: validate_candidate(code, task, compiler),
+            prelude=record.import_block,
+            auto_submit_verified=True,
+        )
+        tools["search_lemmas"] = search_lemmas
+
+        def post_tool_route(
+            caller: AgentRole, called: frozenset[str]
+        ) -> tuple[AgentRole, str] | None:
+            if (
+                caller is AgentRole.REASONER
+                and subgoal_ledger.plan_ready
+                and "route_next_agent" not in called
+            ):
+                return AgentRole.ENGINEER, "controller_plan_ready_fallback"
+            return None
+    else:
+        tools = {
+            "check_lean": compiler.as_tool(),
+            "search_lemmas": search_lemmas,
+        }
+        post_tool_route = None
     manager, user, groupchat, run_state = build_lean_free_team(
         llm_config,
-        tools={
-            "check_lean": compiler.as_tool(),
-            "search_lemmas": make_search_lemmas(num_results=5),
-        },
+        tools=tools,
         setup=setup,
-        max_turns=30,
-        ledger=ledger,
+        max_turns=max_turns,
+        reasoner_search_handoff_after=reasoner_search_handoff_after,
+        engineer_failed_compile_handoff_after=(
+            engineer_failed_compile_handoff_after
+        ),
+        ledger=routing_ledger,
         step_context=step_context,
+        role_llm_configs=role_llm_configs,
+        post_tool_route=post_tool_route,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    trial_id = _trial_key(record.id, trial, setup)
-    log_path = _trace_path(output_dir, record.id, trial, setup)
     meta = make_trial_meta(
         trial_id=trial_id,
         task_id=record.id,
-        backbone=os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini"),
+        backbone=worker_model,
         testbed="lean",
         architecture=f"lean_{setup}",
         grounding=True,
-        config=_trial_config(setup),
+        config=_trial_config(
+            setup,
+            tools=tools,
+            max_turns=max_turns,
+            max_engineer_failures=max_engineer_failures,
+            max_forced_replans=max_forced_replans,
+            outer_orchestrator=outer_orchestrator,
+            worker_model=worker_model,
+            role_budgets=role_budgets,
+            enable_thinking=enable_thinking,
+            min_subgoals=min_subgoals,
+            reasoner_search_handoff_after=reasoner_search_handoff_after,
+            engineer_failed_compile_handoff_after=(
+                engineer_failed_compile_handoff_after
+            ),
+        ),
     )
     writer = TrialLogWriter(log_path, meta)
     observer = TraceObserver(
-        writer, trial_id=trial_id, ledger=ledger, step_context=step_context
+        writer,
+        trial_id=trial_id,
+        ledger=routing_ledger,
+        step_context=step_context,
     )
     observer.attach([a for a in groupchat.agents if a.name != "user"])
     observer.record_task(prompt)
 
     try:
         user.initiate_chat(manager, message=prompt, clear_history=True)
+    except Exception as exc:
+        observer.record_infrastructure_error(exc)
+        raise
     finally:
-        writer.close()
         finalize_run(run_state)
+        try:
+            if setup == TOOL_ROUTED_SUBGOALS_V1:
+                observer.record_controller_plan(subgoal_ledger.plan_record())
+            observer.record_termination(
+                run_state.reason or "framework_stop",
+                turns=run_state.turns,
+                invalid_handoffs=run_state.invalid_handoffs,
+                max_identical_calls_seen=run_state.max_identical_calls_seen,
+                max_failed_compiles_seen=run_state.max_failed_compiles_seen,
+                tool_stall_handoffs=run_state.tool_stall_handoffs,
+                handoff_prompt_turns=run_state.handoff_prompt_turns,
+                handoff_prompt_failures=run_state.handoff_prompt_failures,
+                max_tool_stall_streaks={
+                    f"{role.value}:{tool}": count
+                    for (role, tool), count in sorted(
+                        run_state.max_tool_stall_streaks.items(),
+                        key=lambda item: (item[0][0].value, item[0][1]),
+                    )
+                },
+                tool_handoffs=run_state.tool_handoffs,
+                forced_recoveries=run_state.forced_recoveries,
+                completion_gate_denials=run_state.completion_gate_denials,
+                tool_protocol_errors=run_state.tool_protocol_errors,
+                controller_fallback_routes=run_state.controller_fallback_routes,
+            )
+        finally:
+            writer.close()
 
     return _score_trace(
         record,
@@ -243,12 +630,58 @@ def main() -> int:
     ap.add_argument("--difficulty", nargs="+", default=["easy"], help="tiers to run")
     ap.add_argument("--trials", type=int, default=3, help="trials per problem")
     ap.add_argument(
+        "--task-id",
+        nargs="+",
+        help="run one or more exact dataset task ids",
+    )
+    ap.add_argument(
         "--setup",
         choices=SUPPORTED_LEAN_SETUPS,
         default=RECOVERY_TRIANGLE_V1,
         help="named Lean agent setup recorded in TrialMeta",
     )
     ap.add_argument("--output-dir", type=Path, default=LOG_DIR, help="isolated trace directory")
+    ap.add_argument("--max-turns", type=int, default=30, help="routing decision budget")
+    ap.add_argument(
+        "--worker-model",
+        help="low-cost model used by reasoner, engineer, and critic",
+    )
+    ap.add_argument("--reasoner-max-tokens", type=int, default=2048)
+    ap.add_argument("--engineer-max-tokens", type=int, default=4096)
+    ap.add_argument("--critic-max-tokens", type=int, default=2048)
+    ap.add_argument(
+        "--worker-thinking",
+        choices=("auto", "disabled", "enabled"),
+        default="auto",
+        help="Qwen thinking mode; auto disables it for Qwen models",
+    )
+    ap.add_argument(
+        "--outer-orchestrator",
+        default="external_controller",
+        help="research orchestrator identity recorded in TrialMeta only",
+    )
+    ap.add_argument(
+        "--max-engineer-failures",
+        type=int,
+        default=3,
+        help="failed proof compiles before tool-directed reasoner recovery",
+    )
+    ap.add_argument(
+        "--max-forced-replans",
+        type=int,
+        default=2,
+        help="maximum forced reasoner recoveries per trial",
+    )
+    ap.add_argument(
+        "--reasoner-search-handoff-after",
+        type=int,
+        help="stall arm: repeated search batches before a structured Engineer handoff",
+    )
+    ap.add_argument(
+        "--engineer-failed-compile-handoff-after",
+        type=int,
+        help="stall arm: failed compiles before a structured Reasoner handoff",
+    )
     ap.add_argument("--skip-existing", action="store_true", help="skip existing valid trace files")
     ap.add_argument(
         "--summarize-existing",
@@ -261,6 +694,12 @@ def main() -> int:
     records: list[ProblemRecord] = []
     for diff in args.difficulty:
         records.extend(load_dataset(DATASET_ROOT, difficulty=diff))
+    if args.task_id:
+        requested = set(args.task_id)
+        records = [record for record in records if record.id in requested]
+        missing = requested - {record.id for record in records}
+        if missing:
+            ap.error(f"task ids not found in selected difficulties: {sorted(missing)}")
 
     if args.dry_run:
         print(
@@ -282,9 +721,15 @@ def main() -> int:
     observed_models: set[str] = set()
     for r in records:
         for t in range(args.trials):
+            trial_id = _trial_key(r.id, t, args.setup)
             log_path = _trace_path(args.output_dir, r.id, t, args.setup)
             if args.summarize_existing:
-                if not _trace_is_valid(log_path):
+                if not _trace_is_analyzable(
+                    log_path,
+                    expected_trial_id=trial_id,
+                    expected_setup=args.setup,
+                    expected_task_id=r.id,
+                ):
                     errors.append(
                         {
                             "task_id": r.id,
@@ -296,10 +741,16 @@ def main() -> int:
                     continue
                 print(f"  scoring {r.id} trial {t + 1}/{args.trials} ...", flush=True)
                 try:
-                    trace_meta, _ = read_trial(log_path)
+                    trace_meta, trace_events = read_trial(log_path)
                     observed_models.add(trace_meta.backbone)
                     outcomes.append(
-                        _score_trace(r, t, compiler, log_path, termination="offline_rescore")
+                        _score_trace(
+                            r,
+                            t,
+                            compiler,
+                            log_path,
+                            termination=_recorded_termination(trace_events),
+                        )
                     )
                 except Exception as e:  # noqa: BLE001 -- report every invalid trial
                     print(f"    ERROR in {r.id} t{t}: {type(e).__name__}: {str(e)[:200]}")
@@ -312,13 +763,68 @@ def main() -> int:
                         }
                     )
                 continue
-            if args.skip_existing and _trace_is_valid(log_path):
-                print(f"  skipping {r.id} trial {t + 1}/{args.trials} (existing valid trace)")
+            if args.skip_existing and _trace_is_valid(
+                log_path,
+                expected_trial_id=trial_id,
+                expected_setup=args.setup,
+                expected_task_id=r.id,
+            ):
+                print(
+                    f"  reusing {r.id} trial {t + 1}/{args.trials} "
+                    "(existing valid trace) ...",
+                    flush=True,
+                )
+                try:
+                    trace_meta, trace_events = read_trial(log_path)
+                    observed_models.add(trace_meta.backbone)
+                    outcomes.append(
+                        _score_trace(
+                            r,
+                            t,
+                            compiler,
+                            log_path,
+                            termination=_recorded_termination(trace_events),
+                        )
+                    )
+                except Exception as e:  # noqa: BLE001 -- report every invalid trial
+                    print(
+                        f"    ERROR in {r.id} t{t}: "
+                        f"{type(e).__name__}: {str(e)[:200]}"
+                    )
+                    errors.append(
+                        {
+                            "task_id": r.id,
+                            "trial": t,
+                            "error_type": type(e).__name__,
+                            "message": str(e)[:200],
+                        }
+                    )
                 continue
             print(f"  running {r.id} trial {t + 1}/{args.trials} ...", flush=True)
             try:
                 outcomes.append(
-                    run_one_trial(r, t, compiler, output_dir=args.output_dir, setup=args.setup)
+                    run_one_trial(
+                        r,
+                        t,
+                        compiler,
+                        output_dir=args.output_dir,
+                        setup=args.setup,
+                        max_turns=args.max_turns,
+                        max_engineer_failures=args.max_engineer_failures,
+                        max_forced_replans=args.max_forced_replans,
+                        worker_model=args.worker_model,
+                        reasoner_max_tokens=args.reasoner_max_tokens,
+                        engineer_max_tokens=args.engineer_max_tokens,
+                        critic_max_tokens=args.critic_max_tokens,
+                        outer_orchestrator=args.outer_orchestrator,
+                        worker_thinking=args.worker_thinking,
+                        reasoner_search_handoff_after=(
+                            args.reasoner_search_handoff_after
+                        ),
+                        engineer_failed_compile_handoff_after=(
+                            args.engineer_failed_compile_handoff_after
+                        ),
+                    )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch
                 print(f"    ERROR in {r.id} t{t}: {type(e).__name__}: {str(e)[:200]}")
@@ -334,7 +840,7 @@ def main() -> int:
     summary_model = (
         ", ".join(sorted(observed_models))
         if observed_models
-        else os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
+        else (args.worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini"))
     )
     summary = _build_run_summary(
         outcomes,
@@ -342,6 +848,12 @@ def main() -> int:
         setup=args.setup,
         model=summary_model,
         errors=errors,
+    )
+    summary["trace_exploration"] = _explore_traces(
+        args.output_dir,
+        records,
+        args.trials,
+        args.setup,
     )
     _report(outcomes, summary)
     _write_summary(args.output_dir, summary)
@@ -368,8 +880,32 @@ def _build_run_summary(
         and outcome.communication.revision_followed_by_compile_success
         for outcome in outcomes
     )
+    verified_completions = sum(
+        outcome.communication.verified_completion for outcome in outcomes
+    )
 
-    if eligible == 0:
+    if setup == TOOL_ROUTED_SUBGOALS_V1:
+        tool_handoffs = sum(outcome.communication.tool_handoffs for outcome in outcomes)
+        accepted_subgoals = sum(
+            outcome.communication.subgoals_accepted for outcome in outcomes
+        )
+        forced_recoveries = sum(
+            outcome.communication.forced_recoveries for outcome in outcomes
+        )
+        revisions = sum(outcome.communication.strategy_revisions for outcome in outcomes)
+        if tool_handoffs == 0:
+            decision = "tool_routing_not_adopted"
+        elif accepted_subgoals == 0:
+            decision = "subgoal_gate_not_reached"
+        elif verified_completions > 0 and outcome_counts.get("solved", 0) > 0:
+            decision = "feasibility_demonstrated_no_o3_claim"
+        elif verified_completions > 0 and outcome_counts.get("silent_failure", 0) > 0:
+            decision = "final_faithfulness_gate_required"
+        elif forced_recoveries > 0 and revisions == 0:
+            decision = "reasoner_recovery_not_adopted"
+        else:
+            decision = "revise_subgoal_strategy"
+    elif eligible == 0:
         decision = "inconclusive_no_recovery_opportunity"
     elif evidence_backed == 0:
         decision = "advance_to_strategy_critic"
@@ -391,6 +927,13 @@ def _build_run_summary(
         "critic_approvals",
         "critic_rejections",
         "evidence_backed_revisions",
+        "tool_handoffs",
+        "forced_recoveries",
+        "strategy_revisions",
+        "subgoals_defined",
+        "subgoals_accepted",
+        "subgoals_rejected",
+        "critic_gate_denials",
     )
     communication = {
         field: sum(getattr(outcome.communication, field) for outcome in outcomes)
@@ -401,6 +944,7 @@ def _build_run_summary(
             "eligible_recovery_trials": eligible,
             "evidence_backed_revision_trials": evidence_backed,
             "productive_recovery_trials": productive,
+            "verified_completion_trials": verified_completions,
             "engineer_local_repair_trials": sum(
                 outcome.communication.failed_compile_results > 0
                 and outcome.communication.successful_compile_results > 0
@@ -425,12 +969,16 @@ def _build_run_summary(
     )
 
     return {
-        "schema_version": "lean_recovery_triangle_summary_v1",
+        "schema_version": "lean_agent_setup_summary_v1",
         "setup": setup,
         "model": model,
         "expected_trials": expected_trials,
         "completed_trials": len(outcomes),
-        "provider_status": "complete" if not errors else "partial_or_failed",
+        "provider_status": (
+            "partial_or_failed"
+            if errors
+            else ("complete" if len(outcomes) == expected_trials else "incomplete")
+        ),
         "outcomes": dict(sorted(outcome_counts.items())),
         "termination_reasons": dict(sorted(termination_counts.items())),
         "communication": communication,
@@ -438,7 +986,7 @@ def _build_run_summary(
         "proposal_status": {
             "O1": "pilot evidence for explicit handoff localisation",
             "O2": "pilot evidence for coordination and recovery labels",
-            "O3": "not claimed from one trial per task",
+            "O3": "not claimed from this feasibility pilot",
         },
         "errors": errors,
         "trials": [
@@ -463,7 +1011,7 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
     )
     communication = summary["communication"]
     lines = [
-        "# Qwen Recovery Triangle Pilot",
+        "# Qwen Lean Agent Pilot",
         "",
         f"- Setup: `{summary['setup']}`",
         f"- Model: `{summary['model']}`",
@@ -492,10 +1040,17 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
             f"- Engineer-local repair trials: {communication['engineer_local_repair_trials']}",
             f"- Reasoner stall trials: {communication['reasoner_stall_trials']}",
             f"- Critic masking trials: {communication['critic_masking_trials']}",
+            f"- Tool handoffs: {communication['tool_handoffs']}",
+            f"- Forced recoveries: {communication['forced_recoveries']}",
+            f"- Strategy revisions: {communication['strategy_revisions']}",
+            f"- Subgoals accepted: {communication['subgoals_accepted']}",
+            f"- Critic gate denials: {communication['critic_gate_denials']}",
+            "- Verified completion trials: "
+            f"{communication['verified_completion_trials']}",
             "",
             "## Proposal Interpretation",
             "",
-            "This 10-task pilot tests O1/O2 observability of agent-chosen recovery routes.",
+            "This pilot tests O1/O2 observability of tool-routed recovery and review.",
             "It does not support an O3 architecture-improvement claim.",
         ]
     )

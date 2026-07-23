@@ -20,7 +20,11 @@ from traj_eval.agents.lean_team import (  # noqa: E402
     ENGINEER_STUCK_HANDOFF_PROMPT,
     REASONER_STUCK_HANDOFF_FIELDS,
     REASONER_STUCK_HANDOFF_PROMPT,
+    RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
     RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
+    RECOVERY_TRIANGLE_V1,
+    SUPPORTED_LEAN_SETUPS,
+    TOOL_ROUTED_SUBGOALS_V1,
     build_lean_free_team,
     lean_routing_config,
 )
@@ -59,6 +63,7 @@ def _build(
 ):
     config = lean_routing_config(
         max_turns=max_turns,
+        setup=RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
         reasoner_search_handoff_after=reasoner_after,
         engineer_failed_compile_handoff_after=engineer_after,
     )
@@ -424,6 +429,7 @@ def test_empty_tool_response_does_not_increment_the_stall_streak():
 def test_lean_config_enables_only_the_requested_recovery_rule():
     baseline = lean_routing_config()
     recovery = lean_routing_config(
+        setup=RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
         reasoner_search_handoff_after=2,
         engineer_failed_compile_handoff_after=2,
     )
@@ -450,8 +456,47 @@ def test_lean_config_enables_only_the_requested_recovery_rule():
     )
 
 
+def test_supported_lean_setups_are_exactly_the_four_personal_arms():
+    assert SUPPORTED_LEAN_SETUPS == (
+        RECOVERY_TRIANGLE_V1,
+        RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
+        RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
+        TOOL_ROUTED_SUBGOALS_V1,
+    )
+
+
+def test_stall_and_typed_routing_features_do_not_leak_between_setups():
+    baseline = lean_routing_config(setup=RECOVERY_TRIANGLE_V1)
+    no_retrieval = lean_routing_config(setup=RECOVERY_TRIANGLE_NO_RETRIEVAL_V1)
+    stall = lean_routing_config(setup=RECOVERY_TRIANGLE_STALL_HANDOFF_V1)
+    typed = lean_routing_config(setup=TOOL_ROUTED_SUBGOALS_V1)
+
+    assert baseline.tool_stall_handoffs == no_retrieval.tool_stall_handoffs == ()
+    assert [rule.after_batches for rule in stall.tool_stall_handoffs] == [2, 2]
+    assert typed.tool_stall_handoffs == ()
+    assert typed.tool_result_routing is True
+    assert typed.allow_marker_handoffs is False
+    assert typed.allow_terminal_markers is False
+    assert baseline.tool_result_routing is False
+    with pytest.raises(ValueError, match="require the stall-handoff setup"):
+        lean_routing_config(
+            setup=RECOVERY_TRIANGLE_V1,
+            reasoner_search_handoff_after=2,
+        )
+
+    goal_tool_names = {"try_tactic", "show_goals"}
+    assert all(
+        spec.tools.isdisjoint(goal_tool_names)
+        for config in (baseline, no_retrieval, stall, typed)
+        for spec in config.roles.values()
+    )
+
+
 def test_duplicate_caller_tool_rules_are_rejected():
-    config = lean_routing_config(reasoner_search_handoff_after=1)
+    config = lean_routing_config(
+        setup=RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
+        reasoner_search_handoff_after=1,
+    )
     duplicate = replace(
         config,
         tool_stall_handoffs=(
@@ -475,7 +520,10 @@ def test_duplicate_caller_tool_rules_are_rejected():
 
 
 def test_missing_stall_caller_agent_is_rejected_at_build():
-    config = lean_routing_config(reasoner_search_handoff_after=1)
+    config = lean_routing_config(
+        setup=RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
+        reasoner_search_handoff_after=1,
+    )
     agents = {
         AgentRole.ENGINEER: make_engineer(_DUMMY),
         AgentRole.CRITIC: make_critic(_DUMMY),

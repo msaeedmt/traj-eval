@@ -39,6 +39,7 @@ class RoutingLedger:
         self._latest: dict[AgentRole, str] = {}
         # role -> pending parent event_ids for that role's *next* event
         self._pending: dict[AgentRole, list[str]] = {}
+        self._pending_reason: dict[AgentRole, str] = {}
 
     def record_emit(self, role: AgentRole, event_id: str) -> None:
         """Observer calls this after writing each event."""
@@ -48,7 +49,13 @@ class RoutingLedger:
         """Most recent event_id emitted by ``role``, or None if none yet."""
         return self._latest.get(role)
 
-    def record_routing(self, next_role: AgentRole, cause_event_ids: list[str]) -> None:
+    def record_routing(
+        self,
+        next_role: AgentRole,
+        cause_event_ids: list[str],
+        *,
+        reason: str | None = None,
+    ) -> None:
         """Selector calls this when it picks ``next_role`` to speak.
 
         ``cause_event_ids`` are the parents to stamp on ``next_role``'s next
@@ -63,6 +70,10 @@ class RoutingLedger:
                 f"{cause_event_ids!r}. Pass [event_id], not the id or a role."
             )
         self._pending[next_role] = [c for c in cause_event_ids if c is not None]
+        if reason:
+            self._pending_reason[next_role] = reason
+        else:
+            self._pending_reason.pop(next_role, None)
 
     def take_pending(self, role: AgentRole) -> list[str]:
         """Observer calls this before stamping ``role``'s next event.
@@ -71,3 +82,7 @@ class RoutingLedger:
         consumed exactly once). Empty list if nothing pending.
         """
         return self._pending.pop(role, [])
+
+    def take_pending_reason(self, role: AgentRole) -> str | None:
+        """Return and clear the reason attached to the next routed event."""
+        return self._pending_reason.pop(role, None)

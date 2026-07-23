@@ -27,6 +27,7 @@ we read the result only for its compiled/sorry verdict via the structured
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from dataclasses import dataclass, field
@@ -46,6 +47,8 @@ class ToolCallRecord:
     seq: int
     verification_status: str | None = None
     result_seq: int | None = None
+    evidence_hash: str | None = None
+    gate_ok: bool = True
 
 
 @dataclass(frozen=True)
@@ -302,6 +305,27 @@ def _call_code(event: TraceEvent) -> tuple[str | None, str | None]:
     return None, None
 
 
+def _result_payload(event: TraceEvent) -> tuple[str | None, dict | None]:
+    """Return the linked call id and parsed dictionary for one tool result."""
+    import ast
+
+    responses = event.payload.get("tool_responses") or []
+    for response in responses:
+        call_id = response.get("id")
+        content = response.get("content")
+        if not content:
+            return call_id, None
+        try:
+            parsed = ast.literal_eval(content)
+        except (ValueError, SyntaxError):
+            try:
+                parsed = json.loads(content)
+            except (TypeError, ValueError, json.JSONDecodeError):
+                return call_id, None
+        return call_id, parsed if isinstance(parsed, dict) else None
+    return None, None
+
+
 def _result_verdict(
     event: TraceEvent,
 ) -> tuple[str | None, bool | None, bool | None, str | None]:
@@ -313,43 +337,112 @@ def _result_verdict(
     back to None on any failure -- a verdict we cannot read is 'unknown', never a
     guessed pass/fail.
     """
-    import ast
+    call_id, result = _result_payload(event)
+    if result is None:
+        return call_id, None, None, "infrastructure_unknown"
+    compiled = result.get("compiled")
+    sorry_free = result.get("sorry_free")
+    status = result.get("verification_status")
+    if status not in {"accepted", "rejected", "infrastructure_unknown"}:
+        if result.get("infrastructure_error"):
+            status = "infrastructure_unknown"
+        elif compiled is True:
+            status = "accepted"
+        elif compiled is False:
+            summary = str(result.get("summary") or "").strip().lower()
+            errors = result.get("errors") or []
+            useful_errors = [
+                str(item.get("data") or "").strip()
+                for item in errors
+                if isinstance(item, dict) and str(item.get("data") or "").strip()
+            ]
+            status = (
+                "infrastructure_unknown"
+                if not useful_errors and (not summary or "lean failed" in summary)
+                else "rejected"
+            )
+    if status == "infrastructure_unknown":
+        return call_id, None, None, status
+    return call_id, compiled, sorry_free, status
 
-    responses = event.payload.get("tool_responses") or []
-    for r in responses:
-        content = r.get("content")
-        if not content:
-            return r.get("id"), None, None, "infrastructure_unknown"
-        try:
-            d = ast.literal_eval(content)
-        except (ValueError, SyntaxError):
-            return r.get("id"), None, None, "infrastructure_unknown"
-        if isinstance(d, dict):
-            compiled = d.get("compiled")
-            sorry_free = d.get("sorry_free")
-            status = d.get("verification_status")
-            if status not in {"accepted", "rejected", "infrastructure_unknown"}:
-                if d.get("infrastructure_error"):
-                    status = "infrastructure_unknown"
-                elif compiled is True:
-                    status = "accepted"
-                elif compiled is False:
-                    summary = str(d.get("summary") or "").strip().lower()
-                    errors = d.get("errors") or []
-                    useful_errors = [
-                        str(item.get("data") or "").strip()
-                        for item in errors
-                        if isinstance(item, dict) and str(item.get("data") or "").strip()
-                    ]
-                    status = (
-                        "infrastructure_unknown"
-                        if not useful_errors and (not summary or "lean failed" in summary)
-                        else "rejected"
-                    )
-            if status == "infrastructure_unknown":
-                return r.get("id"), None, None, status
-            return r.get("id"), compiled, sorry_free, status
-    return None, None, None, "infrastructure_unknown"
+
+def _typed_finished_submission(
+    tool_calls: list[ToolCallRecord],
+    result_events: list[tuple[int, str | None, dict]],
+) -> tuple[str | None, int | None, int | None]:
+    """Recover a final proof only from the complete typed verifier chain."""
+
+    def latest(
+        tool_name: str,
+        evidence_hash: str,
+        *,
+        before: int,
+        predicate,
+    ) -> tuple[int, dict] | None:
+        matches = [
+            (seq, payload)
+            for seq, name, payload in result_events
+            if name == tool_name
+            and seq < before
+            and payload.get("evidence_hash") == evidence_hash
+            and predicate(payload)
+        ]
+        return matches[-1] if matches else None
+
+    finishes = [
+        (seq, payload)
+        for seq, name, payload in result_events
+        if name == "finish_run" and payload.get("run_complete") is True
+    ]
+    for finish_seq, finish in reversed(finishes):
+        evidence_hash = str(finish.get("evidence_hash") or "")
+        if not evidence_hash:
+            continue
+        accepted = latest(
+            "review_subgoal",
+            evidence_hash,
+            before=finish_seq,
+            predicate=lambda payload: payload.get("accepted") is True
+            and payload.get("decision") == "accept",
+        )
+        if accepted is None:
+            continue
+        review = latest(
+            "review_lean",
+            evidence_hash,
+            before=accepted[0],
+            predicate=lambda payload: payload.get("compiled") is True
+            and payload.get("sorry_free") is True
+            and payload.get("ok") is not False,
+        )
+        if review is None:
+            continue
+        submitted = latest(
+            "submit_subgoal",
+            evidence_hash,
+            before=review[0],
+            predicate=lambda payload: payload.get("submitted") is True,
+        )
+        if submitted is None:
+            continue
+        candidates = [
+            record
+            for record in tool_calls
+            if record.result_seq is not None
+            and record.result_seq < submitted[0]
+            and record.evidence_hash == evidence_hash
+            and record.verification_status == "accepted"
+            and record.compiled is True
+            and record.sorry_free is True
+            and record.gate_ok
+            and record.code is not None
+            and hashlib.sha256(record.code.encode("utf-8")).hexdigest() == evidence_hash
+            and not contains_prohibited_placeholder(record.code)
+        ]
+        if candidates:
+            candidate = candidates[-1]
+            return candidate.code, candidate.result_seq, finish_seq
+    return None, None, None
 
 
 def extract_artifacts(
@@ -377,11 +470,26 @@ def extract_artifacts(
                     submission_source = "explicit_final"
 
     # 2. Pair tool calls with their results by call id, in order.
+    call_names_by_id: dict[str | None, str | None] = {}
+    for event in events:
+        if event.event_type is not EventType.TOOL_CALL:
+            continue
+        for call in event.payload.get("tool_calls") or []:
+            call_names_by_id[call.get("id")] = call.get("name")
+
     results_by_id: dict[
         str | None, tuple[bool | None, bool | None, str | None, int | None]
     ] = {}
+    result_payloads_by_id: dict[str | None, dict] = {}
+    result_events: list[tuple[int, str | None, dict]] = []
     for e in events:
         if e.event_type is EventType.EXECUTION_RESULT:
+            payload_id, result_payload = _result_payload(e)
+            if result_payload is not None:
+                result_payloads_by_id[payload_id] = result_payload
+                result_events.append(
+                    (e.seq, call_names_by_id.get(payload_id), result_payload)
+                )
             cid, compiled, sorry_free, status = _result_verdict(e)
             results_by_id[cid] = (compiled, sorry_free, status, e.seq)
 
@@ -398,6 +506,7 @@ def extract_artifacts(
             compiled, sorry_free, status, result_seq = results_by_id.get(
                 cid, (None, None, None, None)
             )
+            result_payload = result_payloads_by_id.get(cid, {})
             tool_calls.append(
                 ToolCallRecord(
                     call_id=cid,
@@ -407,6 +516,8 @@ def extract_artifacts(
                     seq=e.seq,
                     verification_status=status,
                     result_seq=result_seq,
+                    evidence_hash=result_payload.get("evidence_hash"),
+                    gate_ok=result_payload.get("ok") is not False,
                 )
             )
 
@@ -418,11 +529,20 @@ def extract_artifacts(
             rec.verification_status == "accepted"
             and rec.compiled is True
             and rec.sorry_free is True
+            and rec.gate_ok
             and rec.code is not None
             and not contains_prohibited_placeholder(rec.code)
         ):
             last_verified = rec.code
             last_verified_seq = rec.result_seq
+
+    typed_submitted, typed_submitted_seq, typed_finish_seq = _typed_finished_submission(
+        tool_calls, result_events
+    )
+    if submitted is None and typed_submitted is not None:
+        submitted = typed_submitted
+        submitted_seq = typed_submitted_seq
+        submission_source = "verified_subgoal_finish"
 
     # 4. declared_success: the final critic verdict in the trace is APPROVE.
     declared_success = False
@@ -431,6 +551,9 @@ def extract_artifacts(
         if e.agent_role is AgentRole.CRITIC and e.payload.get("decision") is not None:
             declared_success = e.payload.get("decision") == "approve"
             critic_decision_seq = e.seq
+    if typed_finish_seq is not None:
+        declared_success = True
+        critic_decision_seq = typed_finish_seq
 
     last_verified_kind = candidate_kind(last_verified, target_statement)
 
@@ -453,7 +576,7 @@ def extract_artifacts(
 
     n_failed = sum(1 for rec in tool_calls if rec.verification_status == "rejected")
     submitted_kind = candidate_kind(submitted, target_statement)
-    submission_accepted = bool(
+    submission_accepted = submission_source == "verified_subgoal_finish" or bool(
         declared_success
         and submitted_seq is not None
         and critic_decision_seq is not None

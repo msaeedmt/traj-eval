@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import json
 
 from traj_eval.metrics.communication import summarize_communication
 from traj_eval.trace_core.schema import AgentRole, EventType, TraceEvent
@@ -26,6 +27,40 @@ def _result(seq, compiled, *, parent):
         AgentRole.EXECUTOR,
         EventType.EXECUTION_RESULT,
         {"tool_responses": [{"id": f"c{seq}", "content": content}]},
+        parent=parent,
+    )
+
+
+def _dict_result(seq, value, *, parent):
+    return _event(
+        seq,
+        AgentRole.EXECUTOR,
+        EventType.EXECUTION_RESULT,
+        {"tool_responses": [{"id": f"c{seq}", "content": repr(value)}]},
+        parent=parent,
+    )
+
+
+def _json_result(seq, value, *, parent):
+    return _event(
+        seq,
+        AgentRole.EXECUTOR,
+        EventType.EXECUTION_RESULT,
+        {"tool_responses": [{"id": f"c{seq}", "content": json.dumps(value)}]},
+        parent=parent,
+    )
+
+
+def _tool_call(seq, role, name, arguments, *, parent):
+    return _event(
+        seq,
+        role,
+        EventType.TOOL_CALL,
+        {
+            "tool_calls": [
+                {"id": f"c{seq}", "name": name, "arguments": json.dumps(arguments)}
+            ]
+        },
         parent=parent,
     )
 
@@ -208,3 +243,99 @@ def test_critic_reject_and_recheck_are_visible():
     assert summary.critic_rejections == 1
     assert summary.critic_to_engineer == 1
     assert summary.evidence_backed_revisions == 1
+
+
+def test_tool_routed_subgoal_recovery_metrics_are_visible():
+    events = [
+        _event(0, AgentRole.SYSTEM, EventType.MESSAGE, {"text": "task"}),
+        _tool_call(
+            1,
+            AgentRole.REASONER,
+            "plan_subgoal",
+            {"subgoal_id": "forward"},
+            parent="e0",
+        ),
+        _dict_result(2, {"ok": True, "created": True}, parent="e1"),
+        _tool_call(
+            3,
+            AgentRole.REASONER,
+            "route_next_agent",
+            {"target": "engineer"},
+            parent="e2",
+        ),
+        _dict_result(
+            4,
+            {"ok": True, "handoff_target": "engineer", "route_kind": "agent_tool_handoff"},
+            parent="e3",
+        ),
+        _tool_call(
+            5,
+            AgentRole.ENGINEER,
+            "check_lean",
+            {"subgoal_id": "forward", "purpose": "subgoal"},
+            parent="e4",
+        ),
+        _dict_result(
+            6,
+            {
+                "compiled": False,
+                "handoff_target": "reasoner",
+                "route_kind": "failed_compile_recovery",
+            },
+            parent="e5",
+        ),
+        _tool_call(
+            7,
+            AgentRole.REASONER,
+            "plan_subgoal",
+            {"subgoal_id": "forward"},
+            parent="e6",
+        ),
+        _dict_result(8, {"ok": True, "revised": True}, parent="e7"),
+        _tool_call(
+            9,
+            AgentRole.REASONER,
+            "route_next_agent",
+            {"target": "engineer"},
+            parent="e8",
+        ),
+        _dict_result(
+            10,
+            {"ok": True, "handoff_target": "engineer"},
+            parent="e9",
+        ),
+        _tool_call(
+            11,
+            AgentRole.ENGINEER,
+            "check_lean",
+            {"subgoal_id": "forward", "purpose": "subgoal"},
+            parent="e10",
+        ),
+        _dict_result(12, {"compiled": True}, parent="e11"),
+        _dict_result(
+            13,
+            {"ok": True, "decision": "accept", "accepted": True},
+            parent="e12",
+        ),
+        _dict_result(14, {"ok": True, "run_complete": True}, parent="e13"),
+    ]
+
+    summary = summarize_communication(events)
+
+    assert summary.tool_handoffs == 2
+    assert summary.forced_recoveries == 1
+    assert summary.strategy_revisions == 1
+    assert summary.subgoals_defined == 1
+    assert summary.subgoals_accepted == 1
+    assert summary.verified_completion is True
+    assert summary.evidence_backed_revisions == 1
+    assert summary.revision_followed_by_compile_success is True
+
+
+def test_json_tool_result_is_included_in_metrics():
+    events = [
+        _event(0, AgentRole.SYSTEM, EventType.MESSAGE, {"text": "task"}),
+        _json_result(1, {"ok": True, "created": True}, parent="e0"),
+    ]
+
+    assert summarize_communication(events).subgoals_defined == 1

@@ -1,11 +1,11 @@
-"""Free-routing controller: agent-chosen hand-offs (Step 4d).
+"""Free-routing controller for marker- or tool-expressed hand-offs (Step 4d).
 
 Where the stepped controller (controller.py) routes by a fixed workflow, this
-controller lets each agent CHOOSE who acts next via a marker in its message
-(``HANDOFF: <role>`` / ``TOOL: <tool>``). Coordination becomes a measured,
-fallible decision: an agent can hand to the wrong role, skip a required tool, or
-nobody can advance -- and each of those is a recorded event, which is the point
-(the study measures multi-agent coordination, not just task success).
+controller can let each agent choose who acts next through a text marker or a
+registered routing tool. Coordination becomes a measured, fallible decision:
+an agent can hand to the wrong role, skip a required tool, or fail a completion
+gate. Tool results may also carry an explicitly configured recovery route, so a
+bounded intervention remains visible in the same causal trace.
 
 Domain-agnostic by construction. The controller knows only: a ``RoutingConfig``
 (which roles exist, each role's allowed hand-off targets and allowed tools, the
@@ -16,10 +16,10 @@ config lives in lean_team.py, astro's would live alongside. This is the O1
 "framework-agnostic ... domain-adaptable" seam, made explicit.
 
 Termination is always bounded: a run ends with a recorded reason -- ``clean``
-(an agent emitted the terminal marker), ``cap`` (turn budget exhausted), or
-``stuck`` (too many consecutive malformed/disallowed hand-offs). A bounded,
-reason-tagged end means non-termination is itself observable data (coordination
-collapse), never an infinite loop.
+(a marker or verified completion tool), ``cap`` (turn budget exhausted),
+``stuck`` (invalid routing, exhausted recovery, or repeated no-progress calls),
+or ``framework_stop`` (AG2 ended before a controller terminal condition).
+A reason-tagged end makes non-termination observable rather than infinite.
 """
 
 from __future__ import annotations
@@ -79,6 +79,9 @@ class RoutingConfig:
     max_identical_calls: int = 4  # identical tool submissions in a row -> 'stuck'
     max_failed_compiles: int = 6  # consecutive failed compiles w/ no success -> 'stuck'
     tool_stall_handoffs: tuple[ToolStallHandoff, ...] = ()
+    allow_marker_handoffs: bool = True
+    allow_terminal_markers: bool = True
+    tool_result_routing: bool = False
 
     def spec(self, role: AgentRole) -> RoleSpec | None:
         return self.roles.get(role)
@@ -91,7 +94,7 @@ class _RunState:
     turns: int = 0
     consecutive_invalid: int = 0
     terminated: bool = False
-    reason: str | None = None  # 'clean' | 'cap' | 'stuck'
+    reason: str | None = None  # clean | cap | stuck | framework_stop
     invalid_handoffs: int = 0  # total coordination errors seen
     # Perseveration bound (4d): the last tool-call code and how many times in a
     # row it has been resubmitted identically. Repeated identical submission is
@@ -107,10 +110,21 @@ class _RunState:
     consecutive_failed_compiles: int = 0
     max_failed_compiles_seen: int = 0
     tool_stall_streaks: dict[tuple[AgentRole, str], int] = field(default_factory=dict)
+    max_tool_stall_streaks: dict[tuple[AgentRole, str], int] = field(
+        default_factory=dict
+    )
     tool_stall_handoffs: int = 0
     handoff_prompt_turns: int = 0
     handoff_prompt_failures: int = 0
     pending_handoff: ToolStallHandoff | None = None
+    tool_handoffs: int = 0
+    forced_recoveries: int = 0
+    completion_gate_denials: int = 0
+    tool_protocol_errors: int = 0
+    controller_fallback_routes: int = 0
+    pending_post_tool_target: AgentRole | None = None
+    pending_post_tool_reason: str | None = None
+    turn_budget: int = 0
 
 
 def _role_of(name: str) -> AgentRole | None:
@@ -166,6 +180,27 @@ def _valid_handoff_summary(text: str, rule: ToolStallHandoff) -> bool:
     return True
 
 
+def _tool_result_dict(message: dict[str, Any]) -> dict[str, Any] | None:
+    """Parse the first dictionary returned by an AG2 tool result."""
+    import ast
+    import json
+
+    for response in message.get("tool_responses") or []:
+        content = response.get("content")
+        if not content:
+            continue
+        try:
+            parsed = ast.literal_eval(content)
+        except (ValueError, SyntaxError):
+            try:
+                parsed = json.loads(content)
+            except (TypeError, ValueError, json.JSONDecodeError):
+                continue
+        if isinstance(parsed, dict):
+            return parsed
+    return None
+
+
 def _compile_verdict(message: dict[str, Any]) -> bool | None:
     """Read a check_lean compile verdict from an executor result message.
 
@@ -174,20 +209,27 @@ def _compile_verdict(message: dict[str, Any]) -> bool | None:
     toward the no-progress bound). ag2 stringifies the tool's dict with repr(),
     so we parse leniently with ast.literal_eval.
     """
-    import ast
-
-    responses = message.get("tool_responses") or []
-    for r in responses:
-        content = r.get("content")
-        if not content:
-            continue
-        try:
-            d = ast.literal_eval(content)
-        except (ValueError, SyntaxError):
-            continue
-        if isinstance(d, dict) and "compiled" in d:
-            return bool(d["compiled"])
+    result = _tool_result_dict(message)
+    if result is not None and "compiled" in result:
+        return bool(result["compiled"])
     return None
+
+
+def _is_tool_protocol_error(message: dict[str, Any]) -> bool:
+    """Detect executor failures caused by malformed model-emitted tool JSON."""
+    text = str(message.get("content") or "")
+    text += " " + " ".join(
+        str(item.get("content") or "") for item in message.get("tool_responses") or []
+    )
+    lowered = text.casefold()
+    return any(
+        marker in lowered
+        for marker in (
+            "argument must be in json format",
+            "failed to parse tool call arguments as json",
+            "unterminated string",
+        )
+    )
 
 
 def _normalise_call_code(message: dict[str, Any]) -> str | None:
@@ -224,6 +266,8 @@ def build_free_routing_team(
     tools: dict[str, Callable[..., Any]] | None = None,
     ledger: RoutingLedger | None = None,
     step_context: StepContext | None = None,
+    post_tool_route: Callable[[AgentRole, frozenset[str]], tuple[AgentRole, str] | None]
+    | None = None,
 ) -> tuple[GroupChatManager, UserProxyAgent, GroupChat, _RunState]:
     """Build a group chat whose next-speaker is chosen by the agents' markers.
 
@@ -289,7 +333,7 @@ def build_free_routing_team(
                 )(fn)
 
     members = [user, executor, *[agents[r] for r in config.roles if r in agents]]
-    state = _RunState()
+    state = _RunState(turn_budget=config.max_turns)
     base_system_messages = {
         role: agent.system_message for role, agent in agents.items()
     }
@@ -314,7 +358,7 @@ def build_free_routing_team(
             state.pending_handoff = None
         return pending
 
-    def _route(agent, parent_role: AgentRole):
+    def _route(agent, parent_role: AgentRole, *, reason: str | None = None):
         # Record the causal edge: the NEXT agent's event will be caused by the
         # PARENT role's most recent event. record_routing expects a LIST of
         # event-ids, not a role -- passing the role here caused it to iterate the
@@ -323,13 +367,15 @@ def build_free_routing_team(
         if ledger is not None and agent is not None:
             next_role = _role_of(agent.name) or AgentRole.SYSTEM
             cause = ledger.latest_event_id(parent_role)
-            ledger.record_routing(next_role, [cause] if cause else [])
+            ledger.record_routing(next_role, [cause] if cause else [], reason=reason)
         return agent
 
     def select_next(last_speaker, groupchat: GroupChat):
         state.turns += 1
         if state.turns >= config.max_turns:
             _clear_pending_handoff()
+            state.pending_post_tool_target = None
+            state.pending_post_tool_reason = None
             state.terminated, state.reason = True, "cap"
             return None
 
@@ -337,31 +383,107 @@ def build_free_routing_team(
 
         # Entry: the user posts the task -> the configured entry agent.
         if name == "user":
-            return _route(agents.get(config.entry), AgentRole.SYSTEM)
+            return _route(agents.get(config.entry), AgentRole.SYSTEM, reason="entry")
 
-        # The executor just ran a tool -> control returns to whoever called it.
-        # The caller is the last non-executor agent; recover it from the ledger
-        # if present, else from the message before the tool result.
+        # The executor just ran a tool. Recover the immediately preceding valid
+        # caller/tool batch once; duplicate or orphan executor results must not
+        # reuse an older caller.
         if name == AgentRole.EXECUTOR.value:
-            # Track compile progress: a check_lean result updates the
-            # consecutive-failure counter (a success resets it). search_lemmas
-            # results return None here and are ignored. Past the threshold the
-            # agent is thrashing without ever compiling -- stop as 'stuck'.
-            verdict = _compile_verdict(_last_message(groupchat))
-            if verdict is True:
-                state.consecutive_failed_compiles = 0
-            elif verdict is False:
-                state.consecutive_failed_compiles += 1
-                state.max_failed_compiles_seen = max(
-                    state.max_failed_compiles_seen, state.consecutive_failed_compiles
-                )
-                if state.consecutive_failed_compiles >= config.max_failed_compiles:
-                    state.terminated, state.reason = True, "stuck"
-                    return None
+            result_message = _last_message(groupchat)
             caller, caller_message = _last_caller_before_executor(groupchat)
             called = _called_tools(caller_message)
+            pending_target = state.pending_post_tool_target
+            pending_reason = state.pending_post_tool_reason
+            state.pending_post_tool_target = None
+            state.pending_post_tool_reason = None
+
+            if caller is None or not called:
+                _reset_nonmatching_stalls(None, frozenset())
+                _clear_pending_handoff()
+                return _invalid(state, config, agents)
+
+            if _is_tool_protocol_error(result_message):
+                _clear_pending_handoff()
+                state.tool_protocol_errors += 1
+                state.terminated, state.reason = True, "stuck"
+                return None
+
+            result = _tool_result_dict(result_message)
+            verdict = _compile_verdict(result_message)
+
+            # Track compile progress before any typed route returns early.
+            if config.max_failed_compiles > 0:
+                if verdict is True:
+                    state.consecutive_failed_compiles = 0
+                elif verdict is False:
+                    state.consecutive_failed_compiles += 1
+                    state.max_failed_compiles_seen = max(
+                        state.max_failed_compiles_seen,
+                        state.consecutive_failed_compiles,
+                    )
+                    if (
+                        state.consecutive_failed_compiles
+                        >= config.max_failed_compiles
+                    ):
+                        _clear_pending_handoff()
+                        state.terminated, state.reason = True, "stuck"
+                        return None
+
+            if config.tool_result_routing:
+                terminate_reason = result.get("terminate_reason") if result else None
+                if terminate_reason:
+                    _clear_pending_handoff()
+                    state.terminated, state.reason = True, str(terminate_reason)
+                    return None
+                if result and result.get("run_complete") is True:
+                    _clear_pending_handoff()
+                    state.terminated, state.reason = True, "clean"
+                    return None
+
+                target_name = result.get("handoff_target") if result else None
+                if target_name:
+                    target = _role_of(str(target_name))
+                    caller_spec = config.spec(caller)
+                    if (
+                        target is not None
+                        and caller_spec is not None
+                        and target in caller_spec.handoff_targets
+                        and target in agents
+                    ):
+                        route_kind = str(result.get("route_kind") or "tool_handoff")
+                        state.tool_handoffs += 1
+                        if route_kind == "failed_compile_recovery":
+                            state.forced_recoveries += 1
+                        return _route(
+                            agents[target], AgentRole.EXECUTOR, reason=route_kind
+                        )
+                    return _invalid(state, config, agents)
+
+                completion_denied = result is not None and result.get("ok") is False
+                if completion_denied:
+                    state.completion_gate_denials += 1
+                elif pending_target is not None:
+                    caller_spec = config.spec(caller)
+                    if (
+                        caller_spec is not None
+                        and pending_target in caller_spec.handoff_targets
+                        and pending_target in agents
+                    ):
+                        state.tool_handoffs += 1
+                        state.controller_fallback_routes += 1
+                        return _route(
+                            agents[pending_target],
+                            AgentRole.EXECUTOR,
+                            reason=pending_reason or "controller_post_tool_fallback",
+                        )
+                    return _invalid(state, config, agents)
+
+            # Track compile progress: a check_lean result updates the
+            # consecutive-failure counter (a success resets it). search_lemmas
+            # results return None here and are ignored. Structured stall rules
+            # are setup-specific and run only after typed-result routing.
             _reset_nonmatching_stalls(caller, called)
-            completed = bool(_last_message(groupchat).get("tool_responses"))
+            completed = bool(result_message.get("tool_responses"))
             for rule in stall_handoffs:
                 matches = (
                     completed
@@ -375,6 +497,10 @@ def build_free_routing_team(
                     continue
                 streak = state.tool_stall_streaks.get(key, 0) + 1
                 state.tool_stall_streaks[key] = streak
+                state.max_tool_stall_streaks[key] = max(
+                    state.max_tool_stall_streaks.get(key, 0),
+                    streak,
+                )
                 if streak >= rule.after_batches:
                     state.tool_stall_streaks[key] = 0
                     state.pending_handoff = rule
@@ -384,8 +510,16 @@ def build_free_routing_team(
                         + "\n\n--- controller recovery turn ---\n"
                         + rule.handoff_prompt.strip()
                     )
-                    return _route(agents[rule.caller], AgentRole.EXECUTOR)
-            return _route(agents.get(caller), AgentRole.EXECUTOR) if caller else None
+                    return _route(
+                        agents[rule.caller],
+                        AgentRole.EXECUTOR,
+                        reason="stall_handoff_prompt",
+                    )
+            return (
+                _route(agents.get(caller), AgentRole.EXECUTOR, reason="tool_return")
+                if caller in agents
+                else None
+            )
 
         role = _role_of(name)
         spec = config.spec(role) if role else None
@@ -410,10 +544,18 @@ def build_free_routing_team(
                 return None
             state.tool_stall_handoffs += 1
             state.consecutive_invalid = 0
-            return _route(agents[pending_handoff.target], role)
+            return _route(
+                agents[pending_handoff.target],
+                role,
+                reason="stall_handoff",
+            )
 
         # 1. Terminal marker (e.g. critic APPROVE) from a role allowed to end.
-        if spec.can_terminate and VERDICT_APPROVE in text.upper():
+        if (
+            config.allow_terminal_markers
+            and spec.can_terminate
+            and VERDICT_APPROVE in text.upper()
+        ):
             state.terminated, state.reason = True, "clean"
             return None
 
@@ -442,19 +584,28 @@ def build_free_routing_team(
                     state.max_identical_calls_seen, state.consecutive_identical_calls
                 )
                 if state.consecutive_identical_calls >= config.max_identical_calls:
+                    state.pending_post_tool_target = None
+                    state.pending_post_tool_reason = None
                     state.terminated, state.reason = True, "stuck"
                     return None
-                return _route(executor, role)
+                if config.tool_result_routing and post_tool_route is not None:
+                    fallback = post_tool_route(role, frozenset(called))
+                    if fallback is not None:
+                        (
+                            state.pending_post_tool_target,
+                            state.pending_post_tool_reason,
+                        ) = fallback
+                return _route(executor, role, reason="tool_call")
             return _invalid(state, config, agents)  # called a tool it may not
 
         # 3. Expressed HANDOFF marker: hand to the named agent (text marker,
         #    since AG2 has no native next-agent mechanism).
-        marker = parse_handoff(text)
+        marker = parse_handoff(text) if config.allow_marker_handoffs else {}
         if "handoff_target" in marker:
             target = _role_of(marker["handoff_target"])
             if target is not None and target in spec.handoff_targets and target in agents:
                 state.consecutive_invalid = 0
-                return _route(agents[target], role)
+                return _route(agents[target], role, reason="marker_handoff")
             return _invalid(state, config, agents)
 
         # 4. No tool call and no parseable hand-off: a coordination omission.
@@ -465,8 +616,10 @@ def build_free_routing_team(
     ) -> tuple[AgentRole | None, dict[str, Any]]:
         for msg in reversed(groupchat.messages[:-1]):
             r = _role_of(msg.get("name", ""))
-            if r is not None and r is not AgentRole.EXECUTOR:
-                return r, msg
+            if r is AgentRole.EXECUTOR:
+                return None, {}
+            if r is not None:
+                return (r, msg) if _is_native_tool_call(msg) else (None, {})
         return None, {}
 
     # AG2's GroupChat.max_round counts EVERY message (each agent turn, tool
@@ -489,13 +642,17 @@ def build_free_routing_team(
 def finalize_run(state: _RunState) -> _RunState:
     """Ensure the run has a recorded termination reason. Call AFTER the chat.
 
-    If our selector set a reason (clean / cap / stuck), keep it. If the chat
-    ended without our selector setting one -- the only remaining way out is
-    AG2's own max_round limit -- record it as 'cap'. Guarantees ``reason`` is
-    never None after a completed run, so 'how did this end' is always answerable.
+    Keep an explicit selector reason. Otherwise distinguish a real turn-budget
+    exhaustion from AG2 ending early without another routed action. The result
+    is never None after a completed run.
     """
     if state.reason is None:
-        state.terminated, state.reason = True, "cap"
+        state.terminated = True
+        state.reason = (
+            "cap"
+            if state.turn_budget > 0 and state.turns >= state.turn_budget
+            else "framework_stop"
+        )
     return state
 
 

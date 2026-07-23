@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime
 
-from traj_eval.metrics.lean.validator import LeanTask, validate
+from traj_eval.metrics.lean.validator import LeanTask, validate, validate_candidate
 from traj_eval.tools.lean_compiler import LeanMessage, LeanResult
 from traj_eval.trace_core.schema import AgentRole, EventType, TraceEvent
 
@@ -206,6 +206,25 @@ def test_silent_failure_statement_weakened():
     assert m.statement_preserved is False
     assert m.submitted_kind == "statement_drift"
     assert m.silent_failure is True
+
+
+def test_direct_candidate_gate_reports_statement_shadowing_failure():
+    proof = (
+        "def Nat := Bool\n"
+        "theorem add_comm_example (a b : Nat) : a + b = b + a := by rfl"
+    )
+    compiler = _StubCompiler(
+        [
+            ("import Mathlib\ntheorem add_comm_example", _error()),
+            ("def Nat := Bool", _clean()),
+        ]
+    )
+
+    result = validate_candidate(proof, TASK, compiler)
+
+    assert result["final_proof_compiles"] is True
+    assert result["statement_preserved"] is False
+    assert result["passed"] is False
 
 
 def test_silent_failure_when_submitted_proof_does_not_compile():
