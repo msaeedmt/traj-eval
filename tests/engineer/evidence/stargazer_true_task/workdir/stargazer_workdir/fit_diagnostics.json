@@ -5,7 +5,7 @@
   "m_sin_i_mjup": 152.01071030276688,
   "residual_rms_ms": 35.686705879692425,
   "sigma_jitter_ms": 35.686705879692425,
-  "submission_path": "C:\\Dev\\src\\github.com\\msaeedmt\\traj-eval\\tests\\engineer\\evidence\\stargazer_true_task\\workdir\\stargazer_workdir\\agent_submission.json",
+  "submission_path": "<repo>\\tests\\engineer\\evidence\\stargazer_true_task\\workdir\\stargazer_workdir\\agent_submission.json",
   "observation_count": 639,
   "instrument_count": 6,
   "time_range_days": [

@@ -14,7 +14,7 @@
 - Worker timeout seconds: 180
 - Provider-internal retries: 0
 - Recorded outer infrastructure retries: at most 1 per slot
-- Retrieval-only no-progress threshold: 8 completed Reasoner search_lemmas calls, evaluated after each executor batch; a parallel batch may cross the threshold and is counted exactly
+- Retrieval-only no-progress threshold: 8 completed Reasoner search_lemmas calls, evaluated after each tool-runtime batch (`executor` in the legacy trace schema); a parallel batch may cross the threshold and is counted exactly
 - Conservative maximum model calls: 4002
 - Lean project: `dataset/Lean`
 - Provider configuration: `<local-provider-config>` (credentials not copied)
@@ -22,12 +22,14 @@
 ## Output layout
 
 - logs/: one console log per executed stage
-- smoke/controller_stuck/: planner and Engineer stuck-routing probes
-- smoke/arm_smoke/: one matched trial per task and arm
-- <arm>/: official JSONL traces, summary.json, and RESULTS.md
-- analysis/: paired statistics and COMPARISON.md
-- run_manifest.json: machine-readable official-run manifest
-- COMPLETED.md or FAILED.md: terminal launcher status
+- smoke/controller_stuck/: Reasoner and Engineer stuck-routing probes
+- `data/batch/.../smoke/arm_smoke/<arm>/`: one raw JSONL per task and arm
+- `data/analysis/.../smoke/arm_smoke/<arm>/summary.json`: arm summaries
+- `data/analysis/.../smoke/arm_smoke/metrics.json`: paired statistics
+- `docs/experiments/.../smoke/arm_smoke/<arm>/RESULTS.md`: arm reports
+- `docs/experiments/.../smoke/arm_smoke/COMPARISON.md`: comparison report
+- `data/batch/.../run_manifest.json`: machine-readable run provenance
+- `data/batch/.../COMPLETED.md` or `FAILED.md`: terminal launcher status
 
 ## Claim boundary
 
@@ -35,4 +37,7 @@ This run was produced at commit `41cc85f` before the later local
 stall-handoff implementation. It is baseline routing-ablation evidence, not
 validation of `recovery_triangle_stall_handoff_v1`.
 
-This two-task, one-model experiment can identify routing burden, safety defects, and a promising recovery effect. It cannot establish overall NLP-proposal improvement without broader repeated tasks and a single-agent control.
+Observed arm-smoke result: `legacy_deterministic` solved 1/2 tasks; each other
+arm solved 0/2, with exact McNemar p = 1.0. This is descriptive pilot evidence
+only. It does not establish a recovery effect, architecture improvement, or
+proposal-wide result.

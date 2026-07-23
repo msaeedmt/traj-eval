@@ -16,7 +16,7 @@ agents — across two testbeds with contrasting step-checkability:
 * **Lean 4** theorem proving (step-verifiable; kernel ground truth)
 * **Astrophysical inference** (partially step-verifiable; Stargazer forward model)
 
-See `docs/SETUP.md` for the full environment setup and `docs/ARCHITECTURE.md`
+See `docs/guides/SETUP.md` for the full environment setup and `docs/ARCHITECTURE.md`
 for the module map and the framework-agnostic vs. domain-adaptable split.
 
 ## Quick start

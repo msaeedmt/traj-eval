@@ -3,15 +3,15 @@
   "generated_on": "2026-07-15",
   "branch": "Han",
   "branch_roles": {
-    "Han": "private Engineer sources, contained experiments, sanitized results, and educational interpretation",
-    "Science-Work-Flow-": "read-only private experiment warehouse and history source",
-    "experiment/qwen-tool-routed-subgoals": "read-only tool-routed evidence",
-    "han-lean-anchors-merge": "public current tree containing validated Lean artifacts and an independent model boundary"
+    "Han": "personal experiment branch with contained experiments, sanitized results, and educational interpretation",
+    "external_private_archive": "read-only historical experiment source outside this repository",
+    "archive/qwen-tool-routed-subgoals": "planned annotated provenance tag for the superseded tool-routed source branch",
+    "han-lean-anchors-merge": "gated integration branch containing validated Lean artifacts and an independent model boundary"
   },
   "research_coverage": {
     "deduplicated_task_count": 73,
     "traj_eval_task_count": 33,
-    "science_work_flow_task_count": 40,
+    "external_archive_task_count": 40,
     "canonical_rollouts_semantically_parsed": 73,
     "missing_or_inaccessible_rollouts": 0,
     "raw_chat_bodies_committed": false,
@@ -121,13 +121,13 @@
   },
   "decision": {
     "private_branch": "preserve Engineer sources and experiment conclusions on Han",
-    "public_branch": "archive dormant runtime and Engineer packages while retaining validated Lean support and the independent model boundary",
+    "integration_boundary": "treat the dormant generic runtime and Engineer packages as historical compatibility code, without inferring a benefit for the active Lean path",
     "history_rewrite": false,
     "e491473_retained": true
   },
   "claim_boundary": {
     "strengths": [
-      "matched retrieval intervention",
+      "matched retrieval-intervention design",
       "external Lean kernel verdict",
       "deterministic runtime-truthfulness checks"
     ],

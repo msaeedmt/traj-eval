@@ -27,12 +27,13 @@ engineer-to-reasoner or critic-to-engineer handoffs. A role transition alone is
 not communication: three engineer-to-reasoner transitions came from runtime
 fallbacks and carried no `handoff_target` evidence.
 
-### Science-Work-Flow warehouse
+### External historical archive
 
-The broader Qwen history is not a matched Lean comparison, but it identifies
-the risks the pilot should expose: format fragility, premature convergence,
-perseveration/reasoning loops, environment-tool failures, and critic masking.
-Provider health is mixed, so every live run requires a redacted preflight.
+The broader Qwen history in the external archive is not a matched Lean
+comparison, but it identifies risks the pilot should expose: format fragility,
+premature convergence, perseveration/reasoning loops, environment-tool
+failures, and critic masking. Provider health is mixed, so every live run
+requires a redacted preflight.
 
 ## Experimental Contract
 
@@ -49,6 +50,8 @@ tool, returns its result, and stops a stuck run; Qwen owns every semantic route.
 The focused E1 setup tests one stronger mechanism: after three failed proof
 compiles on one subgoal, the runtime visibly routes back to the reasoner. The
 runtime chooses only the recovery role, not the revised mathematical strategy.
+Reasoner, Engineer, and Critic are the only reasoning agents. Tool execution and
+deterministic gates belong to the non-agent runtime.
 
 ## Agent Setup Ladder
 
@@ -113,37 +116,36 @@ change or a tool change, never both at once.
 
 E1 intentionally changes routing, state, and review gates together. It is
 therefore a mechanism-feasibility study, not a causal architecture comparison.
-Its traces can support O1 localization and O2 taxonomy refinement, but cannot
-support O3 improvement claims.
+Its traces exercise instrumentation relevant to exploratory O1 event
+localization and O2 taxonomy refinement, but do not validate localization or
+detector quality and cannot support O3 improvement claims.
 
 ## Pilot Output
 
-The ignored output directory is:
+The A2 output contract separates raw, derived, and narrative artifacts:
 
 ```text
-data/experiments/qwen_recovery_triangle_v1/
-  <task_id>_t0.jsonl
-  summary.json
-  summary.md
+data/batch/qwen_recovery_triangle_v1/<task_id>_t0.jsonl
+data/analysis/qwen_recovery_triangle_v1/summary.json
+docs/experiments/qwen_recovery_triangle_v1/summary.md
 ```
 
 `TrialMeta` records setup, prompt revision, routing policy, tools, model, and
 turn cap. The raw trace schema remains `0.2.0` and old traces remain readable.
 
-The E1 ignored output directory is:
+The E1 output contract uses the same separation:
 
 ```text
-data/experiments/qwen_tool_routed_subgoals_v1/
-  easy_fatem_115_t0.jsonl
-  easy_fatem_115_t1.jsonl
-  easy_fatem_115_t2.jsonl
-  summary.json
-  summary.md
+data/batch/qwen_tool_routed_subgoals_v1/easy_fatem_115_t0.jsonl
+data/batch/qwen_tool_routed_subgoals_v1/easy_fatem_115_t1.jsonl
+data/batch/qwen_tool_routed_subgoals_v1/easy_fatem_115_t2.jsonl
+data/analysis/qwen_tool_routed_subgoals_v1/summary.json
+docs/experiments/qwen_tool_routed_subgoals_v1/summary.md
 ```
 
 E1 is bounded to 80 routing decisions, three consecutive failed proof compiles
 before forced reasoner recovery, and two forced replans per trial. Existing
-`data/batch` and A2 traces are read-only experiment history.
+retained traces are read-only experiment history.
 
 ## Decision Rule
 
@@ -174,9 +176,10 @@ all ten local traces with the Lean validator. Results:
 - Two critics approved artifacts that failed offline validation.
 
 The deterministic gate therefore selects A3, `on_demand_strategy_critic`, as
-the next experiment. This is O1/O2 pilot evidence only; O3 remains unclaimed.
-The local evidence is in
-`data/experiments/qwen_recovery_triangle_v1/summary.json`.
+the next experiment. These are descriptive pilot observations relevant to O1
+and O2 instrument design, not validated localization or detector-quality
+results; O3 remains unclaimed. The derived summary belongs at
+`data/analysis/qwen_recovery_triangle_v1/summary.json`.
 
 ## E1 Focused Pilot Result
 
@@ -196,8 +199,10 @@ Across the three trials, Qwen produced 19 tool handoffs, four forced
 recoveries, three recorded strategy revisions, 15 failed compiler results, 14
 successful compiler/reviewer results, one critic rejection, and three accepted
 subgoals. There were zero solved trials. One runtime completion was critic
-masking because offline statement preservation failed. This is O1/O2 evidence;
-it is not an O3 architecture-improvement result.
+masking because offline statement preservation failed. This is descriptive
+instrumentation evidence relevant to exploratory O1/O2 analysis; it does not
+validate localization, taxonomy-detector quality, or an O3 architecture
+improvement.
 
 ### Mathematical Diagnosis
 
@@ -226,11 +231,12 @@ branch. Their longest paths covered every event: 23/23 edges for t0, 79/79 for
 t1, and 74/74 for t2. AG2 still executed one speaker/tool at a time, so each
 trace is a serial chain over a branched subgoal-state DAG.
 
-This distinction matters for the proposal. E1 localizes recovery and critic
-failure in a graph (O1) and adds useful coordination labels (O2), but it does
-not test parallel or branching reasoning. A later branching experiment needs
-isolated engineer attempts or explicit multi-parent dependency edges; more
-role revisits alone do not create a branching causal graph.
+This distinction matters for the proposal. E1 records event-level recovery and
+critic failures that can be inspected for exploratory O1 localization and O2
+taxonomy work, but it does not validate either objective or test parallel or
+branching reasoning. A later branching experiment needs isolated engineer
+attempts or explicit multi-parent dependency edges; more role revisits alone do
+not create a branching causal graph.
 
 ### Implemented Hardening
 
@@ -247,9 +253,11 @@ failures:
 - JSONL writes flush per event, and future traces end with a causal system
   event recording `clean`, `cap`, `stuck`, or `framework_stop`.
 
-Historical E1 traces are not rewritten. The local evidence remains in
-`data/experiments/qwen_tool_routed_subgoals_v1/`; the interrupted observability
-audit is preserved separately under its `aborted/` directory.
+Historical E1 traces are not rewritten. Their pre-consolidation paths remain
+part of the frozen report manifest and external recovery record. Any promoted
+raw traces belong under `data/batch/qwen_tool_routed_subgoals_v1/`; derived
+summaries and narrative belong under `data/analysis/` and `docs/`,
+respectively.
 
 ### Low-Token Specialist Direction
 
@@ -261,7 +269,7 @@ with explicit response budgets, recorded in `TrialMeta`:
 reasoner: short strategy/revision budget
 engineer: moderate proof/tool budget
 critic: short evidence-review budget
-executor and gates: deterministic, zero LLM tokens
+tool runtime and gates: deterministic, zero LLM tokens
 ```
 
 Do not switch provider models silently. A matched budget experiment should add
@@ -286,10 +294,17 @@ shared proof memory.
 
 ## E1.1 Medium Slice
 
-The next authorized run is specified in
-`docs/reports/QWEN_MEDIUM_SUBGOAL_EXPERIMENT.md`: two pre-registered medium tasks, ten
-trials each, with Codex Ultra outside the measured trial and low-token Qwen
-specialists inside it. Each new trace persists the controller's reasoner-owned
-plan and revision history, while `summary.json` exposes compact graph and plan
-facts for deterministic exploration. This remains an O1/O2 feasibility slice;
-O3 is not claimed.
+The completed medium slice followed
+`docs/reports/QWEN_MEDIUM_SUBGOAL_EXPERIMENT.md`: two pre-registered medium
+tasks, ten trials each, with Codex Ultra outside the measured trial and
+low-token Qwen specialists inside it. Each trace persists the controller's
+reasoner-owned plan and revision history, while `summary.json` exposes compact
+graph and plan facts for deterministic exploration. All 20 recorded outcomes
+are unsolved, with zero independently verified final proofs. Retained raw
+traces, the derived summary, and narrative are under
+`data/batch/qwen_medium_subgoals_v1/`,
+`data/analysis/qwen_medium_subgoals_v1/`, and
+`docs/experiments/qwen_medium_subgoals_v1/`, respectively. This is a
+descriptive instrumentation result and negative evidence under the tested
+conditions; it does not validate localization or detector quality, and O3 is
+not claimed.

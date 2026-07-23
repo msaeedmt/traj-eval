@@ -1,8 +1,10 @@
 # Lean Trajectory Failure Analysis Guide
 
 This guide defines the evidence contract for diagnosing the 100 existing Lean
-agent traces in **data/batch/**. It is an analysis of immutable runs, not a
-claim that every possible agent failure has been enumerated.
+agent traces in **data/batch/version_1_trial_traces/**. It is an analysis of
+immutable runs, not a claim that every possible agent failure has been
+enumerated. The reasoning roles are Reasoner, Engineer, and Critic. Historical
+`executor` events record a non-agent tool runtime, not a fourth reasoning agent.
 
 No published taxonomy is exhaustive. The report therefore uses a layered,
 multi-label model: an observed compiler symptom, its supported causal
@@ -11,8 +13,9 @@ rest of the trajectory are stored separately.
 
 ## Scientific status
 
-This dataset is the fully step-verifiable Lean comparison in the trajectory
-proposal, but only the kernel can supply final proof truth.
+Lean is the fully step-verifiable testbed in the trajectory proposal, but only
+an available independent kernel check can supply final proof truth for a
+specific candidate.
 
 - **O1 — localisation: partial evidence.** Event IDs and causal edges exist, but
   all raw event anchors are null. The report may localise reviewed incidents to
@@ -22,8 +25,8 @@ proposal, but only the kernel can supply final proof truth.
   claim the proposal's precision/recall target of 0.8.
 - **O3 — comparison/early warning: not tested.** These traces use one
   architecture, backbone, grounding setting, and stress level.
-- **Warehouse evidence used:** the private warehouse has no matched Lean control
-  for this slice. STARGAZER rankings are excluded from Lean counts.
+- **External archive evidence used:** the historical archive has no matched Lean
+  control for this slice. STARGAZER rankings are excluded from Lean counts.
 
 The reviewed trace-only partition is 55 approved exact-target candidates, four
 approved statement drifts, one exact target without critic approval, and 40

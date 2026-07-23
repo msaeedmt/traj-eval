@@ -12,10 +12,13 @@ the same domain-agnostic controller and remain separately named in TrialMeta.
 Historical coordination triangle:
 
     reasoner --HANDOFF--> engineer
-    engineer --TOOL: check_lean--> (executor) --> engineer
+    engineer --TOOL: check_lean--> (tool runtime) --> engineer
     engineer --HANDOFF--> {critic, reasoner}
-    critic   --TOOL: check_lean--> (executor) --> critic
+    critic   --TOOL: check_lean--> (tool runtime) --> critic
     critic   --HANDOFF--> engineer   |   VERDICT: APPROVE (terminate)
+
+The tool runtime is not a reasoning agent. Historical schema events retain the
+``executor`` role value for compatibility with recorded traces.
 
 Each role's allowed targets/tools are the ALLOWED sets; the gap between allowed
 and what an agent actually expresses is the coordination signal the run records.

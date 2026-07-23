@@ -10,35 +10,35 @@ from inspect import signature
 from types import SimpleNamespace
 
 import pytest
-
 import scripts.run_batch as run_batch_module
-from traj_eval.agents import lean_team
-from traj_eval.agents import make_trial_meta
+from scripts.run_batch import (
+    TrialOutcome,
+    _assert_summary_paths_available,
+    _assert_trace_path_available,
+    _build_run_summary,
+    _configure_console,
+    _explore_trace,
+    _explore_traces,
+    _recorded_termination,
+    _report,
+    _resolve_worker_thinking,
+    _summary_stem,
+    _task_prompt,
+    _trace_is_analyzable,
+    _trace_is_valid,
+    _trace_path,
+    _trial_config,
+    _trial_key,
+    _write_summary,
+    run_one_trial,
+)
+
+from traj_eval.agents import lean_team, make_trial_meta
 from traj_eval.agents.lean_team import (
     RECOVERY_TRIANGLE_NO_RETRIEVAL_V1,
     RECOVERY_TRIANGLE_STALL_HANDOFF_V1,
     RECOVERY_TRIANGLE_V1,
     TOOL_ROUTED_SUBGOALS_V1,
-)
-from scripts.run_batch import (
-    TrialOutcome,
-    _build_run_summary,
-    _assert_trace_path_available,
-    _configure_console,
-    _explore_trace,
-    _explore_traces,
-    _report,
-    _recorded_termination,
-    _resolve_worker_thinking,
-    _summary_stem,
-    _task_prompt,
-    _trace_is_analyzable,
-    _trace_path,
-    _trace_is_valid,
-    _trial_config,
-    _trial_key,
-    _write_summary,
-    run_one_trial,
 )
 from traj_eval.dataset.loader import ProblemRecord
 from traj_eval.metrics.communication import CommunicationSummary
@@ -490,9 +490,40 @@ def test_run_summary_uses_recovery_decision_gate(tmp_path):
     assert summary["decision"] == "scale_recovery_triangle_to_10_trials"
     assert summary["communication"]["productive_recovery_trials"] == 1
 
-    _write_summary(tmp_path, summary)
-    assert (tmp_path / "summary.json").is_file()
-    assert "O3" in (tmp_path / "summary.md").read_text(encoding="utf-8")
+    analysis_dir = tmp_path / "analysis"
+    docs_dir = tmp_path / "docs"
+    _write_summary(analysis_dir, docs_dir, summary)
+    assert (analysis_dir / "summary.json").is_file()
+    assert not (analysis_dir / "summary.md").exists()
+    assert "O3" in (docs_dir / "summary.md").read_text(encoding="utf-8")
+    assert not (docs_dir / "summary.json").exists()
+
+
+def test_summary_outputs_are_write_once_and_preflight_all_targets(tmp_path):
+    summary = _build_run_summary(
+        [],
+        expected_trials=0,
+        setup=TOOL_ROUTED_SUBGOALS_V1,
+        model="qwen",
+        errors=[],
+    )
+    analysis_dir = tmp_path / "analysis"
+    docs_dir = tmp_path / "docs"
+    collision = docs_dir / "summary.md"
+    collision.parent.mkdir(parents=True)
+    collision.write_text("preserve", encoding="utf-8")
+
+    with pytest.raises(FileExistsError, match="derived evidence"):
+        _assert_summary_paths_available(
+            analysis_dir,
+            docs_dir,
+            TOOL_ROUTED_SUBGOALS_V1,
+        )
+    with pytest.raises(FileExistsError, match="derived evidence"):
+        _write_summary(analysis_dir, docs_dir, summary)
+
+    assert collision.read_text(encoding="utf-8") == "preserve"
+    assert not (analysis_dir / "summary.json").exists()
 
 
 def test_run_summary_is_incomplete_when_expected_trials_are_missing():
@@ -823,16 +854,18 @@ def test_no_retrieval_summary_does_not_overwrite_baseline(tmp_path):
         model="probe",
     )
 
-    _write_summary(tmp_path, baseline)
-    _write_summary(tmp_path, ablation)
+    analysis_dir = tmp_path / "analysis"
+    docs_dir = tmp_path / "docs"
+    _write_summary(analysis_dir, docs_dir, baseline)
+    _write_summary(analysis_dir, docs_dir, ablation)
 
-    assert (tmp_path / "summary.json").is_file()
-    assert (tmp_path / "summary.md").is_file()
+    assert (analysis_dir / "summary.json").is_file()
+    assert (docs_dir / "summary.md").is_file()
     assert (
-        tmp_path / "summary__recovery_triangle_no_retrieval_v1.json"
+        analysis_dir / "summary__recovery_triangle_no_retrieval_v1.json"
     ).is_file()
     assert (
-        tmp_path / "summary__recovery_triangle_no_retrieval_v1.md"
+        docs_dir / "summary__recovery_triangle_no_retrieval_v1.md"
     ).is_file()
 
 

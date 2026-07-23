@@ -1,9 +1,14 @@
-"""The four-role agents for the multi-agent configuration (Methodology §4.1).
+"""Historical four-role compatibility agents (Methodology §4.1).
 
 Roles are added one at a time and exercised in the smallest context where each
 is actually testable. Step 1a: planner. Step 1b: + engineer.
 Step 1c: + critic (terminal judge). Step 1d: + executor/repairer and the
 four-role group chat with the genuine repair loop (critic REJECT -> engineer).
+
+Planner and the LLM-backed Executor/Repairer are historical reasoning roles.
+Current Lean experiments use Reasoner, Engineer, and Critic; their tool calls
+are executed by a non-agent runtime. The legacy identifiers remain unchanged so
+old traces and APIs stay readable.
 
 The role *names* deliberately mirror ``traj_eval.trace_core.schema.AgentRole``
 so that when the observer (Step 2) tags events, an agent's name maps onto its
@@ -90,7 +95,7 @@ Rules:
 
 
 def make_planner(llm_config: LLMConfig) -> ConversableAgent:
-    """Create the planner agent.
+    """Create the historical planner compatibility agent.
 
     ``human_input_mode='NEVER'`` so it runs unattended; the agent name is the
     schema role string, keeping agent identity and trace role aligned.
@@ -408,7 +413,7 @@ Rules:
 
 
 def make_executor(llm_config: LLMConfig) -> ConversableAgent:
-    """Create the executor / repairer agent.
+    """Create the historical LLM-backed executor / repairer agent.
 
     Owns the "run loop" stage. On the toy task it simulates execution and
     confirms the approved answer; once a real sandbox is wired (later step) it

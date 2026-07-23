@@ -38,7 +38,7 @@ from traj_eval.trace_core.graph import build_graph, causal_order
 from traj_eval.trace_core.schema import AgentRole, EventType, TraceEvent
 from traj_eval.trace_core.storage import read_trial
 
-DEFAULT_INPUT_DIR = Path("data/batch")
+DEFAULT_INPUT_DIR = Path("data/batch/version_1_trial_traces")
 DEFAULT_DATASET_ROOT = Path("dataset/Lean")
 DEFAULT_REVIEWS = Path("data/analysis/lean_easy_failure_reviews.jsonl")
 DEFAULT_OUT_CSV = Path("data/analysis/lean_easy_failure_patterns.csv")
@@ -109,7 +109,7 @@ PROPOSAL_GROUNDING = (
     "O2 labels are agent-reviewed and detector precision/recall is untested; "
     "O3 is not tested on this single configuration."
 )
-MD_GROUNDING = "Taxonomy: docs/LEAN_FAILURE_ANALYSIS_GUIDE.md."
+MD_GROUNDING = "Taxonomy: docs/guides/LEAN_FAILURE_ANALYSIS_GUIDE.md."
 
 CONFIDENCE_LEVELS = frozenset({"confirmed", "strong", "tentative", "not_observable"})
 CANDIDATE_KINDS = frozenset({"exact_target", "statement_drift", "helper_or_probe", "none"})

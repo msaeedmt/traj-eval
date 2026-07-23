@@ -22,7 +22,8 @@ Outcome classification (mutually exclusive, checked in order):
 Usage:
     TRAJ_EVAL_MODEL=gpt-4o uv run python scripts/run_batch.py --difficulty easy --trials 3
     TRAJ_EVAL_MODEL=gpt-4o uv run python scripts/run_batch.py --difficulty easy medium --trials 3
-    TRAJ_EVAL_MODEL=gpt-4o uv run python scripts/run_batch.py --difficulty easy --trials 10 --skip-existing
+    uv run python scripts/run_batch.py --difficulty easy --trials 10 \
+        --summarize-existing --analysis-dir <fresh-analysis> --docs-dir <fresh-docs>
     uv run python scripts/run_batch.py --dry-run          # list what would run
 """
 
@@ -32,8 +33,8 @@ import argparse
 import json
 import os
 import sys
-from collections.abc import Iterable
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -69,6 +70,8 @@ DATASET_ROOT = Path("dataset/Lean")
 PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
 LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
+ANALYSIS_DIR = Path("data/analysis")
+DOCS_DIR = Path("docs/experiments")
 
 
 def _trial_config(
@@ -190,6 +193,35 @@ def _summary_stem(setup: str) -> str:
     if setup in (RECOVERY_TRIANGLE_V1, TOOL_ROUTED_SUBGOALS_V1):
         return "summary"
     return f"summary__{setup}"
+
+
+def _summary_paths(
+    analysis_dir: Path,
+    docs_dir: Path,
+    setup: str,
+) -> tuple[Path, Path]:
+    """Return the write-once machine-readable and narrative summary paths."""
+    stem = _summary_stem(setup)
+    return analysis_dir / f"{stem}.json", docs_dir / f"{stem}.md"
+
+
+def _assert_summary_paths_available(
+    analysis_dir: Path,
+    docs_dir: Path,
+    setup: str,
+) -> None:
+    """Fail before a run rather than overwrite any derived evidence."""
+    collisions = [
+        path.resolve()
+        for path in _summary_paths(analysis_dir, docs_dir, setup)
+        if path.exists()
+    ]
+    if collisions:
+        paths = "\n".join(str(path) for path in collisions)
+        raise FileExistsError(
+            "refusing to overwrite existing derived evidence; use fresh "
+            f"analysis/docs directories:\n{paths}"
+        )
 
 
 @dataclass
@@ -641,6 +673,18 @@ def main() -> int:
         help="named Lean agent setup recorded in TrialMeta",
     )
     ap.add_argument("--output-dir", type=Path, default=LOG_DIR, help="isolated trace directory")
+    ap.add_argument(
+        "--analysis-dir",
+        type=Path,
+        default=ANALYSIS_DIR,
+        help="reproducible JSON summary directory",
+    )
+    ap.add_argument(
+        "--docs-dir",
+        type=Path,
+        default=DOCS_DIR,
+        help="human-readable Markdown summary directory",
+    )
     ap.add_argument("--max-turns", type=int, default=30, help="routing decision budget")
     ap.add_argument(
         "--worker-model",
@@ -704,11 +748,14 @@ def main() -> int:
     if args.dry_run:
         print(
             f"Would run setup={args.setup}: {len(records)} problems x {args.trials} trials "
-            f"into {args.output_dir}:"
+            f"with raw={args.output_dir}, analysis={args.analysis_dir}, "
+            f"docs={args.docs_dir}:"
         )
         for r in records:
             print(f"  {r.id:22s} {r.source:8s} {r.difficulty}")
         return 0
+
+    _assert_summary_paths_available(args.analysis_dir, args.docs_dir, args.setup)
 
     print(f"Starting REAL Lean compiler against {PROJECT_DIR}...")
     from traj_eval.tools.lean_cli_compiler import LeanCliCompiler
@@ -856,7 +903,7 @@ def main() -> int:
         args.setup,
     )
     _report(outcomes, summary)
-    _write_summary(args.output_dir, summary)
+    _write_summary(args.analysis_dir, args.docs_dir, summary)
     return 0
 
 
@@ -984,8 +1031,8 @@ def _build_run_summary(
         "communication": communication,
         "decision": decision,
         "proposal_status": {
-            "O1": "pilot evidence for explicit handoff localisation",
-            "O2": "pilot evidence for coordination and recovery labels",
+            "O1": "descriptive instrumentation only; localisation quality was not validated",
+            "O2": "descriptive coordination labels only; detector quality was not validated",
             "O3": "not claimed from this feasibility pilot",
         },
         "errors": errors,
@@ -1003,10 +1050,16 @@ def _build_run_summary(
     }
 
 
-def _write_summary(output_dir: Path, summary: dict) -> None:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    summary_stem = _summary_stem(summary["setup"])
-    (output_dir / f"{summary_stem}.json").write_text(
+def _write_summary(analysis_dir: Path, docs_dir: Path, summary: dict) -> None:
+    _assert_summary_paths_available(analysis_dir, docs_dir, summary["setup"])
+    analysis_dir.mkdir(parents=True, exist_ok=True)
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    json_path, markdown_path = _summary_paths(
+        analysis_dir,
+        docs_dir,
+        summary["setup"],
+    )
+    json_path.write_text(
         json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
     )
     communication = summary["communication"]
@@ -1054,9 +1107,7 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
             "It does not support an O3 architecture-improvement claim.",
         ]
     )
-    (output_dir / f"{summary_stem}.md").write_text(
-        "\n".join(lines) + "\n", encoding="utf-8"
-    )
+    markdown_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _report(outcomes: list[TrialOutcome], summary: dict) -> None:

@@ -1,11 +1,12 @@
 # Han V4 Lean Routing Ablation
 
-Status: preregistered and locally validated; no live Qwen trial has run yet.
+Status: harness and test gates passed. One completed two-task by four-arm
+Qwen smoke bundle is retained; the official 160-trial study has not run.
 
-This private `Han-experiment` study asks whether routing policy changes recovery
-on two weak V1 tasks without changing the mathematical workers or their tools.
-The historical evidence reports `easy_fatem_019` at 0/10 solved and
-`easy_fatem_020` at 3/10 solved.
+This historical V4 study, now retained on `Han`, asks whether routing policy
+changes recovery on two weak V1 tasks without changing the mathematical
+workers or their tools. The historical V1 evidence reports
+`easy_fatem_019` at 0/10 solved and `easy_fatem_020` at 3/10 solved.
 
 ## Fixed substrate
 
@@ -13,8 +14,9 @@ The historical evidence reports `easy_fatem_019` at 0/10 solved and
 - Model: one explicitly selected Qwen OpenAI-compatible backend for every role.
 - Worker roles: Reasoner (the Lean planner-equivalent), Engineer, Critic.
 - Tools: `check_lean`, `search_lemmas`, `try_tactic`, `show_goals`.
-- Kernel tools: exact validated source/tests from
-  `han-lean-anchors-merge@45f0ab1`.
+- Kernel tools: source/tests recorded at
+  `han-lean-anchors-merge@45f0ab1`; this is provenance, not a promotion
+  instruction.
 - Imports: `import Mathlib`.
 - Worker output cap: 1,500 tokens; controller output cap: 128 tokens.
 - Maximum worker turns: 200.
@@ -61,8 +63,10 @@ its original JSONL and receives at most one `_retry1.jsonl`; an agent failure is
 never retried. Generated `RESULTS.md`, `summary.json`, and `run_manifest.json`
 are written only after the selected run completes.
 
-The existing 100 V1 JSONL files in `data/batch` and the default path in
-`scripts/run_batch.py` are not changed by this experiment.
+The 100 V1 JSONL files are retained under
+`data/batch/version_1_trial_traces/`. New raw, analysis, and human-readable
+outputs are separated under `data/batch/`, `data/analysis/`, and
+`docs/experiments/`.
 
 Provider credentials and endpoint are read without modification from the file
 named by `TRAJ_EVAL_PROVIDER_ENV` (the CLI override is equivalent). They are
@@ -71,7 +75,7 @@ passed directly into the in-memory AG2 configuration; the runner sets only
 
 ## Claim boundary
 
-This experiment can compare recovery, kernel-validated success, calls, latency,
-tool failure, and coordination behavior on the two selected tasks. It cannot
-establish overall NLP-proposal improvement without a broader task sample and a
-single-agent control.
+The retained smoke bundle is descriptive pilot evidence about routing burden,
+kernel-validated outcomes, calls, latency, tool failure, and coordination on
+two selected tasks. It does not establish a recovery effect, architecture
+improvement, or proposal-wide result.

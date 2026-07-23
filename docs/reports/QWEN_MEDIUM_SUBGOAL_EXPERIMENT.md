@@ -67,7 +67,12 @@ A successful `purpose="subgoal"` or `purpose="final"` compile atomically submits
 that candidate and routes it to the critic, preventing verified work from being
 lost to further probes.
 
-## Command
+## Offline reconstruction command
+
+The retained traces can be rescored without any model call by using
+`--summarize-existing`. Derived outputs are write-once, so reconstruction must
+target fresh analysis and documentation directories. A missing or invalid trace
+is recorded as an incomplete input; it is never replaced by a live trial.
 
 ```powershell
 python scripts\run_batch.py `
@@ -76,8 +81,8 @@ python scripts\run_batch.py `
   --trials 10 `
   --setup tool_routed_subgoals_v1 `
   --output-dir data\batch\qwen_medium_subgoals_v1 `
-  --analysis-dir data\analysis\qwen_medium_subgoals_v1 `
-  --docs-dir docs\experiments\qwen_medium_subgoals_v1 `
+  --analysis-dir data\analysis\recomputed\qwen_medium_subgoals_v1 `
+  --docs-dir docs\experiments\recomputed\qwen_medium_subgoals_v1 `
   --max-turns 160 `
   --max-engineer-failures 3 `
   --max-forced-replans 3 `
@@ -87,7 +92,7 @@ python scripts\run_batch.py `
   --critic-max-tokens 2048 `
   --worker-thinking disabled `
   --outer-orchestrator codex_ultra `
-  --skip-existing
+  --summarize-existing
 ```
 
 ## Reading The Result

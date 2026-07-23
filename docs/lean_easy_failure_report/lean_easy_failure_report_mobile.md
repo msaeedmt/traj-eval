@@ -15,7 +15,7 @@ Mobile evidence export generated from one validated CSV/trace/raw-JSONL snapshot
 - Kernel environment: available=100
 - Review confidence: strong=56, tentative=21, confirmed=23
 - Timeline topology: connected linear=97, disconnected=3, branching=0
-- Snapshot SHA-256: `5b10f2f43c77431c7c5f4b60d5b17be983eb9fb38a289b8a9e6eac19496e3e15`
+- Snapshot SHA-256: `0bdec4647e1c5c1cab01e2bbd7f64bbe2294b898910769515fd2facdf8e46eed`
 - Analyzer snapshot SHA-256: `00e3594d0906251d2412e7918e32cb23a06d7f1e2cfd7037c624cba29122cd2c`
 - Warehouse evidence used: no matched Lean control; STARGAZER history is excluded from these counts and no architecture comparison is claimed.
 
@@ -119,11 +119,11 @@ These legacy role/global labels are provisional observations. They may describe 
 
 ## Reproducibility
 
-- Raw traces: `data/batch/*.jsonl`
+- Raw traces: `data/batch/version_1_trial_traces/*.jsonl`
 - Canonical CSV: `data/analysis/lean_easy_failure_patterns.csv`
 - HTML export: `docs/lean_easy_failure_report/lean_easy_failure_report_standalone.html`
 - Markdown export: `docs/lean_easy_failure_report/lean_easy_failure_report_mobile.md`
-- Validated snapshot: `5b10f2f43c77431c7c5f4b60d5b17be983eb9fb38a289b8a9e6eac19496e3e15`
+- Validated snapshot: `0bdec4647e1c5c1cab01e2bbd7f64bbe2294b898910769515fd2facdf8e46eed`
 - Generate both mobile exports: `npm.cmd run build:mobile` from `docs/lean_easy_failure_report`
 
 ## Compact Trial Appendix

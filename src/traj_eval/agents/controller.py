@@ -1,4 +1,4 @@
-"""Per-step controller (Phase 3, Steps 3b-3c; Phase 4, Step 4d).
+"""Legacy per-step compatibility controller (Phase 3/4).
 
 Replaces the single-pass flow with a controller that walks the planner's
 structured plan one sub-task at a time, gating each step through a critic:
@@ -12,14 +12,13 @@ structured plan one sub-task at a time, gating each step through a critic:
       -> END after the last step is approved (or its repair budget is spent)
 
 In-loop compiler (Step 4d, opt-in via ``lean_tool``): the engineer is given a
-deterministic checker as an AG2 tool (``register_function`` with the engineer
-as caller and a mechanical ``executor`` proxy as runner -- this restores the
-proposal's executor role, now as plumbing rather than a reasoning agent). When
-the engineer suggests a call, the selector routes to the executor, then back to
-the engineer to react to the result; this engineer<->executor loop is bounded
-per step by ``max_tool_calls`` so it cannot spin. Only when the engineer
+deterministic checker as an AG2 tool. ``register_function`` uses a mechanical
+proxy whose historical schema name is ``executor``. That proxy is a non-agent
+tool runtime, not a reasoning role. When the engineer suggests a call, the
+selector routes through the proxy and back to the engineer; this tool loop is
+bounded per step by ``max_tool_calls`` so it cannot spin. Only when the engineer
 returns a plain (non-tool) message does the critic review. With no ``lean_tool``
-the executor is absent and behaviour is identical to Steps 3b-3c.
+the proxy is absent and behaviour is identical to Steps 3b-3c.
 
 Note the compiler is now IN the loop (agents use it to solve the task); it is
 no longer an independent anchor oracle. Correctness ground truth moves to an
@@ -148,7 +147,7 @@ def build_stepped_team(
     ),
     max_tool_calls: int = 4,
 ) -> tuple[GroupChatManager, UserProxyAgent, GroupChat]:
-    """Build a per-step team: planner, then engineer->critic per plan sub-task.
+    """Build the legacy Planner-led per-step compatibility team.
 
     Returns (manager, user_proxy, groupchat). Start with
     ``user_proxy.initiate_chat(manager, message=task)``.
@@ -159,11 +158,11 @@ def build_stepped_team(
     (a per-step perseveration outcome) rather than stalling.
 
     If ``lean_tool`` is given, it is registered as an AG2 tool the engineer can
-    call (Step 4d); a mechanical ``executor`` proxy runs it. When the engineer
-    suggests a call the selector routes engineer->executor->engineer, bounded by
-    ``max_tool_calls`` per step, before the critic ever reviews. With no
-    ``lean_tool`` the executor is absent and the flow is exactly Steps 3b-3c.
-    The tool must be deterministic (same code in, same verdict out).
+    call (Step 4d); a non-agent runtime proxy with the legacy ``executor`` schema
+    label runs it. Tool routing is bounded by ``max_tool_calls`` per step before
+    the critic reviews. With no ``lean_tool`` the proxy is absent and the flow
+    is exactly Steps 3b-3c. The tool must be deterministic (same code in, same
+    verdict out).
 
     If a ``step_context`` is passed, the controller mirrors its private
     ``(current_step, repairs)`` onto it whenever they change, so an observer
@@ -185,20 +184,19 @@ def build_stepped_team(
 
     agents = [user, planner, engineer, critic]
 
-    # In-loop compiler (Step 4d): restore the executor, but as a non-LLM runner
-    # for the tool, not a reasoning role. register_function makes the engineer
-    # the caller (its LLM can suggest the call) and the executor the runner.
+    # In-loop compiler (Step 4d): the object named ``executor`` is a non-LLM
+    # tool-runtime proxy retained under its legacy trace label. register_function
+    # makes the engineer the caller and this proxy the mechanical runner.
     executor: UserProxyAgent | None = None
     if lean_tool is not None:
         executor = UserProxyAgent(
             name=AgentRole.EXECUTOR.value,
             human_input_mode="NEVER",
             code_execution_config=False,
-            # The executor must be allowed to auto-reply: running the tool and
-            # returning its result IS an auto-reply. With 0 it is selected but
-            # declines to act, and the run terminates. The selector still gates
-            # how often it speaks (per-step max_tool_calls), so a generous cap
-            # here does not let it run away.
+            # The tool-runtime proxy must be allowed to auto-reply: running the
+            # tool and returning its result is an AG2 auto-reply. With 0 it is
+            # selected but declines to act, and the run terminates. The selector
+            # still gates how often it runs (per-step max_tool_calls).
             max_consecutive_auto_reply=max_tool_calls + 1,
         )
         register_function(

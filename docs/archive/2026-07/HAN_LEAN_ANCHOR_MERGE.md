@@ -1,7 +1,12 @@
 # Han / Lean Anchor Research Record
 
-This document is the sanitized research record for the private `Han` branch. It
-explains which work is active Lean infrastructure, which work is a private
+> **Archived historical record.** This document preserves the boundary and
+> evidence interpretation used during the July 2026 consolidation. Current
+> product and branch policy is defined by `CODEX.md` and
+> `docs/idea/concept.md`.
+
+This document is the sanitized research record for the personal `Han` branch.
+It explains which work is active Lean infrastructure, which work is a personal
 experiment, and what the available evidence can and cannot support. It contains
 no raw chat bodies, credentials, personal material, or copied tool transcripts.
 
@@ -9,30 +14,35 @@ no raw chat bodies, credentials, personal material, or copied tool transcripts.
 
 | Surface | Research role |
 |---|---|
-| `Han` | Private Engineer sources, contained experiments, sanitized results, and educational interpretation |
-| `experiment/qwen-tool-routed-subgoals` | Read-only evidence for tool-routed experiments |
-| `han-lean-anchors-merge` | Public current tree: validated Lean workflow and independent model boundary only |
-| `Science-Work-Flow-` | Read-only private warehouse and historical experiment source |
+| `Han` | Personal experiments, sanitized results, and educational interpretation |
+| `archive/qwen-tool-routed-subgoals` | Planned annotated tag preserving the superseded tool-routed source tip |
+| `han-lean-anchors-merge` | Separately gated integration branch; no promotion without teammate discussion and explicit approval |
+| External historical archive | Read-only recovery and historical experiment source outside the public repository |
 
-"Pure Lean" describes the current public tree, not rewritten history. The
-private sources remain recoverable from `Han`, and the copied Lean integration
-at `e491473` remains essential. It is a Windows-clean integration snapshot, not
-a merge commit, and must not be reverted as cleanup.
+"Pure Lean" described the integration snapshot at the time of this archived
+analysis, not rewritten history. The copied Lean integration at `e491473`
+remains essential. It is a Windows-clean integration snapshot, not a merge
+commit, and must not be reverted as cleanup.
+
+The current reasoning-agent model has exactly three roles: Reasoner, Engineer,
+and Critic. Historical Planner and Executor/Repairer labels are compatibility
+labels; tool execution is performed by a non-agent runtime.
 
 ## Research coverage
 
-The audit deduplicated exact working-directory task IDs and semantically read all
-73 locally discoverable Codex histories: 33 for `traj-eval` and 40 for
-`Science-Work-Flow-`. No task was missing from the canonical local rollouts.
-Only aggregate decisions and findings are recorded here.
+The pre-consolidation audit deduplicated exact working-directory task IDs and
+reviewed 73 locally discoverable Codex histories: 33 for this repository and 40
+from an external historical archive. It recorded no missing task in the
+canonical local rollout inventory available at that time. Only aggregate
+decisions and findings are recorded here.
 
-The Science-Work-Flow warehouse was queried read-only. Its history shows why
-provider reachability, model output, physical artifacts, critic opinions, and
-external validation must be reported separately. It includes provider failures,
-template-like outputs, artifact mismatches, coordination collapse, and critic
-masking. Those runs are useful diagnostic controls; they are not a matched Lean
-retrieval study and do not prove that a larger runtime improves Lean or the
-overall NLP proposal.
+The external historical archive was queried read-only. Its history illustrates
+why provider reachability, model output, physical artifacts, critic opinions,
+and external validation must be reported separately. It includes provider
+failures, template-like outputs, artifact mismatches, coordination collapse,
+and critic masking. Those runs are diagnostic context; they are not a matched
+Lean retrieval study and do not prove that a larger runtime improves Lean or
+the overall NLP proposal.
 
 ## How the work evolved
 
@@ -40,7 +50,7 @@ overall NLP proposal.
 |---|---|---|
 | `9b3db45` | Initial Qwen JSONL Engineer worker | A task-specific action worker, not a general architecture result |
 | `74ecd5d` | Stargazer Engineer evidence | Actions could be emitted, executed, written, and traced |
-| `1414edf` | Engineer moved under `agents` | Preserved private implementation layout |
+| `1414edf` | Engineer moved under `agents` | Preserved historical implementation layout |
 | `e491473` | Lean anchors copied into the integration line | Essential Lean integration; not a merge to undo |
 | `8932864` | Integration boundary documented | Documentation, not causal evidence |
 | `eb3fb46` | Generic contracts/orchestrator compatibility work | Did not break Lean tests; did not improve the active Lean path |
@@ -54,7 +64,7 @@ not silently mixed into the public cleanup claim.
 
 ## Matched retrieval intervention on `Han`
 
-`recovery_triangle_no_retrieval_v1` is a private ablation setup. Relative to
+`recovery_triangle_no_retrieval_v1` is a personal ablation setup. Relative to
 `recovery_triangle_v1`, it keeps the same roles, prompts, routing policy,
 provider route, tool names, and turn budget. It changes only the result of
 `search_lemmas` to a deterministic retrieval-disabled response. Trial metadata
@@ -62,17 +72,17 @@ records `retrieval_condition`, and the non-baseline arm receives a distinct
 trial ID, trace path, and summary filename so artifacts cannot overwrite or
 silently mix the two arms.
 
-Tests prove that the original setup still receives the original tool mapping,
+Tests check that the original setup still receives the original tool mapping,
 that the ablated setup preserves the search function's name, documentation, and
 signature, and that the two metadata records differ only in the setup and
 retrieval-condition labels. Tests also preserve the legacy baseline trace name
-while proving that the ablation has a distinct identity and path. The fixed
+while checking that the ablation has a distinct identity and path. The fixed
 Lean/routing/communication/analyzer/search
 test set passed 78 tests, and the independent provider-registration probe passed.
 
 ### Contained Codex smoke
 
-The private lab used `gpt-5.4-mini`, low reasoning, existing ChatGPT
+The contained local smoke used `gpt-5.4-mini`, low reasoning, existing ChatGPT
 authentication, no fallback, read-only empty worker state, schema-constrained
 role output, and a fixed LeanCat002 wrapper. The host retained role order and
 Lean validation. Six worker processes were attempted, three per arm.
@@ -105,10 +115,12 @@ were replayed through the current code.
 | hidden evaluation | Excluded from step prompts | Correct boundary |
 | active Lean import graph | 25 nodes, 59 edges, unchanged; no Engineer edge | Engineer/runtime is dormant for active Lean execution |
 
-This is strong evidence of current truthfulness and safety defects and of
-dependency burden. It does not measure broad Engineer task utility. The public
-tree should therefore archive the generic runtime and Engineer package while
-`Han` keeps their original paths for private study and recovery.
+These deterministic replay observations identify truthfulness and safety
+defects in the tested component and show its dependency burden. They do not
+measure broad Engineer task utility. The archived analysis therefore proposed
+removing the dormant generic runtime and Engineer package from the integration
+surface; it is not current authorization to delete either component from
+`Han`.
 
 ## Educational conclusion
 
@@ -130,7 +142,9 @@ contained runner starts successfully.
 
 ## Recovery
 
-Private code remains at its original paths on `Han`. Public cleanup is performed
-as ordinary commits after moving the approved paths to the external archive,
-and each cleanup commit can be reversed with a normal `git revert <commit>`.
-Neither branch history nor `e491473` is rewritten.
+External recovery records preserve approved source material and the
+pre-consolidation branch tips. Cleanup on `Han` is performed as ordinary
+commits, and superseded source tips are preserved as annotated `archive/*`
+tags. Each cleanup commit can be reversed with a normal `git revert <commit>`.
+Promotion to `han-lean-anchors-merge` remains separately gated. Neither branch
+history nor `e491473` is rewritten.

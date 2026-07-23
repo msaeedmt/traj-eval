@@ -12,5 +12,5 @@
   "submission_schema_ok": false,
   "ready_for_evaluation": false,
   "engineer_output_status": "needs_repair",
-  "outputs": "C:\\Dev\\src\\github.com\\msaeedmt\\traj-eval\\notebooks\\qwen_saeed_stargazer_real1\\outputs\\qwen_saeed_agent_stargazer"
+  "outputs": "<repo>\\notebooks\\qwen_saeed_stargazer_real1\\outputs\\qwen_saeed_agent_stargazer"
 }

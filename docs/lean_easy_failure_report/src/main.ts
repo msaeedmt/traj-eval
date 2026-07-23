@@ -953,7 +953,7 @@ function renderReproducibility(snapshot: SnapshotDoc): string {
           <p class="eyebrow dark">Reproducibility</p>
           <h2>Paths And Commands</h2>
         </div>
-        <p class="section-note">Layout follows docs/REPO_LAYOUT_RULES.md.</p>
+        <p class="section-note">Layout follows docs/guides/REPO_LAYOUT_RULES.md.</p>
       </div>
       <div class="terminal-panel">
         <p><span>Raw traces</span> data/batch/version_1_trial_traces/*.jsonl</p>

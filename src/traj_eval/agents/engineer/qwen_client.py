@@ -39,12 +39,11 @@ def redact_config(values: dict[str, str]) -> dict[str, Any]:
 
 
 def resolve_qwen_config(repo: Path, args: argparse.Namespace) -> dict[str, Any]:
-    env_path = Path(
-        args.provider_env
-        or os.getenv("TRAJ_EVAL_PROVIDER_ENV")
-        or repo / "configs" / "qwen.remote.local.env"
-    ).expanduser()
-    loaded = load_env_file(env_path)
+    provider_env = args.provider_env or os.getenv("TRAJ_EVAL_PROVIDER_ENV")
+    env_path = Path(provider_env).expanduser() if provider_env else None
+    if env_path is not None and not env_path.is_file():
+        raise FileNotFoundError(f"Qwen provider environment file not found: {env_path}")
+    loaded = load_env_file(env_path) if env_path is not None else {}
     base_url = (os.getenv("OPENAI_BASE_URL") or os.getenv("OPENAI_API_BASE") or "").strip()
     api_key = (os.getenv("OPENAI_API_KEY") or "").strip()
     model = (
@@ -55,7 +54,7 @@ def resolve_qwen_config(repo: Path, args: argparse.Namespace) -> dict[str, Any]:
         or ""
     ).strip()
     return {
-        "env_path": str(env_path),
+        "env_path": str(env_path) if env_path is not None else None,
         "loaded_redacted": redact_config(loaded),
         "base_url": base_url,
         "api_key_set": bool(api_key),
@@ -90,7 +89,11 @@ def parse_jsonl_actions_text(text: str) -> list[dict[str, Any]]:
         if isinstance(parsed_whole, dict) and "tool" in parsed_whole:
             return [parsed_whole]
         if isinstance(parsed_whole, list):
-            whole_actions = [item for item in parsed_whole if isinstance(item, dict) and "tool" in item]
+            whole_actions = [
+                item
+                for item in parsed_whole
+                if isinstance(item, dict) and "tool" in item
+            ]
             if whole_actions:
                 return whole_actions
     except json.JSONDecodeError:
@@ -162,7 +165,12 @@ def build_qwen_client(repo: Path, args: argparse.Namespace) -> tuple[Any, str, d
     return client, model, config
 
 
-def chat_completion(client: Any, model: str, messages: list[dict[str, str]], args: argparse.Namespace) -> Any:
+def chat_completion(
+    client: Any,
+    model: str,
+    messages: list[dict[str, str]],
+    args: argparse.Namespace,
+) -> Any:
     return client.chat.completions.create(
         model=model,
         messages=messages,

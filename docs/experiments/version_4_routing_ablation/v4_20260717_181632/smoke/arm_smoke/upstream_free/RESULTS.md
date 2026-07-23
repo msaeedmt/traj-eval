@@ -6,7 +6,7 @@
 - Kernel-validated solved: 0
 - Mean model calls: 8.00
 - Maximum retrieval-only streak: 8
-- Reasoner/planner stuck recoveries: 0
+- Reasoner stuck recoveries: 0
 - Engineer strategic replans: 0
 - Engineer local retries: 0
 

@@ -1,5 +1,8 @@
 ﻿param(
     [switch] $SkipRepoGuard,
+    [string] $ProviderEnv = $env:TRAJ_EVAL_PROVIDER_ENV,
+    [string] $CodexHome = $env:QWEN_CODEX_HOME,
+    [string] $CodexBin = $env:QWEN_CODEX_BIN,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]] $CodexArgs
 )
@@ -7,18 +10,18 @@
 $ErrorActionPreference = "Stop"
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$ScienceRoot = "C:\Users\Anwender\Science-Work-Flow-"
-$CodexHome = "C:\Users\Anwender\.codex-qwen-agent-eval"
-$EnvFile = Join-Path $ScienceRoot "configs\cmbagent_eval\provider.local.env"
-$ExpectedRemote = "git@github.com:msaeedmt/traj-eval.git"
-$PreferredCodexBins = @(
-    $env:QWEN_CODEX_BIN,
-    "/mnt/c/Dev/src/github.com/openai/codex/codex-rs/target/release/codex",
-    "/mnt/c/Dev/src/github.com/openai/codex/codex-rs/target/debug/codex",
-    "C:\Dev\src\github.com\openai\codex\codex-rs\target\release\codex.exe",
-    "C:\Dev\src\github.com\openai\codex\codex-rs\target\debug\codex.exe",
-    "C:\Users\Anwender\.vscode\extensions\openai.chatgpt-26.609.30741-win32-x64\bin\windows-x86_64\codex.exe"
-) | Where-Object { $_ }
+if (-not $CodexHome) {
+    $userProfile = [Environment]::GetFolderPath(
+        [Environment+SpecialFolder]::UserProfile
+    )
+    if (-not $userProfile) {
+        throw "Unable to derive a user profile for Qwen CODEX_HOME."
+    }
+    $CodexHome = Join-Path $userProfile ".codex-qwen-agent-eval"
+}
+elseif (-not [System.IO.Path]::IsPathRooted($CodexHome)) {
+    $CodexHome = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $CodexHome))
+}
 
 function Import-AgentEvalEnv {
     param([Parameter(Mandatory = $true)][string] $Path)
@@ -43,35 +46,31 @@ function Import-AgentEvalEnv {
 }
 
 function Resolve-CodexBinary {
-    function Test-WslExecutable {
-        param([Parameter(Mandatory = $true)][string] $Path)
+    param([string] $Candidate)
 
-        $safePath = $Path.Replace("'", "'\\''")
-        $probe = wsl -e bash -lc "if [ -x '$safePath' ]; then echo found; else exit 1; fi"
-        return ($LASTEXITCODE -eq 0 -and $probe.Trim() -eq "found")
+    if ($Candidate) {
+        if ($Candidate -like "wsl:*" -or $Candidate -like "/mnt/*") {
+            throw "This Windows launcher requires a Windows Codex executable. WSL execution is intentionally unsupported because it cannot share the isolated Windows provider and CODEX_HOME contract safely."
+        }
+        if (Test-Path -LiteralPath $Candidate -PathType Leaf) {
+            Write-Host "Using Codex binary: $Candidate"
+            return (Resolve-Path -LiteralPath $Candidate).Path
+        }
+        $configured = Get-Command $Candidate -CommandType Application -ErrorAction SilentlyContinue
+        if ($configured) {
+            Write-Host "Using configured Codex command: $($configured.Source)"
+            return $configured.Source
+        }
+        throw "Configured Codex binary was not found: $Candidate"
     }
 
-    foreach ($candidate in $PreferredCodexBins) {
-        if ($candidate -like "/mnt/*") {
-            if (Test-WslExecutable $candidate) {
-                Write-Host "Using WSL Codex binary: $candidate"
-                return "wsl:$candidate"
-            }
-            continue
-        }
-        if (Test-Path -LiteralPath $candidate) {
-            Write-Host "Using Codex binary: $candidate"
-            return (Resolve-Path -LiteralPath $candidate).Path
-        }
-    }
-
-    $cmd = Get-Command codex -ErrorAction SilentlyContinue
+    $cmd = Get-Command codex -CommandType Application -ErrorAction SilentlyContinue
     if ($cmd) {
         Write-Host "Using PATH Codex binary: $($cmd.Source)"
         return $cmd.Source
     }
 
-    throw "No Codex binary found. Set QWEN_CODEX_BIN or build/install Codex first."
+    throw "No Codex binary found. Pass -CodexBin, set QWEN_CODEX_BIN, or add codex to PATH."
 }
 
 if (-not $SkipRepoGuard) {
@@ -79,27 +78,26 @@ if (-not $SkipRepoGuard) {
     if ($branch -ne "Han") {
         throw "traj-eval Qwen launcher expected branch Han, found '$branch'. Use -SkipRepoGuard only if intentional."
     }
-
-    $origin = (& git -C $RepoRoot remote get-url origin).Trim()
-    if ($origin -ne $ExpectedRemote) {
-        throw "traj-eval Qwen launcher expected origin $ExpectedRemote, found '$origin'."
-    }
 }
 
-Import-AgentEvalEnv -Path $EnvFile
+if (-not $ProviderEnv) {
+    throw "Pass -ProviderEnv or set TRAJ_EVAL_PROVIDER_ENV."
+}
+$providerPath = $ProviderEnv
+if (-not [System.IO.Path]::IsPathRooted($providerPath)) {
+    $providerPath = Join-Path $RepoRoot $providerPath
+}
+Import-AgentEvalEnv -Path $providerPath
 $env:CODEX_HOME = $CodexHome
-$env:OPENAI_BASE_URL = $env:OPENAI_BASE_URL
-$env:OPENAI_API_BASE = $env:OPENAI_API_BASE
-$env:TRAJ_EVAL_MODEL = $env:CMBAGENT_EVAL_LOCAL_MODEL
+if ($env:CMBAGENT_EVAL_LOCAL_MODEL) {
+    $env:TRAJ_EVAL_MODEL = $env:CMBAGENT_EVAL_LOCAL_MODEL
+}
+if (-not $env:TRAJ_EVAL_MODEL) {
+    throw "Provider configuration must set TRAJ_EVAL_MODEL or CMBAGENT_EVAL_LOCAL_MODEL."
+}
 
 Set-Location -LiteralPath $RepoRoot
 
-$codex = Resolve-CodexBinary
-if ($codex -like "wsl:*") {
-    $wslCodex = $codex.Substring(4)
-    wsl -e $wslCodex @CodexArgs
-    exit $LASTEXITCODE
-}
-
+$codex = Resolve-CodexBinary -Candidate $CodexBin
 & $codex @CodexArgs
 exit $LASTEXITCODE

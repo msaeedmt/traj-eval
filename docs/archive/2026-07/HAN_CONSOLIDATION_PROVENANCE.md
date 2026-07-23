@@ -10,11 +10,14 @@ planned repository-cleanup phase is complete.
 - Merged `Han-experiment` tip: `0003329d137a08cfcb59fc3d99d8bb5b973d8a42`.
 - Merged `experiment/qwen-tool-routed-subgoals` tip:
   `1e2f03b47682dc3216a17d117d13b5facf7a431a`.
-- Both source histories are retained as merge parents. Their planned
-  `archive/*` ref names are a separate ref-cleanup phase.
+- Both source histories are retained as merge parents. After consolidation,
+  their superseded tips are to be preserved as the annotated tags
+  `archive/Han-experiment` and `archive/qwen-tool-routed-subgoals`; they are not
+  additional active branches.
 - `main`, `lean-anchors`, and `han-lean-anchors-merge` are outside this
-  consolidation. In particular, the fifth goal-tool integration setup belongs
-  only on the future integration branch and is not a supported `Han` setup.
+  consolidation and remain unchanged. Promotion from `Han` to the integration
+  branch is separately gated by teammate discussion and explicit approval. The
+  fifth goal-tool integration setup is therefore not a supported `Han` setup.
 
 ## Supported personal experiment setups
 
@@ -34,38 +37,45 @@ and verify both terminal state and trial/setup identity.
 
 ### Qwen medium typed-subgoal pilot
 
-`data/experiments/qwen_medium_subgoals_v1/` is a complete 20/20-trial bundle.
-All 20 outcomes are unsolved. The run nevertheless contains useful negative
-evidence: 102 tool handoffs, 12 forced recoveries, 15 accepted subgoals, and
-zero verified completions. Its recorded decision is
-`revise_subgoal_strategy`.
+The 20 raw traces are under `data/batch/qwen_medium_subgoals_v1/`, the derived
+summary is under `data/analysis/qwen_medium_subgoals_v1/`, and the narrative
+summary is under `docs/experiments/qwen_medium_subgoals_v1/`. All 20 recorded
+outcomes are unsolved, with zero independently verified final proofs. The
+bundle also records 102 tool handoffs, 12 forced recoveries, and 15 accepted
+subgoals. Its recorded decision is `revise_subgoal_strategy`.
 
-This is meaningful O1/O2 observability and recovery evidence. It is not a
-success claim and does not support an O3 architecture-improvement claim.
+These are descriptive run facts and meaningful negative evidence under the
+tested conditions, not a success claim. They show that the instrumentation
+captured routing and recovery events; they do not validate O1 localization,
+O2 detector precision/recall/F1, or any O3 architecture-improvement claim.
 
 ### V4 routing ablation
 
-`data/batch/version_4_routing_ablation/shell_runs/v4_20260717_181632/` is the
-retained completed two-task smoke bundle. It was produced at commit
+`data/batch/version_4_routing_ablation/shell_runs/v4_20260717_181632/` retains
+a completed two-task smoke bundle. Its derived comparison is under
+`data/analysis/version_4_routing_ablation/`, and its narrative results are under
+`docs/experiments/version_4_routing_ablation/`. It was produced at commit
 `41cc85f3cc87aa99c9ba81eb345d0ee0f15f69fa`, before the structured
-stall-handoff implementation. It is baseline routing-ablation evidence, not
-validation of `recovery_triangle_stall_handoff_v1`.
+stall-handoff implementation. The official V4 experiment was not run. The
+retained smoke is descriptive instrumentation evidence, not validation of
+`recovery_triangle_stall_handoff_v1` or an architecture comparison.
 
 Incomplete V4 material was excluded from scientific claims and copied to the
-private recovery archive before its original files were moved to the Windows
+external recovery archive before its original files were moved to the Windows
 Recycle Bin.
 
 ### Earlier evidence and integration evidence
 
 - The meeting report and dashboard are retained under
   `docs/lean_easy_failure_report/`.
-- Promotion of the 100-file V1 raw-trace set into its final versioned
-  `data/batch/` location remains a separately approved mass move. Until then,
-  the generated meeting artifacts are preserved, but a clean-worktree rebuild
-  still depends on that pending source promotion.
+- The separately approved 100-file V1 relocation is complete. Its raw traces
+  are under `data/batch/version_1_trial_traces/`; the relocation preserved each
+  file's bytes at the time of the move. Two traces later received the separately
+  approved machine-local path-token sanitization recorded in the external
+  recovery audit; their schema, sequence, causal, and scientific fields were
+  unchanged.
 - V2/V3 traces and the V1–V3 failure-mode analysis remain integration-branch
-  material and will be ported only when the frozen integration worktree is
-  released for the separately planned rebuild.
+  material. Any later port remains subject to the separate integration gate.
 
 ### Presentation evidence
 
@@ -77,12 +87,11 @@ slides were pixel-identical after note-path sanitization.
 
 ## Recovery and schema guarantees
 
-- The private recovery bundle covers all branch and stash-reachable commits.
-- Recovery manifest SHA-256:
-  `43C6B66FD038A296F191E12A21CAEE091E685A2F27474A0E488882B5D6CA62D3`.
-- Git bundle SHA-256:
-  `9FB33E97A66753CFA151E5FC4C888C8627629DD98917B56D0866386A0B95E3C8`.
+- External recovery records retain the bundle, manifest, hashes, original
+  paths, source-branch tips, and stash-reachable commits. Those machine-local
+  recovery details are intentionally not published here.
 - Secret-bearing environment files are neither read nor tracked.
-- Historical trace event content is not rewritten. The trace schema remains
-  version `0.2.0`; only path registries and derived artifact locations are
-  normalized.
+- The trace schema remains version `0.2.0`. Evidence relocation does not change
+  scientific fields; approved public sanitization may replace only
+  machine-local path tokens, with the exact transformations recorded in the
+  external recovery records.

@@ -112,8 +112,9 @@ Each medium trial has two labels: a dominant observed failure behavior and a con
 
 Registered provenance is embedded in the dashboard (169 relative references). Source-file families:
 
-- `data/batch/` — 62 files
-- `data/experiments/qwen_medium_subgoals_v1/` — 21 files
+- `data/analysis/qwen_medium_subgoals_v1/` — 1 file
+- `data/batch/qwen_medium_subgoals_v1/` — 20 files
+- `data/batch/version_1_trial_traces/` — 62 files
 - `docs/lean_easy_failure_report/public/data/` — 1 file
 
 Build and extension details are documented in [`MEETING_DASHBOARD_BUILD.md`](MEETING_DASHBOARD_BUILD.md).

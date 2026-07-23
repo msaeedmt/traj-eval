@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import csv
 import copy
+import csv
 import hashlib
 import json
 import re
@@ -16,8 +16,7 @@ from scripts import analyze_lean_easy_failures as analyzer
 from traj_eval.dataset.loader import load_dataset
 from traj_eval.trace_core.storage import read_trial
 
-
-TRACE_DIR = Path("data/batch")
+TRACE_DIR = Path("data/batch/version_1_trial_traces")
 REVIEW_PATH = Path("data/analysis/lean_easy_failure_reviews.jsonl")
 DATASET_ROOT = Path("dataset/Lean")
 
@@ -58,7 +57,7 @@ def _has_windows_absolute_path(text):
 
 def test_parse_trial_number():
     assert analyzer.parse_trial_number("easy_fatem_111_t7.jsonl") == 7
-    assert analyzer.parse_trial_number(Path("data/batch/easy_leancat_002_t0.jsonl")) == 0
+    assert analyzer.parse_trial_number(TRACE_DIR / "easy_leancat_002_t0.jsonl") == 0
 
 
 def test_public_text_redacts_workstation_and_temp_paths():

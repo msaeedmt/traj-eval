@@ -10,9 +10,9 @@ explicitly marked historical summary.
 
 The report follows three local sources:
 
-- the [NLP Lab proposal](NLP_Lab___Project_Proposal.pdf), which asks whether
+- the [NLP Lab proposal](../reference/NLP_Lab___Project_Proposal.pdf), which asks whether
   trajectory evidence can localize failures that output-only evaluation misses;
-- the [Lean failure analysis guide](LEAN_FAILURE_ANALYSIS_GUIDE.md), which
+- the [Lean failure analysis guide](../guides/LEAN_FAILURE_ANALYSIS_GUIDE.md), which
   separates symptoms, bounded causal interpretations, recovery, critical
   failure, and independent verification;
 - the educational ordering of the separate 100-trial Vibecoding Lean lab:
@@ -34,13 +34,15 @@ The report follows three local sources:
 | Deep forensic records | 62 |
 | Compact passed records | 62 |
 | Events | 3,948 |
-| Combined manifest SHA-256 | `c21b537e290d85949a639595fb8c290709fea4b6230b9a32725c4ab9bf7663a8` |
+| Pre-consolidation combined manifest SHA-256 | `c21b537e290d85949a639595fb8c290709fea4b6230b9a32725c4ab9bf7663a8` |
 
-The frozen snapshot used for this report is stored in private analysis storage
-outside the repository.
-The combined hash is SHA-256 over a sorted manifest of relative path, tab,
-full-file SHA-256, and newline. All ten medium files contain an explicit
-terminal event; no growing medium file is treated as complete by inference.
+The frozen snapshot used for this report is retained in an external historical
+archive. The combined hash is SHA-256 over its pre-consolidation sorted manifest
+of relative path, tab, full-file SHA-256, and newline. It is path-sensitive and
+therefore intentionally remains a historical provenance value after evidence
+relocation; the per-file SHA-256 values below identify the source bytes. All ten
+medium files contain an explicit terminal event; no growing medium file is
+treated as complete by inference.
 
 | Cohort | Solved label | Unsolved label | Silent-failure label | Other |
 |---|---:|---:|---:|---:|
@@ -128,6 +130,8 @@ proof.
 
 ### Roles
 
+The reasoning-agent team has exactly three roles:
+
 - **Reasoner:** identifies the mathematical route, searches for library
   objects, and should revise strategy when implementation evidence invalidates
   the plan.
@@ -135,8 +139,10 @@ proof.
   from proof candidates, and reacts to diagnostics.
 - **Critic:** checks exact-statement fidelity and compiler evidence. A useful
   rejection should return concrete evidence to the engineer.
-- **Executor:** carries tool calls and returns observations. Executor activity
-  is not an independent mathematical strategy.
+
+Historical `Executor` events are non-agent tool-runtime records. Historical
+`Planner` or `Repairer` labels are compatibility labels, not additional current
+reasoning roles.
 
 ### Failure Record
 
@@ -997,7 +1003,7 @@ is evidence that communication count and correctness are different variables.
 | 11..17 | Engineer | forward subgoal | Three failed checks | Initial implementation failure |
 | 19..23 | Reasoner | revision | Revises and routes | One evidence-backed recovery |
 | 25..41 | Engineer | subgoal | Two failures, one success and submission | One candidate reaches review |
-| 43..46 | Critic/executor | review | Review compiles and one subgoal is accepted | Trace stops before a decision about later subgoals |
+| 43..46 | Critic/tool runtime (legacy executor label) | review | Review compiles and one subgoal is accepted | Trace stops before a decision about later subgoals |
 
 - **Outcome:** interrupted snapshot, not unsolved completion. It has five failed
   and two successful results, one accepted subgoal, and no terminal event.
@@ -1096,7 +1102,7 @@ than Lean verdicts.
 | 1..29 | Reasoner | retrieval and planning | Seven searches; four subgoals; three plan revisions before work begins | More precise decomposition than `t0/t1` |
 | 30..51 | Engineer/critic | subgoal 1 | Six checks; candidate and review compile; accepted | Inclusion morphisms verified |
 | 52..143 | Engineer | uniqueness exploration | 11 searches and 35 checks; 17 failures | `liftEquiv`, coercions, rewrites, and extensionality never become a candidate |
-| 144..146 | Executor/system | malformed call and stop | Final check returns an unterminated-JSON argument error; `stuck` at turn 145 | Tool-format failure is not a Lean verdict |
+| 144..146 | Tool runtime/system (legacy executor label) | malformed call and stop | Final check returns an unterminated-JSON argument error; `stuck` at turn 145 | Tool-format failure is not a Lean verdict |
 
 - **Counts:** 19 searches; probes 22/17; subgoals 1/0; reviews 1/0.
 - **Final plan:** inclusions accepted; `IsColimit` active with zero submitted
@@ -1579,113 +1585,118 @@ The presentation-safe conclusion is:
 
 ## 7. Complete Trace Index And Reproducibility
 
-Every source JSONL appears exactly once below. `none` in the terminal column
-means the historical trace has no explicit terminal event; it does not mean the
-process was observed running. Hashes are SHA-256 prefixes. The full combined
-hash at the start of the report commits to the full per-file hashes and paths.
+Every source JSONL in the pre-consolidation snapshot appears exactly once below.
+`none` in the terminal column means the historical trace has no explicit
+terminal event; it does not mean the process was observed running. Hashes are
+frozen pre-consolidation SHA-256 prefixes; approved public path-token
+sanitization can therefore change a current file hash without changing the
+scientific fields interpreted here. The full combined hash at the start of the
+report commits to the pre-consolidation per-file hashes and paths. Relocated V1
+and medium paths below show the current public layout; external-only historical
+sources retain their pre-consolidation path notation.
 
 | Trace key | Depth | Outcome label | Events | Terminal | SHA-256 prefix | Source |
 |---|---|---|---:|---|---|---|
-| `canonical/easy_fatem_011_t0` | compact | solved | 8 | none | `95a7b2665f20` | `data/batch/easy_fatem_011_t0.jsonl` |
-| `canonical/easy_fatem_011_t1` | compact | solved | 10 | none | `c5708c696f86` | `data/batch/easy_fatem_011_t1.jsonl` |
-| `canonical/easy_fatem_011_t2` | compact | solved | 8 | none | `1fd748ee8d30` | `data/batch/easy_fatem_011_t2.jsonl` |
-| `canonical/easy_fatem_011_t3` | compact | solved | 10 | none | `28b543c6df31` | `data/batch/easy_fatem_011_t3.jsonl` |
-| `canonical/easy_fatem_011_t4` | compact | solved | 8 | none | `d268d927fe3c` | `data/batch/easy_fatem_011_t4.jsonl` |
-| `canonical/easy_fatem_011_t5` | compact | solved | 8 | none | `41a0c9dfc604` | `data/batch/easy_fatem_011_t5.jsonl` |
-| `canonical/easy_fatem_011_t6` | compact | solved | 8 | none | `7df0fe14085f` | `data/batch/easy_fatem_011_t6.jsonl` |
-| `canonical/easy_fatem_011_t7` | compact | solved | 8 | none | `4f1efdfecd29` | `data/batch/easy_fatem_011_t7.jsonl` |
-| `canonical/easy_fatem_011_t8` | compact | solved | 8 | none | `032412808a92` | `data/batch/easy_fatem_011_t8.jsonl` |
-| `canonical/easy_fatem_011_t9` | compact | solved | 8 | none | `2ffbf5e9dc11` | `data/batch/easy_fatem_011_t9.jsonl` |
-| `canonical/easy_fatem_012_t0` | compact | solved | 18 | none | `80e8683f57be` | `data/batch/easy_fatem_012_t0.jsonl` |
-| `canonical/easy_fatem_012_t1` | compact | solved | 20 | none | `f01157b8eaf0` | `data/batch/easy_fatem_012_t1.jsonl` |
-| `canonical/easy_fatem_012_t2` | compact | solved | 14 | none | `2f6d0e6e56a0` | `data/batch/easy_fatem_012_t2.jsonl` |
-| `canonical/easy_fatem_012_t3` | compact | solved | 20 | none | `a7030d9a5229` | `data/batch/easy_fatem_012_t3.jsonl` |
-| `canonical/easy_fatem_012_t4` | compact | solved | 16 | none | `a3e19517eac6` | `data/batch/easy_fatem_012_t4.jsonl` |
-| `canonical/easy_fatem_012_t5` | compact | solved | 26 | none | `0121f84d1ada` | `data/batch/easy_fatem_012_t5.jsonl` |
-| `canonical/easy_fatem_012_t6` | compact | solved | 12 | none | `5733e3e8ff27` | `data/batch/easy_fatem_012_t6.jsonl` |
-| `canonical/easy_fatem_012_t7` | compact | solved | 14 | none | `30a28c962554` | `data/batch/easy_fatem_012_t7.jsonl` |
-| `canonical/easy_fatem_012_t8` | compact | solved | 14 | none | `f7e0349c07df` | `data/batch/easy_fatem_012_t8.jsonl` |
-| `canonical/easy_fatem_012_t9` | compact | solved | 10 | none | `b97aa8accb4b` | `data/batch/easy_fatem_012_t9.jsonl` |
-| `canonical/easy_fatem_019_t0` | deep | unsolved | 30 | none | `260f6a55ff6d` | `data/batch/easy_fatem_019_t0.jsonl` |
-| `canonical/easy_fatem_019_t1` | deep | unsolved | 30 | none | `484b94169e7b` | `data/batch/easy_fatem_019_t1.jsonl` |
-| `canonical/easy_fatem_019_t2` | deep | unsolved | 30 | none | `7384d05fc75f` | `data/batch/easy_fatem_019_t2.jsonl` |
-| `canonical/easy_fatem_019_t3` | deep | unsolved | 30 | none | `f2de267c74fb` | `data/batch/easy_fatem_019_t3.jsonl` |
-| `canonical/easy_fatem_019_t4` | deep | unsolved | 30 | none | `17f134526da2` | `data/batch/easy_fatem_019_t4.jsonl` |
-| `canonical/easy_fatem_019_t5` | deep | unsolved | 26 | none | `c3c14097a633` | `data/batch/easy_fatem_019_t5.jsonl` |
-| `canonical/easy_fatem_019_t6` | deep | unsolved | 30 | none | `e1dda368def5` | `data/batch/easy_fatem_019_t6.jsonl` |
-| `canonical/easy_fatem_019_t7` | deep | unsolved | 16 | none | `fcb88e27ef28` | `data/batch/easy_fatem_019_t7.jsonl` |
-| `canonical/easy_fatem_019_t8` | deep | unsolved | 30 | none | `e0c14ba8c918` | `data/batch/easy_fatem_019_t8.jsonl` |
-| `canonical/easy_fatem_019_t9` | deep | unsolved | 30 | none | `17903e4e85e8` | `data/batch/easy_fatem_019_t9.jsonl` |
-| `canonical/easy_fatem_020_t0` | compact | solved | 16 | none | `f663509439ce` | `data/batch/easy_fatem_020_t0.jsonl` |
-| `canonical/easy_fatem_020_t1` | compact | solved | 16 | none | `c80a698e47e8` | `data/batch/easy_fatem_020_t1.jsonl` |
-| `canonical/easy_fatem_020_t2` | deep | unsolved | 18 | none | `39c39066233d` | `data/batch/easy_fatem_020_t2.jsonl` |
-| `canonical/easy_fatem_020_t3` | deep | unsolved | 12 | none | `2d8fe59406cb` | `data/batch/easy_fatem_020_t3.jsonl` |
-| `canonical/easy_fatem_020_t4` | deep | unsolved | 30 | none | `9dfc9cfdc441` | `data/batch/easy_fatem_020_t4.jsonl` |
-| `canonical/easy_fatem_020_t5` | deep | unsolved | 16 | none | `bd5e50447ccb` | `data/batch/easy_fatem_020_t5.jsonl` |
-| `canonical/easy_fatem_020_t6` | compact | solved | 8 | none | `60c3452e7e83` | `data/batch/easy_fatem_020_t6.jsonl` |
-| `canonical/easy_fatem_020_t7` | deep | unsolved | 18 | none | `15dbf6d04026` | `data/batch/easy_fatem_020_t7.jsonl` |
-| `canonical/easy_fatem_020_t8` | deep | unsolved | 30 | none | `f837f20dcc5b` | `data/batch/easy_fatem_020_t8.jsonl` |
-| `canonical/easy_fatem_020_t9` | deep | unsolved | 18 | none | `05f20de31c41` | `data/batch/easy_fatem_020_t9.jsonl` |
-| `canonical/easy_fatem_041_t0` | compact | solved | 8 | none | `96e82f022d82` | `data/batch/easy_fatem_041_t0.jsonl` |
-| `canonical/easy_fatem_041_t1` | compact | solved | 8 | none | `a90430573fc2` | `data/batch/easy_fatem_041_t1.jsonl` |
-| `canonical/easy_fatem_041_t2` | compact | solved | 8 | none | `b8330fee0095` | `data/batch/easy_fatem_041_t2.jsonl` |
-| `canonical/easy_fatem_041_t3` | compact | solved | 10 | none | `52c05d603dee` | `data/batch/easy_fatem_041_t3.jsonl` |
-| `canonical/easy_fatem_041_t4` | compact | solved | 8 | none | `ff9b06f1e95e` | `data/batch/easy_fatem_041_t4.jsonl` |
-| `canonical/easy_fatem_041_t5` | compact | solved | 8 | none | `a9d998284c14` | `data/batch/easy_fatem_041_t5.jsonl` |
-| `canonical/easy_fatem_041_t6` | compact | solved | 8 | none | `f076295aa9f3` | `data/batch/easy_fatem_041_t6.jsonl` |
-| `canonical/easy_fatem_041_t7` | compact | solved | 8 | none | `9b1e73195773` | `data/batch/easy_fatem_041_t7.jsonl` |
-| `canonical/easy_fatem_041_t8` | compact | solved | 8 | none | `9b13d289fda4` | `data/batch/easy_fatem_041_t8.jsonl` |
-| `canonical/easy_fatem_041_t9` | compact | solved | 10 | none | `917158a33d29` | `data/batch/easy_fatem_041_t9.jsonl` |
-| `canonical/easy_fatem_109_t0` | compact | solved | 10 | none | `7df5215495ed` | `data/batch/easy_fatem_109_t0.jsonl` |
-| `canonical/easy_fatem_109_t1` | compact | solved | 12 | none | `5c08b558b97e` | `data/batch/easy_fatem_109_t1.jsonl` |
-| `canonical/easy_fatem_109_t2` | compact | solved | 10 | none | `899a69a6b75d` | `data/batch/easy_fatem_109_t2.jsonl` |
-| `canonical/easy_fatem_109_t3` | deep | unsolved | 24 | none | `70adfa21bedb` | `data/batch/easy_fatem_109_t3.jsonl` |
-| `canonical/easy_fatem_109_t4` | compact | solved | 10 | none | `4a933e4d7337` | `data/batch/easy_fatem_109_t4.jsonl` |
-| `canonical/easy_fatem_109_t5` | compact | solved | 10 | none | `35e6a6cc43e0` | `data/batch/easy_fatem_109_t5.jsonl` |
-| `canonical/easy_fatem_109_t6` | compact | solved | 12 | none | `5a12f966b123` | `data/batch/easy_fatem_109_t6.jsonl` |
-| `canonical/easy_fatem_109_t7` | compact | solved | 12 | none | `fd7437d1ec41` | `data/batch/easy_fatem_109_t7.jsonl` |
-| `canonical/easy_fatem_109_t8` | compact | solved | 22 | none | `cec8d6e9f054` | `data/batch/easy_fatem_109_t8.jsonl` |
-| `canonical/easy_fatem_109_t9` | deep | unsolved | 6 | none | `035abf684182` | `data/batch/easy_fatem_109_t9.jsonl` |
-| `canonical/easy_fatem_111_t0` | deep | unsolved | 30 | none | `876b333bf277` | `data/batch/easy_fatem_111_t0.jsonl` |
-| `canonical/easy_fatem_111_t1` | deep | unsolved | 20 | none | `7bd8303958e1` | `data/batch/easy_fatem_111_t1.jsonl` |
-| `canonical/easy_fatem_111_t2` | deep | unsolved | 22 | none | `24d868e23e93` | `data/batch/easy_fatem_111_t2.jsonl` |
-| `canonical/easy_fatem_111_t3` | deep | unsolved | 22 | none | `1e76ec174a20` | `data/batch/easy_fatem_111_t3.jsonl` |
-| `canonical/easy_fatem_111_t4` | deep | unsolved | 20 | none | `697b2b001eaf` | `data/batch/easy_fatem_111_t4.jsonl` |
-| `canonical/easy_fatem_111_t5` | deep | unsolved | 26 | none | `f83465d3c86c` | `data/batch/easy_fatem_111_t5.jsonl` |
-| `canonical/easy_fatem_111_t6` | deep | unsolved | 20 | none | `7ea5a2fe3239` | `data/batch/easy_fatem_111_t6.jsonl` |
-| `canonical/easy_fatem_111_t7` | deep | unsolved | 22 | none | `12f53521e48b` | `data/batch/easy_fatem_111_t7.jsonl` |
-| `canonical/easy_fatem_111_t8` | deep | unsolved | 20 | none | `247bd40bda6f` | `data/batch/easy_fatem_111_t8.jsonl` |
-| `canonical/easy_fatem_111_t9` | deep | unsolved | 26 | none | `55e4597b6c39` | `data/batch/easy_fatem_111_t9.jsonl` |
-| `canonical/easy_fatem_115_t0` | deep | unsolved | 26 | none | `43030233d70e` | `data/batch/easy_fatem_115_t0.jsonl` |
-| `canonical/easy_fatem_115_t1` | deep | unsolved | 22 | none | `c75286b3bd35` | `data/batch/easy_fatem_115_t1.jsonl` |
-| `canonical/easy_fatem_115_t2` | deep | silent failure | 26 | none | `4c676480f1d4` | `data/batch/easy_fatem_115_t2.jsonl` |
-| `canonical/easy_fatem_115_t3` | deep | unsolved | 30 | none | `ccaddde7d652` | `data/batch/easy_fatem_115_t3.jsonl` |
-| `canonical/easy_fatem_115_t4` | deep | silent failure | 14 | none | `07f6766cfa01` | `data/batch/easy_fatem_115_t4.jsonl` |
-| `canonical/easy_fatem_115_t5` | deep | silent failure | 24 | none | `2be2e6466930` | `data/batch/easy_fatem_115_t5.jsonl` |
-| `canonical/easy_fatem_115_t6` | deep | unsolved | 22 | none | `8a26a2354ae0` | `data/batch/easy_fatem_115_t6.jsonl` |
-| `canonical/easy_fatem_115_t7` | deep | unsolved | 12 | none | `a463b85ca3a1` | `data/batch/easy_fatem_115_t7.jsonl` |
-| `canonical/easy_fatem_115_t8` | deep | silent failure | 24 | none | `332856f7ac7a` | `data/batch/easy_fatem_115_t8.jsonl` |
-| `canonical/easy_fatem_115_t9` | deep | unsolved | 22 | none | `6d7b89242786` | `data/batch/easy_fatem_115_t9.jsonl` |
-| `canonical/easy_leancat_001_t0` | deep | unsolved | 30 | none | `ddd32fe725ba` | `data/batch/easy_leancat_001_t0.jsonl` |
-| `canonical/easy_leancat_001_t1` | compact | solved | 30 | none | `5b8bd661672c` | `data/batch/easy_leancat_001_t1.jsonl` |
-| `canonical/easy_leancat_001_t2` | compact | solved | 8 | none | `90dc3af20492` | `data/batch/easy_leancat_001_t2.jsonl` |
-| `canonical/easy_leancat_001_t3` | deep | unsolved | 28 | none | `c3f27169e552` | `data/batch/easy_leancat_001_t3.jsonl` |
-| `canonical/easy_leancat_001_t4` | compact | solved | 14 | none | `6bb4bdc19d4e` | `data/batch/easy_leancat_001_t4.jsonl` |
-| `canonical/easy_leancat_001_t5` | deep | unsolved | 24 | none | `00c91b1ff381` | `data/batch/easy_leancat_001_t5.jsonl` |
-| `canonical/easy_leancat_001_t6` | deep | unsolved | 30 | none | `4b69bbbe5199` | `data/batch/easy_leancat_001_t6.jsonl` |
-| `canonical/easy_leancat_001_t7` | compact | solved | 20 | none | `c875e21a9546` | `data/batch/easy_leancat_001_t7.jsonl` |
-| `canonical/easy_leancat_001_t8` | compact | solved | 12 | none | `d64928845a8a` | `data/batch/easy_leancat_001_t8.jsonl` |
-| `canonical/easy_leancat_001_t9` | compact | solved | 24 | none | `63e04f9fdde8` | `data/batch/easy_leancat_001_t9.jsonl` |
-| `canonical/easy_leancat_002_t0` | compact | solved | 14 | none | `f2db9b77ff82` | `data/batch/easy_leancat_002_t0.jsonl` |
-| `canonical/easy_leancat_002_t1` | deep | unsolved | 12 | none | `07b2564ca89f` | `data/batch/easy_leancat_002_t1.jsonl` |
-| `canonical/easy_leancat_002_t2` | compact | solved | 14 | none | `6b7a8f4b2518` | `data/batch/easy_leancat_002_t2.jsonl` |
-| `canonical/easy_leancat_002_t3` | compact | solved | 12 | none | `775d1e327edb` | `data/batch/easy_leancat_002_t3.jsonl` |
-| `canonical/easy_leancat_002_t4` | compact | solved | 12 | none | `f50966791019` | `data/batch/easy_leancat_002_t4.jsonl` |
-| `canonical/easy_leancat_002_t5` | compact | solved | 12 | none | `10c20738a1fb` | `data/batch/easy_leancat_002_t5.jsonl` |
-| `canonical/easy_leancat_002_t6` | compact | solved | 12 | none | `74a54f279728` | `data/batch/easy_leancat_002_t6.jsonl` |
-| `canonical/easy_leancat_002_t7` | compact | solved | 14 | none | `a1dd2a51f8d7` | `data/batch/easy_leancat_002_t7.jsonl` |
-| `canonical/easy_leancat_002_t8` | compact | solved | 14 | none | `ebd1756181f9` | `data/batch/easy_leancat_002_t8.jsonl` |
-| `canonical/easy_leancat_002_t9` | compact | solved | 16 | none | `de2357ca5824` | `data/batch/easy_leancat_002_t9.jsonl` |
+| `canonical/easy_fatem_011_t0` | compact | solved | 8 | none | `95a7b2665f20` | `data/batch/version_1_trial_traces/easy_fatem_011_t0.jsonl` |
+| `canonical/easy_fatem_011_t1` | compact | solved | 10 | none | `c5708c696f86` | `data/batch/version_1_trial_traces/easy_fatem_011_t1.jsonl` |
+| `canonical/easy_fatem_011_t2` | compact | solved | 8 | none | `1fd748ee8d30` | `data/batch/version_1_trial_traces/easy_fatem_011_t2.jsonl` |
+| `canonical/easy_fatem_011_t3` | compact | solved | 10 | none | `28b543c6df31` | `data/batch/version_1_trial_traces/easy_fatem_011_t3.jsonl` |
+| `canonical/easy_fatem_011_t4` | compact | solved | 8 | none | `d268d927fe3c` | `data/batch/version_1_trial_traces/easy_fatem_011_t4.jsonl` |
+| `canonical/easy_fatem_011_t5` | compact | solved | 8 | none | `41a0c9dfc604` | `data/batch/version_1_trial_traces/easy_fatem_011_t5.jsonl` |
+| `canonical/easy_fatem_011_t6` | compact | solved | 8 | none | `7df0fe14085f` | `data/batch/version_1_trial_traces/easy_fatem_011_t6.jsonl` |
+| `canonical/easy_fatem_011_t7` | compact | solved | 8 | none | `4f1efdfecd29` | `data/batch/version_1_trial_traces/easy_fatem_011_t7.jsonl` |
+| `canonical/easy_fatem_011_t8` | compact | solved | 8 | none | `032412808a92` | `data/batch/version_1_trial_traces/easy_fatem_011_t8.jsonl` |
+| `canonical/easy_fatem_011_t9` | compact | solved | 8 | none | `2ffbf5e9dc11` | `data/batch/version_1_trial_traces/easy_fatem_011_t9.jsonl` |
+| `canonical/easy_fatem_012_t0` | compact | solved | 18 | none | `80e8683f57be` | `data/batch/version_1_trial_traces/easy_fatem_012_t0.jsonl` |
+| `canonical/easy_fatem_012_t1` | compact | solved | 20 | none | `f01157b8eaf0` | `data/batch/version_1_trial_traces/easy_fatem_012_t1.jsonl` |
+| `canonical/easy_fatem_012_t2` | compact | solved | 14 | none | `2f6d0e6e56a0` | `data/batch/version_1_trial_traces/easy_fatem_012_t2.jsonl` |
+| `canonical/easy_fatem_012_t3` | compact | solved | 20 | none | `a7030d9a5229` | `data/batch/version_1_trial_traces/easy_fatem_012_t3.jsonl` |
+| `canonical/easy_fatem_012_t4` | compact | solved | 16 | none | `a3e19517eac6` | `data/batch/version_1_trial_traces/easy_fatem_012_t4.jsonl` |
+| `canonical/easy_fatem_012_t5` | compact | solved | 26 | none | `0121f84d1ada` | `data/batch/version_1_trial_traces/easy_fatem_012_t5.jsonl` |
+| `canonical/easy_fatem_012_t6` | compact | solved | 12 | none | `5733e3e8ff27` | `data/batch/version_1_trial_traces/easy_fatem_012_t6.jsonl` |
+| `canonical/easy_fatem_012_t7` | compact | solved | 14 | none | `30a28c962554` | `data/batch/version_1_trial_traces/easy_fatem_012_t7.jsonl` |
+| `canonical/easy_fatem_012_t8` | compact | solved | 14 | none | `f7e0349c07df` | `data/batch/version_1_trial_traces/easy_fatem_012_t8.jsonl` |
+| `canonical/easy_fatem_012_t9` | compact | solved | 10 | none | `b97aa8accb4b` | `data/batch/version_1_trial_traces/easy_fatem_012_t9.jsonl` |
+| `canonical/easy_fatem_019_t0` | deep | unsolved | 30 | none | `260f6a55ff6d` | `data/batch/version_1_trial_traces/easy_fatem_019_t0.jsonl` |
+| `canonical/easy_fatem_019_t1` | deep | unsolved | 30 | none | `484b94169e7b` | `data/batch/version_1_trial_traces/easy_fatem_019_t1.jsonl` |
+| `canonical/easy_fatem_019_t2` | deep | unsolved | 30 | none | `7384d05fc75f` | `data/batch/version_1_trial_traces/easy_fatem_019_t2.jsonl` |
+| `canonical/easy_fatem_019_t3` | deep | unsolved | 30 | none | `f2de267c74fb` | `data/batch/version_1_trial_traces/easy_fatem_019_t3.jsonl` |
+| `canonical/easy_fatem_019_t4` | deep | unsolved | 30 | none | `17f134526da2` | `data/batch/version_1_trial_traces/easy_fatem_019_t4.jsonl` |
+| `canonical/easy_fatem_019_t5` | deep | unsolved | 26 | none | `c3c14097a633` | `data/batch/version_1_trial_traces/easy_fatem_019_t5.jsonl` |
+| `canonical/easy_fatem_019_t6` | deep | unsolved | 30 | none | `e1dda368def5` | `data/batch/version_1_trial_traces/easy_fatem_019_t6.jsonl` |
+| `canonical/easy_fatem_019_t7` | deep | unsolved | 16 | none | `fcb88e27ef28` | `data/batch/version_1_trial_traces/easy_fatem_019_t7.jsonl` |
+| `canonical/easy_fatem_019_t8` | deep | unsolved | 30 | none | `e0c14ba8c918` | `data/batch/version_1_trial_traces/easy_fatem_019_t8.jsonl` |
+| `canonical/easy_fatem_019_t9` | deep | unsolved | 30 | none | `17903e4e85e8` | `data/batch/version_1_trial_traces/easy_fatem_019_t9.jsonl` |
+| `canonical/easy_fatem_020_t0` | compact | solved | 16 | none | `f663509439ce` | `data/batch/version_1_trial_traces/easy_fatem_020_t0.jsonl` |
+| `canonical/easy_fatem_020_t1` | compact | solved | 16 | none | `c80a698e47e8` | `data/batch/version_1_trial_traces/easy_fatem_020_t1.jsonl` |
+| `canonical/easy_fatem_020_t2` | deep | unsolved | 18 | none | `39c39066233d` | `data/batch/version_1_trial_traces/easy_fatem_020_t2.jsonl` |
+| `canonical/easy_fatem_020_t3` | deep | unsolved | 12 | none | `2d8fe59406cb` | `data/batch/version_1_trial_traces/easy_fatem_020_t3.jsonl` |
+| `canonical/easy_fatem_020_t4` | deep | unsolved | 30 | none | `9dfc9cfdc441` | `data/batch/version_1_trial_traces/easy_fatem_020_t4.jsonl` |
+| `canonical/easy_fatem_020_t5` | deep | unsolved | 16 | none | `bd5e50447ccb` | `data/batch/version_1_trial_traces/easy_fatem_020_t5.jsonl` |
+| `canonical/easy_fatem_020_t6` | compact | solved | 8 | none | `60c3452e7e83` | `data/batch/version_1_trial_traces/easy_fatem_020_t6.jsonl` |
+| `canonical/easy_fatem_020_t7` | deep | unsolved | 18 | none | `15dbf6d04026` | `data/batch/version_1_trial_traces/easy_fatem_020_t7.jsonl` |
+| `canonical/easy_fatem_020_t8` | deep | unsolved | 30 | none | `f837f20dcc5b` | `data/batch/version_1_trial_traces/easy_fatem_020_t8.jsonl` |
+| `canonical/easy_fatem_020_t9` | deep | unsolved | 18 | none | `05f20de31c41` | `data/batch/version_1_trial_traces/easy_fatem_020_t9.jsonl` |
+| `canonical/easy_fatem_041_t0` | compact | solved | 8 | none | `96e82f022d82` | `data/batch/version_1_trial_traces/easy_fatem_041_t0.jsonl` |
+| `canonical/easy_fatem_041_t1` | compact | solved | 8 | none | `a90430573fc2` | `data/batch/version_1_trial_traces/easy_fatem_041_t1.jsonl` |
+| `canonical/easy_fatem_041_t2` | compact | solved | 8 | none | `b8330fee0095` | `data/batch/version_1_trial_traces/easy_fatem_041_t2.jsonl` |
+| `canonical/easy_fatem_041_t3` | compact | solved | 10 | none | `52c05d603dee` | `data/batch/version_1_trial_traces/easy_fatem_041_t3.jsonl` |
+| `canonical/easy_fatem_041_t4` | compact | solved | 8 | none | `ff9b06f1e95e` | `data/batch/version_1_trial_traces/easy_fatem_041_t4.jsonl` |
+| `canonical/easy_fatem_041_t5` | compact | solved | 8 | none | `a9d998284c14` | `data/batch/version_1_trial_traces/easy_fatem_041_t5.jsonl` |
+| `canonical/easy_fatem_041_t6` | compact | solved | 8 | none | `f076295aa9f3` | `data/batch/version_1_trial_traces/easy_fatem_041_t6.jsonl` |
+| `canonical/easy_fatem_041_t7` | compact | solved | 8 | none | `9b1e73195773` | `data/batch/version_1_trial_traces/easy_fatem_041_t7.jsonl` |
+| `canonical/easy_fatem_041_t8` | compact | solved | 8 | none | `9b13d289fda4` | `data/batch/version_1_trial_traces/easy_fatem_041_t8.jsonl` |
+| `canonical/easy_fatem_041_t9` | compact | solved | 10 | none | `917158a33d29` | `data/batch/version_1_trial_traces/easy_fatem_041_t9.jsonl` |
+| `canonical/easy_fatem_109_t0` | compact | solved | 10 | none | `7df5215495ed` | `data/batch/version_1_trial_traces/easy_fatem_109_t0.jsonl` |
+| `canonical/easy_fatem_109_t1` | compact | solved | 12 | none | `5c08b558b97e` | `data/batch/version_1_trial_traces/easy_fatem_109_t1.jsonl` |
+| `canonical/easy_fatem_109_t2` | compact | solved | 10 | none | `899a69a6b75d` | `data/batch/version_1_trial_traces/easy_fatem_109_t2.jsonl` |
+| `canonical/easy_fatem_109_t3` | deep | unsolved | 24 | none | `70adfa21bedb` | `data/batch/version_1_trial_traces/easy_fatem_109_t3.jsonl` |
+| `canonical/easy_fatem_109_t4` | compact | solved | 10 | none | `4a933e4d7337` | `data/batch/version_1_trial_traces/easy_fatem_109_t4.jsonl` |
+| `canonical/easy_fatem_109_t5` | compact | solved | 10 | none | `35e6a6cc43e0` | `data/batch/version_1_trial_traces/easy_fatem_109_t5.jsonl` |
+| `canonical/easy_fatem_109_t6` | compact | solved | 12 | none | `5a12f966b123` | `data/batch/version_1_trial_traces/easy_fatem_109_t6.jsonl` |
+| `canonical/easy_fatem_109_t7` | compact | solved | 12 | none | `fd7437d1ec41` | `data/batch/version_1_trial_traces/easy_fatem_109_t7.jsonl` |
+| `canonical/easy_fatem_109_t8` | compact | solved | 22 | none | `cec8d6e9f054` | `data/batch/version_1_trial_traces/easy_fatem_109_t8.jsonl` |
+| `canonical/easy_fatem_109_t9` | deep | unsolved | 6 | none | `035abf684182` | `data/batch/version_1_trial_traces/easy_fatem_109_t9.jsonl` |
+| `canonical/easy_fatem_111_t0` | deep | unsolved | 30 | none | `876b333bf277` | `data/batch/version_1_trial_traces/easy_fatem_111_t0.jsonl` |
+| `canonical/easy_fatem_111_t1` | deep | unsolved | 20 | none | `7bd8303958e1` | `data/batch/version_1_trial_traces/easy_fatem_111_t1.jsonl` |
+| `canonical/easy_fatem_111_t2` | deep | unsolved | 22 | none | `24d868e23e93` | `data/batch/version_1_trial_traces/easy_fatem_111_t2.jsonl` |
+| `canonical/easy_fatem_111_t3` | deep | unsolved | 22 | none | `1e76ec174a20` | `data/batch/version_1_trial_traces/easy_fatem_111_t3.jsonl` |
+| `canonical/easy_fatem_111_t4` | deep | unsolved | 20 | none | `697b2b001eaf` | `data/batch/version_1_trial_traces/easy_fatem_111_t4.jsonl` |
+| `canonical/easy_fatem_111_t5` | deep | unsolved | 26 | none | `f83465d3c86c` | `data/batch/version_1_trial_traces/easy_fatem_111_t5.jsonl` |
+| `canonical/easy_fatem_111_t6` | deep | unsolved | 20 | none | `7ea5a2fe3239` | `data/batch/version_1_trial_traces/easy_fatem_111_t6.jsonl` |
+| `canonical/easy_fatem_111_t7` | deep | unsolved | 22 | none | `12f53521e48b` | `data/batch/version_1_trial_traces/easy_fatem_111_t7.jsonl` |
+| `canonical/easy_fatem_111_t8` | deep | unsolved | 20 | none | `247bd40bda6f` | `data/batch/version_1_trial_traces/easy_fatem_111_t8.jsonl` |
+| `canonical/easy_fatem_111_t9` | deep | unsolved | 26 | none | `55e4597b6c39` | `data/batch/version_1_trial_traces/easy_fatem_111_t9.jsonl` |
+| `canonical/easy_fatem_115_t0` | deep | unsolved | 26 | none | `43030233d70e` | `data/batch/version_1_trial_traces/easy_fatem_115_t0.jsonl` |
+| `canonical/easy_fatem_115_t1` | deep | unsolved | 22 | none | `c75286b3bd35` | `data/batch/version_1_trial_traces/easy_fatem_115_t1.jsonl` |
+| `canonical/easy_fatem_115_t2` | deep | silent failure | 26 | none | `4c676480f1d4` | `data/batch/version_1_trial_traces/easy_fatem_115_t2.jsonl` |
+| `canonical/easy_fatem_115_t3` | deep | unsolved | 30 | none | `ccaddde7d652` | `data/batch/version_1_trial_traces/easy_fatem_115_t3.jsonl` |
+| `canonical/easy_fatem_115_t4` | deep | silent failure | 14 | none | `07f6766cfa01` | `data/batch/version_1_trial_traces/easy_fatem_115_t4.jsonl` |
+| `canonical/easy_fatem_115_t5` | deep | silent failure | 24 | none | `2be2e6466930` | `data/batch/version_1_trial_traces/easy_fatem_115_t5.jsonl` |
+| `canonical/easy_fatem_115_t6` | deep | unsolved | 22 | none | `8a26a2354ae0` | `data/batch/version_1_trial_traces/easy_fatem_115_t6.jsonl` |
+| `canonical/easy_fatem_115_t7` | deep | unsolved | 12 | none | `a463b85ca3a1` | `data/batch/version_1_trial_traces/easy_fatem_115_t7.jsonl` |
+| `canonical/easy_fatem_115_t8` | deep | silent failure | 24 | none | `332856f7ac7a` | `data/batch/version_1_trial_traces/easy_fatem_115_t8.jsonl` |
+| `canonical/easy_fatem_115_t9` | deep | unsolved | 22 | none | `6d7b89242786` | `data/batch/version_1_trial_traces/easy_fatem_115_t9.jsonl` |
+| `canonical/easy_leancat_001_t0` | deep | unsolved | 30 | none | `ddd32fe725ba` | `data/batch/version_1_trial_traces/easy_leancat_001_t0.jsonl` |
+| `canonical/easy_leancat_001_t1` | compact | solved | 30 | none | `5b8bd661672c` | `data/batch/version_1_trial_traces/easy_leancat_001_t1.jsonl` |
+| `canonical/easy_leancat_001_t2` | compact | solved | 8 | none | `90dc3af20492` | `data/batch/version_1_trial_traces/easy_leancat_001_t2.jsonl` |
+| `canonical/easy_leancat_001_t3` | deep | unsolved | 28 | none | `c3f27169e552` | `data/batch/version_1_trial_traces/easy_leancat_001_t3.jsonl` |
+| `canonical/easy_leancat_001_t4` | compact | solved | 14 | none | `6bb4bdc19d4e` | `data/batch/version_1_trial_traces/easy_leancat_001_t4.jsonl` |
+| `canonical/easy_leancat_001_t5` | deep | unsolved | 24 | none | `00c91b1ff381` | `data/batch/version_1_trial_traces/easy_leancat_001_t5.jsonl` |
+| `canonical/easy_leancat_001_t6` | deep | unsolved | 30 | none | `4b69bbbe5199` | `data/batch/version_1_trial_traces/easy_leancat_001_t6.jsonl` |
+| `canonical/easy_leancat_001_t7` | compact | solved | 20 | none | `c875e21a9546` | `data/batch/version_1_trial_traces/easy_leancat_001_t7.jsonl` |
+| `canonical/easy_leancat_001_t8` | compact | solved | 12 | none | `d64928845a8a` | `data/batch/version_1_trial_traces/easy_leancat_001_t8.jsonl` |
+| `canonical/easy_leancat_001_t9` | compact | solved | 24 | none | `63e04f9fdde8` | `data/batch/version_1_trial_traces/easy_leancat_001_t9.jsonl` |
+| `canonical/easy_leancat_002_t0` | compact | solved | 14 | none | `f2db9b77ff82` | `data/batch/version_1_trial_traces/easy_leancat_002_t0.jsonl` |
+| `canonical/easy_leancat_002_t1` | deep | unsolved | 12 | none | `07b2564ca89f` | `data/batch/version_1_trial_traces/easy_leancat_002_t1.jsonl` |
+| `canonical/easy_leancat_002_t2` | compact | solved | 14 | none | `6b7a8f4b2518` | `data/batch/version_1_trial_traces/easy_leancat_002_t2.jsonl` |
+| `canonical/easy_leancat_002_t3` | compact | solved | 12 | none | `775d1e327edb` | `data/batch/version_1_trial_traces/easy_leancat_002_t3.jsonl` |
+| `canonical/easy_leancat_002_t4` | compact | solved | 12 | none | `f50966791019` | `data/batch/version_1_trial_traces/easy_leancat_002_t4.jsonl` |
+| `canonical/easy_leancat_002_t5` | compact | solved | 12 | none | `10c20738a1fb` | `data/batch/version_1_trial_traces/easy_leancat_002_t5.jsonl` |
+| `canonical/easy_leancat_002_t6` | compact | solved | 12 | none | `74a54f279728` | `data/batch/version_1_trial_traces/easy_leancat_002_t6.jsonl` |
+| `canonical/easy_leancat_002_t7` | compact | solved | 14 | none | `a1dd2a51f8d7` | `data/batch/version_1_trial_traces/easy_leancat_002_t7.jsonl` |
+| `canonical/easy_leancat_002_t8` | compact | solved | 14 | none | `ebd1756181f9` | `data/batch/version_1_trial_traces/easy_leancat_002_t8.jsonl` |
+| `canonical/easy_leancat_002_t9` | compact | solved | 16 | none | `de2357ca5824` | `data/batch/version_1_trial_traces/easy_leancat_002_t9.jsonl` |
 | `recovery/easy_fatem_011_t0` | compact | historical solved | 10 | none | `66a4f028bfa2` | `data/experiments/qwen_recovery_triangle_v1/easy_fatem_011_t0.jsonl` |
 | `recovery/easy_fatem_012_t0` | deep | historical silent failure; current unknown | 22 | none | `f3ce6b37ac33` | `data/experiments/qwen_recovery_triangle_v1/easy_fatem_012_t0.jsonl` |
 | `recovery/easy_fatem_019_t0` | deep | unsolved | 28 | none | `3458678ded4c` | `data/experiments/qwen_recovery_triangle_v1/easy_fatem_019_t0.jsonl` |
@@ -1700,16 +1711,16 @@ hash at the start of the report commits to the full per-file hashes and paths.
 | `tool-routed/easy_fatem_115_t1` | deep | unsolved | 80 | none | `c2684ff74712` | `data/experiments/qwen_tool_routed_subgoals_v1/easy_fatem_115_t1.jsonl` |
 | `tool-routed/easy_fatem_115_t2` | deep | silent failure | 75 | none | `ce1292a55f5e` | `data/experiments/qwen_tool_routed_subgoals_v1/easy_fatem_115_t2.jsonl` |
 | `tool-routed-aborted/easy_fatem_115_t0` | deep | interrupted | 47 | none | `7af4e0d2a865` | `data/experiments/qwen_tool_routed_subgoals_v1/aborted/easy_fatem_115_t0_interrupted_import_audit.jsonl` |
-| `medium/medium_leancat_008_t0` | deep | unsolved | 202 | cap | `338d6e0d19b4` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t0.jsonl` |
-| `medium/medium_leancat_008_t1` | deep | unsolved | 202 | cap | `a5aa4a28174b` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t1.jsonl` |
-| `medium/medium_leancat_008_t2` | deep | unsolved | 147 | stuck | `885d45b87966` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t2.jsonl` |
-| `medium/medium_leancat_008_t3` | deep | unsolved | 202 | cap | `1f7961746adb` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t3.jsonl` |
-| `medium/medium_leancat_008_t4` | deep | unsolved | 202 | cap | `8480e03b6660` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t4.jsonl` |
-| `medium/medium_leancat_008_t5` | deep | unsolved | 202 | cap | `0ec978ba5418` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t5.jsonl` |
-| `medium/medium_leancat_008_t6` | deep | unsolved | 202 | cap | `24d3bf38eeb7` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t6.jsonl` |
-| `medium/medium_leancat_008_t7` | deep | unsolved | 151 | stuck | `8d80b9dab5e2` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t7.jsonl` |
-| `medium/medium_leancat_008_t8` | deep | unsolved | 116 | stuck | `5c73c13885d3` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t8.jsonl` |
-| `medium/medium_leancat_008_t9` | deep | unsolved | 202 | cap | `d7caf1adecff` | `data/experiments/qwen_medium_subgoals_v1/medium_leancat_008_t9.jsonl` |
+| `medium/medium_leancat_008_t0` | deep | unsolved | 202 | cap | `338d6e0d19b4` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t0.jsonl` |
+| `medium/medium_leancat_008_t1` | deep | unsolved | 202 | cap | `a5aa4a28174b` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t1.jsonl` |
+| `medium/medium_leancat_008_t2` | deep | unsolved | 147 | stuck | `885d45b87966` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t2.jsonl` |
+| `medium/medium_leancat_008_t3` | deep | unsolved | 202 | cap | `1f7961746adb` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t3.jsonl` |
+| `medium/medium_leancat_008_t4` | deep | unsolved | 202 | cap | `8480e03b6660` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t4.jsonl` |
+| `medium/medium_leancat_008_t5` | deep | unsolved | 202 | cap | `0ec978ba5418` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t5.jsonl` |
+| `medium/medium_leancat_008_t6` | deep | unsolved | 202 | cap | `24d3bf38eeb7` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t6.jsonl` |
+| `medium/medium_leancat_008_t7` | deep | unsolved | 151 | stuck | `8d80b9dab5e2` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t7.jsonl` |
+| `medium/medium_leancat_008_t8` | deep | unsolved | 116 | stuck | `5c73c13885d3` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t8.jsonl` |
+| `medium/medium_leancat_008_t9` | deep | unsolved | 202 | cap | `d7caf1adecff` | `data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t9.jsonl` |
 
 ### Reproduction Commands
 
@@ -1718,20 +1729,20 @@ agent or call an external API.
 
 ```powershell
 # Inventory the research traces (exclude pytest fixtures).
-Get-ChildItem data\batch -Filter *.jsonl -File
-Get-ChildItem data\experiments -Recurse -Filter *.jsonl -File
+Get-ChildItem data\batch\version_1_trial_traces -Filter *.jsonl -File
+Get-ChildItem data\batch\qwen_medium_subgoals_v1 -Filter *.jsonl -File
 
 # Validate every canonical record and its references.
 python -m pytest tests\scripts\test_analyze_lean_easy_failures.py -q `
-  -p no:cacheprovider --basetemp data\_pytest_basetemp_behavior_report
+  -p no:cacheprovider --basetemp .pytest-basetemp-behavior-report
 
 # Recompute a source hash.
 Get-FileHash -Algorithm SHA256 `
-  data\batch\easy_fatem_115_t2.jsonl
+  data\batch\version_1_trial_traces\easy_fatem_115_t2.jsonl
 
 # Inspect one trace without changing it.
 $env:PYTHONPATH = "src"
-python -c "from traj_eval.trace_core.storage import read_trial; m,e=read_trial(r'data\batch\easy_fatem_115_t2.jsonl'); print(m.trial_id, len(e))"
+python -c "from traj_eval.trace_core.storage import read_trial; m,e=read_trial(r'data\batch\version_1_trial_traces\easy_fatem_115_t2.jsonl'); print(m.trial_id, len(e))"
 ```
 
 ### Limitations

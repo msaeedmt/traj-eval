@@ -1,4 +1,4 @@
-"""Four-role group chat with a deterministic workflow loop (Methodology §4.1).
+"""Historical four-role compatibility chat with deterministic routing.
 
 This is the Step 1d substrate: planner, engineer, critic, executor wired into an
 AG2 GroupChat whose speaker selection is a *deterministic* function encoding the
@@ -14,8 +14,9 @@ observer (O1) will trace, so it must be a known function, not a model guess.
 The repair edge (critic REJECT -> engineer) is the genuine loop; hitting
 max_repairs is the operational signal behind the perseveration detector (O2).
 
-Execution is simulated on toy tasks (no sandbox yet); a real executor is a
-later step.
+This historical path treats Planner and the simulated Executor as reasoning
+agents. Current Lean experiments instead use Reasoner, Engineer, and Critic,
+with tool execution handled by a non-agent runtime.
 """
 
 from __future__ import annotations
@@ -55,7 +56,7 @@ def build_team(
     max_round: int = 20,
     ledger: RoutingLedger | None = None,
 ) -> tuple[GroupChatManager, UserProxyAgent, GroupChat]:
-    """Build the four-role group chat and its manager.
+    """Build the historical four-role compatibility chat and its manager.
 
     Returns (manager, user_proxy, groupchat). Start a run with
     ``user_proxy.initiate_chat(manager, message=task)``.

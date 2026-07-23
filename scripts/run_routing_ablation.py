@@ -29,8 +29,8 @@ from traj_eval.agents.lean_routing_ablation import (
     CONTROLLER_PROMPT,
     CONTROLLER_STUCK_PROBES,
     RETRIEVAL_ONLY_STREAK_LIMIT,
-    RoutingArm,
     TOOL_SUBSTRATE_PROVENANCE,
+    RoutingArm,
     build_routing_ablation_team,
     evaluate_controller_stuck_probe,
     finalize_routing_ablation,
@@ -41,10 +41,13 @@ from traj_eval.metrics.communication import summarize_communication
 from traj_eval.metrics.lean.artifacts import extract_artifacts
 from traj_eval.metrics.lean.outcomes import classify_outcome
 from traj_eval.metrics.lean.validator import validate
+from traj_eval.trace_core.schema import TrialMeta
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
 DATASET_ROOT = Path("dataset/Lean")
 DEFAULT_OUTPUT_DIR = Path("data/batch/version_4_routing_ablation")
+DEFAULT_ANALYSIS_DIR = Path("data/analysis/version_4_routing_ablation")
+DEFAULT_DOCS_DIR = Path("docs/experiments/version_4_routing_ablation")
 DEFAULT_TASKS = ("easy_fatem_019", "easy_fatem_020")
 PROJECT_CONTRACT_FILES = ("lean-toolchain", "lake-manifest.json", "lakefile.lean")
 WORKER_MAX_TOKENS = 1_500
@@ -170,20 +173,72 @@ def _refuse_existing(path: Path) -> None:
         raise FileExistsError(f"refusing to overwrite existing artifact: {path.resolve()}")
 
 
-def _trace_is_valid(path: Path) -> bool:
+def _trace_is_valid(
+    path: Path,
+    *,
+    expected_meta: TrialMeta | None = None,
+) -> bool:
     if not path.is_file() or path.stat().st_size == 0:
         return False
     try:
         meta, events = read_trial(path)
     except Exception:  # noqa: BLE001 - resume must reject any malformed evidence
         return False
-    return (
+    if (
         meta.config.get("retrieval_only_streak_limit")
-        == RETRIEVAL_ONLY_STREAK_LIMIT
-        and meta.config.get("retrieval_only_streak_evaluation")
-        == RETRIEVAL_ONLY_STREAK_EVALUATION
-        and any(event.payload.get("phase") == "termination" for event in events)
+        != RETRIEVAL_ONLY_STREAK_LIMIT
+        or meta.config.get("retrieval_only_streak_evaluation")
+        != RETRIEVAL_ONLY_STREAK_EVALUATION
+        or not events
+        or events[-1].payload.get("phase") != "termination"
+        or any(event.trial_id != meta.trial_id for event in events)
+    ):
+        return False
+    return expected_meta is None or (
+        meta.model_dump(exclude={"started_at"})
+        == expected_meta.model_dump(exclude={"started_at"})
     )
+
+
+def _portable_trace_path(path: Path) -> str:
+    """Represent a trace without persisting an absolute workstation path."""
+    resolved = path.resolve()
+    roots = (Path(__file__).resolve().parents[1], Path.cwd().resolve())
+    for root in roots:
+        try:
+            return resolved.relative_to(root).as_posix()
+        except ValueError:
+            continue
+    try:
+        return Path(os.path.relpath(resolved, roots[1])).as_posix()
+    except ValueError:
+        return resolved.name
+
+
+def _resolved_path_key(path: Path) -> str:
+    resolved = str(path.resolve())
+    return resolved.casefold() if os.name == "nt" else resolved
+
+
+def _require_distinct_run_roots(
+    output_dir: Path,
+    analysis_dir: Path,
+    docs_dir: Path,
+) -> None:
+    roots = {
+        "raw": output_dir,
+        "analysis": analysis_dir,
+        "docs": docs_dir,
+    }
+    keys = [_resolved_path_key(path) for path in roots.values()]
+    if len(set(keys)) != len(keys):
+        manifest = ", ".join(
+            f"{label}={path.resolve()}" for label, path in roots.items()
+        )
+        raise ValueError(
+            "raw, analysis, and docs run roots must resolve to distinct paths: "
+            f"{manifest}"
+        )
 
 
 def _terminal_details(path: Path) -> dict[str, Any]:
@@ -240,6 +295,37 @@ def _trial_config(
     }
 
 
+def _trial_meta(
+    record: ProblemRecord,
+    trial: int,
+    arm: RoutingArm,
+    *,
+    model: str,
+    max_worker_turns: int,
+    max_total_model_calls: int,
+    contract_hashes: dict[str, str],
+    attempt: int = 0,
+) -> TrialMeta:
+    trial_id = f"v4_{arm.value}_{record.id}_t{trial:02d}"
+    if attempt:
+        trial_id += f"_retry{attempt}"
+    return make_trial_meta(
+        trial_id=trial_id,
+        task_id=record.id,
+        backbone=model,
+        testbed="lean",
+        architecture=f"lean_routing_{arm.value}",
+        grounding=True,
+        config=_trial_config(
+            arm,
+            model=model,
+            max_worker_turns=max_worker_turns,
+            max_total_model_calls=max_total_model_calls,
+            contract_hashes=contract_hashes,
+        ),
+    )
+
+
 def _score_trace(
     record: ProblemRecord,
     arm: RoutingArm,
@@ -257,7 +343,7 @@ def _score_trace(
         arm=arm.value,
         task_id=record.id,
         trial=trial,
-        trace=str(path.as_posix()),
+        trace=_portable_trace_path(path),
         attempt=int(details.get("attempt", 0)),
         outcome=classify_outcome(events, metrics),
         termination=str(details.get("termination_reason", "missing_terminal_event")),
@@ -342,24 +428,17 @@ def run_one_trial(
         ledger=ledger,
         step_context=step_context,
     )
-    trial_id = f"v4_{arm.value}_{record.id}_t{trial:02d}"
-    if attempt:
-        trial_id += f"_retry{attempt}"
-    meta = make_trial_meta(
-        trial_id=trial_id,
-        task_id=record.id,
-        backbone=model,
-        testbed="lean",
-        architecture=f"lean_routing_{arm.value}",
-        grounding=True,
-        config=_trial_config(
-            arm,
-            model=model,
-            max_worker_turns=max_worker_turns,
-            max_total_model_calls=max_total_model_calls,
-            contract_hashes=contract_hashes,
-        ),
+    meta = _trial_meta(
+        record,
+        trial,
+        arm,
+        model=model,
+        max_worker_turns=max_worker_turns,
+        max_total_model_calls=max_total_model_calls,
+        contract_hashes=contract_hashes,
+        attempt=attempt,
     )
+    trial_id = meta.trial_id
     writer = TrialLogWriter(path, meta)
     observer = TraceObserver(
         writer, trial_id=trial_id, ledger=ledger, step_context=step_context
@@ -408,10 +487,13 @@ def _retry_path(path: Path) -> Path:
 
 def preflight_new_run(
     output_dir: Path,
+    analysis_dir: Path,
+    docs_dir: Path,
     schedule: list[tuple[int, str, RoutingArm]],
     arms: tuple[RoutingArm, ...],
 ) -> None:
     """Refuse the entire run before its first call if any future artifact collides."""
+    _require_distinct_run_roots(output_dir, analysis_dir, docs_dir)
     targets: list[Path] = []
     for trial, task_id, arm in schedule:
         trace = _trace_path(output_dir, arm, task_id, trial)
@@ -419,15 +501,15 @@ def preflight_new_run(
     for arm in arms:
         targets.extend(
             (
-                output_dir / arm.value / "summary.json",
-                output_dir / arm.value / "RESULTS.md",
+                analysis_dir / arm.value / "summary.json",
+                docs_dir / arm.value / "RESULTS.md",
             )
         )
     targets.extend(
         (
             output_dir / "run_manifest.json",
-            output_dir / "analysis" / "metrics.json",
-            output_dir / "analysis" / "COMPARISON.md",
+            analysis_dir / "metrics.json",
+            docs_dir / "COMPARISON.md",
         )
     )
     collisions = [target.resolve() for target in targets if target.exists()]
@@ -448,14 +530,33 @@ def run_trial_with_one_infrastructure_retry(
     **kwargs: Any,
 ) -> TrialOutcome:
     """Retry infrastructure once in a new file; never retry an agent failure."""
+    expected_meta = _trial_meta(
+        record,
+        trial,
+        arm,
+        model=kwargs["model"],
+        max_worker_turns=kwargs["max_worker_turns"],
+        max_total_model_calls=kwargs["max_total_model_calls"],
+        contract_hashes=kwargs["contract_hashes"],
+    )
     if path.exists():
-        if not resume or not _trace_is_valid(path):
+        if not resume or not _trace_is_valid(path, expected_meta=expected_meta):
             raise FileExistsError(f"existing trace is not safely resumable: {path.resolve()}")
         if _terminal_details(path).get("termination_reason") != "infrastructure_error":
             return _score_trace(record, arm, trial, kwargs["compiler"], path)
         retry_path = _retry_path(path)
         if retry_path.exists():
-            if not _trace_is_valid(retry_path):
+            retry_meta = _trial_meta(
+                record,
+                trial,
+                arm,
+                model=kwargs["model"],
+                max_worker_turns=kwargs["max_worker_turns"],
+                max_total_model_calls=kwargs["max_total_model_calls"],
+                contract_hashes=kwargs["contract_hashes"],
+                attempt=1,
+            )
+            if not _trace_is_valid(retry_path, expected_meta=retry_meta):
                 raise FileExistsError(f"invalid retry trace: {retry_path.resolve()}")
             if _terminal_details(retry_path).get("termination_reason") == "infrastructure_error":
                 raise RuntimeError(
@@ -511,6 +612,8 @@ def _arm_summary(
         "max_retrieval_only_streak_seen": max(
             (item.max_retrieval_only_streak_seen for item in outcomes), default=0
         ),
+        # Compatibility field retained for existing V4 summaries; the measured
+        # role is the Reasoner, not a fourth Planner agent.
         "planner_recoveries": sum(item.reasoner_stuck_to_engineer for item in outcomes),
         "engineer_replans": sum(item.engineer_stuck_to_reasoner for item in outcomes),
         "engineer_local_retries": sum(item.engineer_local_retries for item in outcomes),
@@ -633,7 +736,7 @@ def _summary_markdown(summary: dict[str, Any]) -> str:
             f"- Mean model calls: {summary['mean_total_model_calls']:.2f}",
             "- Maximum retrieval-only streak: "
             f"{summary['max_retrieval_only_streak_seen']}",
-            f"- Reasoner/planner stuck recoveries: {summary['planner_recoveries']}",
+            f"- Reasoner stuck recoveries: {summary['planner_recoveries']}",
             f"- Engineer strategic replans: {summary['engineer_replans']}",
             f"- Engineer local retries: {summary['engineer_local_retries']}",
             "",
@@ -681,23 +784,26 @@ def _comparison_markdown(comparison: dict[str, Any]) -> str:
 
 def write_summaries(
     output_dir: Path,
+    analysis_dir: Path,
+    docs_dir: Path,
     outcomes: list[TrialOutcome],
     arms: tuple[RoutingArm, ...],
     expected_per_arm: int,
     model: str,
 ) -> None:
+    _require_distinct_run_roots(output_dir, analysis_dir, docs_dir)
     output_targets = [output_dir / "run_manifest.json"]
     for arm in arms:
         output_targets.extend(
             [
-                output_dir / arm.value / "summary.json",
-                output_dir / arm.value / "RESULTS.md",
+                analysis_dir / arm.value / "summary.json",
+                docs_dir / arm.value / "RESULTS.md",
             ]
         )
     output_targets.extend(
         [
-            output_dir / "analysis" / "metrics.json",
-            output_dir / "analysis" / "COMPARISON.md",
+            analysis_dir / "metrics.json",
+            docs_dir / "COMPARISON.md",
         ]
     )
     for target in output_targets:
@@ -707,10 +813,12 @@ def write_summaries(
     for arm in arms:
         arm_outcomes = [item for item in outcomes if item.arm == arm.value]
         summary = _arm_summary(arm, arm_outcomes, expected_per_arm, model)
-        summary_path = output_dir / arm.value / "summary.json"
-        results_path = output_dir / arm.value / "RESULTS.md"
+        summary_path = analysis_dir / arm.value / "summary.json"
+        results_path = docs_dir / arm.value / "RESULTS.md"
         _refuse_existing(summary_path)
         _refuse_existing(results_path)
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        results_path.parent.mkdir(parents=True, exist_ok=True)
         summary_path.write_text(
             json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
         )
@@ -718,6 +826,7 @@ def write_summaries(
         all_summaries[arm.value] = summary
     manifest_path = output_dir / "run_manifest.json"
     _refuse_existing(manifest_path)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(
         json.dumps(
             {
@@ -731,24 +840,68 @@ def write_summaries(
         encoding="utf-8",
     )
     comparison = build_preplanned_comparison(outcomes)
-    metrics_path = output_dir / "analysis" / "metrics.json"
-    comparison_path = output_dir / "analysis" / "COMPARISON.md"
+    metrics_path = analysis_dir / "metrics.json"
+    comparison_path = docs_dir / "COMPARISON.md"
     _refuse_existing(metrics_path)
     _refuse_existing(comparison_path)
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
+    comparison_path.parent.mkdir(parents=True, exist_ok=True)
     metrics_path.write_text(
         json.dumps(comparison, indent=2, sort_keys=True), encoding="utf-8"
     )
     comparison_path.write_text(_comparison_markdown(comparison), encoding="utf-8")
 
 
-def _read_smoke_result(path: Path) -> dict[str, Any]:
+def _controller_smoke_contract(
+    probe: Any,
+    *,
+    model: str,
+    timeout: float,
+    provider: dict[str, str],
+) -> dict[str, Any]:
+    request = {
+        "transcript": probe.transcript,
+        "allowed_next_roles": sorted(role.value for role in probe.allowed_roles),
+    }
+    route_hash = hashlib.sha256(
+        provider["OPENAI_BASE_URL"].encode("utf-8")
+    ).hexdigest()
+    return {
+        "schema": "han_controller_stuck_smoke_v4",
+        "probe": probe.name,
+        "expected_role": probe.expected_role.value,
+        "request": request,
+        "model": model,
+        "controller_max_tokens": CONTROLLER_MAX_TOKENS,
+        "provider_max_retries": PROVIDER_MAX_RETRIES,
+        "provider_route_sha256": route_hash,
+        "timeout_seconds": timeout,
+    }
+
+
+def _read_smoke_result(
+    path: Path,
+    *,
+    expected_contract: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     try:
         result = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise RuntimeError(f"invalid preserved smoke result: {path.resolve()}") from exc
     if not isinstance(result, dict) or not isinstance(result.get("passed"), bool):
         raise RuntimeError(f"invalid preserved smoke schema: {path.resolve()}")
+    if expected_contract is not None:
+        mismatches = [
+            key
+            for key, expected in expected_contract.items()
+            if result.get(key) != expected
+        ]
+        if mismatches:
+            fields = ", ".join(sorted(mismatches))
+            raise RuntimeError(
+                "incompatible preserved smoke contract "
+                f"({fields}): {path.resolve()}"
+            )
     return result
 
 
@@ -760,7 +913,7 @@ def run_controller_stuck_smoke(
     *,
     resume: bool = False,
 ) -> int:
-    """Make two routing-only calls for planner and Engineer stuck scenarios."""
+    """Make two routing-only calls for Reasoner and Engineer stuck scenarios."""
     target_dir = output_dir / "smoke" / "controller_stuck"
     config = build_llm_config(
         temperature=0.0,
@@ -776,10 +929,16 @@ def run_controller_stuck_smoke(
     failed = 0
     for probe in (item for item in CONTROLLER_STUCK_PROBES if item.live_smoke):
         target = target_dir / f"{probe.name}.json"
+        contract = _controller_smoke_contract(
+            probe,
+            model=model,
+            timeout=timeout,
+            provider=provider,
+        )
         if target.exists():
             if not resume:
                 _refuse_existing(target)
-            original = _read_smoke_result(target)
+            original = _read_smoke_result(target, expected_contract=contract)
             if original["passed"]:
                 continue
             target = target.with_name(f"{target.stem}_retry1{target.suffix}")
@@ -790,10 +949,7 @@ def run_controller_stuck_smoke(
             llm_config=config,
             human_input_mode="NEVER",
         )
-        request = {
-            "transcript": probe.transcript,
-            "allowed_next_roles": sorted(role.value for role in probe.allowed_roles),
-        }
+        request = contract["request"]
         raw = controller.generate_reply(
             messages=[{"role": "user", "content": json.dumps(request)}]
         )
@@ -803,10 +959,7 @@ def run_controller_stuck_smoke(
         target.write_text(
             json.dumps(
                 {
-                    "schema": "han_controller_stuck_smoke_v4",
-                    "probe": probe.name,
-                    "expected_role": probe.expected_role.value,
-                    "request": request,
+                    **contract,
                     "response": message,
                     "passed": passed,
                     "score_reason": reason,
@@ -857,6 +1010,8 @@ def main() -> int:
     parser.add_argument("--provider-env", type=Path)
     parser.add_argument("--lean-project", type=Path, default=DATASET_ROOT)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--analysis-dir", type=Path, default=DEFAULT_ANALYSIS_DIR)
+    parser.add_argument("--docs-dir", type=Path, default=DEFAULT_DOCS_DIR)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
 
@@ -866,7 +1021,13 @@ def main() -> int:
     print(f"mode={args.mode} tasks={tasks} arms={[arm.value for arm in arms]}")
     print(f"official trial slots={len(schedule)}; max worker turns={args.max_worker_turns}")
     if args.mode == "dry-run":
-        preflight_new_run(args.output_dir, schedule, arms)
+        preflight_new_run(
+            args.output_dir,
+            args.analysis_dir,
+            args.docs_dir,
+            schedule,
+            arms,
+        )
         print("collision preflight=pass")
         for trial, task_id, arm in schedule:
             print(f"t{trial:02d} {task_id} {arm.value}")
@@ -900,11 +1061,22 @@ def main() -> int:
         if args.mode == "arm-smoke"
         else args.output_dir
     )
+    run_analysis = (
+        args.analysis_dir / "smoke" / "arm_smoke"
+        if args.mode == "arm-smoke"
+        else args.analysis_dir
+    )
+    run_docs = (
+        args.docs_dir / "smoke" / "arm_smoke"
+        if args.mode == "arm-smoke"
+        else args.docs_dir
+    )
     run_schedule = (
         balanced_schedule(tasks, arms, 1) if args.mode == "arm-smoke" else schedule
     )
+    _require_distinct_run_roots(run_output, run_analysis, run_docs)
     if not args.resume:
-        preflight_new_run(run_output, run_schedule, arms)
+        preflight_new_run(run_output, run_analysis, run_docs, run_schedule, arms)
     outcomes: list[TrialOutcome] = []
     for trial, task_id, arm in run_schedule:
         path = _trace_path(run_output, arm, task_id, trial)
@@ -926,7 +1098,15 @@ def main() -> int:
             )
         )
     expected_per_arm = len(tasks) * (1 if args.mode == "arm-smoke" else args.trials)
-    write_summaries(run_output, outcomes, arms, expected_per_arm, args.model)
+    write_summaries(
+        run_output,
+        run_analysis,
+        run_docs,
+        outcomes,
+        arms,
+        expected_per_arm,
+        args.model,
+    )
     return 0
 
 

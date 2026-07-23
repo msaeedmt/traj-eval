@@ -1,8 +1,8 @@
 # Repo Layout Rules
 
 This repo should stay simple: source code in `src/`, runnable commands in
-`scripts/`, compact benchmark data in `dataset/`, raw trial traces in `data/`,
-and human explanations in `docs/`.
+`scripts/`, compact benchmark data in `dataset/`, raw trial traces in
+`data/batch/`, and human explanations in `docs/`.
 
 ## Top-Level Rule
 
@@ -123,6 +123,13 @@ Example:
 easy_fatem_111_t7.jsonl
 ```
 
+Group retained traces by a versioned cohort or run bundle:
+
+```text
+data/batch/version_1_trial_traces/easy_fatem_111_t7.jsonl
+data/batch/qwen_medium_subgoals_v1/medium_leancat_008_t0.jsonl
+```
+
 `data/` is ignored by default because raw outputs can become large. Track only
 selected benchmark evidence that is intentionally part of the shared result.
 
@@ -168,9 +175,9 @@ Do not put raw JSONL traces, large tables, or notebook outputs in `docs/`.
 Recommended report pairing:
 
 ```text
-data/batch/*.jsonl
--> data/analysis/*.csv
--> docs/*_ANALYSIS.md
+data/batch/<cohort>/*.jsonl
+-> data/analysis/<cohort>/
+-> docs/reports/ or docs/experiments/
 ```
 
 ## Tests
@@ -236,9 +243,9 @@ Avoid vague names such as `notes.md`, `output.json`, `final.md`, or
 For Lean easy-task analysis, use this path:
 
 ```text
-1. Run trials into data/batch/{difficulty}_{task_id}_t{trial}.jsonl
+1. Run trials into data/batch/version_1_trial_traces/{difficulty}_{task_id}_t{trial}.jsonl
 2. Aggregate them into data/analysis/lean_easy_failure_patterns.csv
-3. Interpret them in docs/LEAN_EASY_FAILURE_PATTERN_ANALYSIS.md
+3. Interpret them in docs/reports/LEAN_AGENT_BEHAVIOR_ANALYSIS.md
 4. Keep private reruns and debugging under runs/ or local_reference/
 ```
 

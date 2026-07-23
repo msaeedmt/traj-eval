@@ -7,7 +7,7 @@ The final comparison will report, by task and arm:
 - worker, controller, and total model calls;
 - output tokens when the provider reports usage, latency, and tool failures;
 - repeated-call and failed-compile stuck terminations;
-- Reasoner/planner stuck recovery, Engineer strategic replanning, and local
+- Reasoner stuck recovery, Engineer strategic replanning, and local
   Engineer repair;
 - communication graph metrics.
 
