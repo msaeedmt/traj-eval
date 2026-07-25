@@ -51,6 +51,7 @@ def build_llm_config(
         "model": model,
         "api_key": api_key,
         "temperature": temperature,
+        "max_retries": 0,
     }
     if max_tokens is not None:
         if max_tokens < 1:

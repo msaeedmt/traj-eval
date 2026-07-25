@@ -30,7 +30,9 @@ def test_provider_default_omits_qwen_specific_extra_body(monkeypatch):
 
     config = build_llm_config(model="gpt-4o-mini")
 
-    assert config.config_list[0].get("extra_body") is None
+    entry = config.config_list[0]
+    assert entry["max_retries"] == 0
+    assert entry.get("extra_body") is None
 
 
 def test_provider_limits_must_be_positive(monkeypatch):
