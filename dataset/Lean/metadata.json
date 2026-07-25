@@ -221,6 +221,7 @@
         "source_id":  "S_0041",
         "difficulty":  "hard",
         "imports":  [
+                        "Mathlib.CategoryTheory.ConcreteCategory.Forget",
                         "Mathlib.Order.Category.CompleteLat",
                         "Mathlib.SetTheory.Cardinal.Basic"
                     ]
@@ -233,8 +234,9 @@
         "difficulty":  "hard",
         "imports":  [
                         "Mathlib.CategoryTheory.Limits.Shapes.End",
-                        "Mathlib.Algebra.Category.ModuleCat.Basic",
-                        "Mathlib.LinearAlgebra.Trace"
+                        "Mathlib.CategoryTheory.Linear.Yoneda",
+                        "Mathlib.LinearAlgebra.Trace",
+                        "Mathlib.Algebra.Category.FGModuleCat.Basic"
                     ]
     },
     {
@@ -307,8 +309,7 @@
         "source_id":  "13",
         "difficulty":  "hard",
         "imports":  [
-                        "Mathlib.Algebra.Ring.Idempotent",
-                        "Mathlib.Algebra.Field.IsField"
+                        "Mathlib.Algebra.Ring.Idempotent"
                     ]
     },
     {
