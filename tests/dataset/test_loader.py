@@ -10,6 +10,8 @@ import pytest
 
 from traj_eval.dataset.loader import (
     ProblemRecord,
+    _extract_context,
+    _extract_statement,
     load_dataset,
     parse_problem_file,
     to_lean_task,
@@ -103,6 +105,49 @@ def test_context_captured_for_leancat():
     assert "variable {C" in task.imports
     # imports come before context in the prelude
     assert task.imports.index("import") < task.imports.index("variable")
+
+
+def test_local_declarations_captured_for_hard_tasks():
+    records = {r.id: r for r in load_dataset(ROOT, difficulty="hard")}
+
+    leancat041 = records["hard_leancat_041"]
+    assert "structure FreeObject" in leancat041.context
+    assert "(uniq :" in leancat041.context
+    assert leancat041.context.index("namespace") < leancat041.context.index(
+        "structure FreeObject"
+    )
+    assert "structure FreeObject" in to_lean_task(leancat041).imports
+
+    fatex048 = records["hard_fatex_048"]
+    assert "A commutative ring is absolutely flat" in fatex048.context
+    assert "class IsAbsolutelyFlat" in fatex048.context
+    assert "out ⦃P : Type⦄" in fatex048.context
+    assert "class IsAbsolutelyFlat" in to_lean_task(fatex048).imports
+
+
+def test_complete_preamble_preserves_comments_and_attributes():
+    text = """\
+/- Informal statement:
+Keep the complete preamble.
+-/
+
+import Mathlib
+
+open Nat
+
+/-- A helper declaration used by the target. -/
+@[simp] def helper (n : Nat) := n
+
+theorem target : helper 1 = 1 := by
+  rfl
+"""
+
+    assert _extract_statement(text) == "theorem target : helper 1 = 1"
+    assert _extract_context(text) == """\
+open Nat
+
+/-- A helper declaration used by the target. -/
+@[simp] def helper (n : Nat) := n"""
 
 
 def test_no_spurious_context_for_self_contained():
