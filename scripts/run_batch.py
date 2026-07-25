@@ -46,18 +46,16 @@ from traj_eval.agents import (
 from traj_eval.agents.free_routing import finalize_run
 from traj_eval.agents.lean_team import (
     RECOVERY_TRIANGLE_V1,
-    SUPPORTED_LEAN_SETUPS,
     TOOL_ROUTED_SUBGOALS_V1,
     TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
     build_lean_free_team,
 )
-from traj_eval.agents.subgoal_state import SubgoalLedger, make_subgoal_tools
 from traj_eval.dataset.loader import ProblemRecord, load_dataset, to_lean_task
 from traj_eval.detectors.perseveration import detect_perseveration
 from traj_eval.metrics.communication import CommunicationSummary, summarize_communication
 from traj_eval.metrics.lean.artifacts import extract_artifacts
 from traj_eval.metrics.lean.outcomes import classify_outcome
-from traj_eval.metrics.lean.validator import validate, validate_candidate
+from traj_eval.metrics.lean.validator import validate
 from traj_eval.trace_core.schema import AgentRole
 from traj_eval.trace_core.storage import TrialLogWriter, read_trial
 
@@ -66,6 +64,11 @@ PROJECT_DIR = Path(os.environ.get("TRAJ_EVAL_LEAN_PROJECT", str(DATASET_ROOT)))
 LEAN_TIMEOUT = int(os.environ.get("TRAJ_EVAL_LEAN_TIMEOUT", "360"))
 LOG_DIR = Path("data/batch")
 LEAN_TOOL_NAMES = ("check_lean", "search_lemmas", "try_tactic", "show_goals")
+LEAN_AGENT_ROLES = (
+    AgentRole.REASONER,
+    AgentRole.ENGINEER,
+    AgentRole.CRITIC,
+)
 DEFAULT_MAX_TURNS = 30
 DEFAULT_WORKER_MAX_TOKENS = 1500
 DEFAULT_WORKER_TIMEOUT_SECONDS = 180.0
@@ -144,6 +147,74 @@ def _resolve_worker_thinking(model: str, mode: str) -> bool | None:
     return False if "qwen" in model.casefold() else None
 
 
+def _resolve_role_models(
+    *,
+    worker_model: str | None,
+    reasoner_model: str | None,
+    engineer_model: str | None,
+    critic_model: str | None,
+) -> dict[AgentRole, str]:
+    """Resolve role-specific models with the legacy worker model as fallback."""
+
+    fallback = worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
+    requested = {
+        AgentRole.REASONER: reasoner_model or fallback,
+        AgentRole.ENGINEER: engineer_model or fallback,
+        AgentRole.CRITIC: critic_model or fallback,
+    }
+    resolved: dict[AgentRole, str] = {}
+    for role, model in requested.items():
+        if not model:
+            raise ValueError(f"missing model selection for role {role.value}")
+        resolved[role] = model
+    return resolved
+
+
+def _resolve_role_max_tokens(
+    *,
+    worker_max_tokens: int,
+    reasoner_max_tokens: int | None,
+    engineer_max_tokens: int | None,
+    critic_max_tokens: int | None,
+) -> dict[AgentRole, int]:
+    """Resolve per-role budgets with the legacy worker budget as fallback."""
+
+    budgets = {
+        AgentRole.REASONER: (
+            reasoner_max_tokens
+            if reasoner_max_tokens is not None
+            else worker_max_tokens
+        ),
+        AgentRole.ENGINEER: (
+            engineer_max_tokens
+            if engineer_max_tokens is not None
+            else worker_max_tokens
+        ),
+        AgentRole.CRITIC: (
+            critic_max_tokens
+            if critic_max_tokens is not None
+            else worker_max_tokens
+        ),
+    }
+    invalid = [role.value for role, budget in budgets.items() if budget < 1]
+    if invalid:
+        raise ValueError(
+            f"role max-token budgets must be positive for: {', '.join(invalid)}"
+        )
+    return budgets
+
+
+def _backbone_label(role_models: dict[AgentRole, str]) -> str:
+    unique_models = set(role_models.values())
+    return next(iter(unique_models)) if len(unique_models) == 1 else "mixed"
+
+
+def _trial_id(record_id: str, trial: int, run_id: str | None) -> str:
+    if run_id is None:
+        return f"{record_id}_t{trial}"
+    return f"{run_id}__{record_id}__t{trial + 1:02d}"
+
+
 def _score_trace(
     record: ProblemRecord,
     trial: int,
@@ -186,43 +257,13 @@ def _build_agent_tools(compiler) -> dict:
 
 def _build_trial_tools(compiler, record: ProblemRecord, setup: str):
     """Build a matched tool surface and optional trial-local subgoal state."""
-    if setup not in {
-        TOOL_ROUTED_SUBGOALS_V1,
-        TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
-    }:
+    if setup == RECOVERY_TRIANGLE_V1:
         return _build_agent_tools(compiler), None, None
 
-    from traj_eval.tools.lean_search import make_search_lemmas
-
-    subgoals = SubgoalLedger(min_nodes=3, max_failures=3, max_forced_replans=2)
-    task = to_lean_task(record)
-    tools = make_subgoal_tools(
-        compiler,
-        subgoals,
-        final_validator=lambda code: validate_candidate(code, task, compiler),
-        prelude=record.import_block,
-        auto_submit_verified=True,
+    raise RuntimeError(
+        f"Setup {setup!r} requires the excluded subgoal-agent implementation. "
+        f"This experiment is restricted to {RECOVERY_TRIANGLE_V1!r}."
     )
-    tools["search_lemmas"] = make_search_lemmas(num_results=5)
-    if setup == TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1:
-        from traj_eval.tools.lean_goals import make_show_goals
-        from traj_eval.tools.lean_tactic import make_try_tactic
-
-        tools["try_tactic"] = make_try_tactic(compiler)
-        tools["show_goals"] = make_show_goals(compiler)
-
-    def post_tool_route(
-        caller: AgentRole, called: frozenset[str]
-    ) -> tuple[AgentRole, str] | None:
-        if (
-            caller is AgentRole.REASONER
-            and subgoals.plan_ready
-            and "route_next_agent" not in called
-        ):
-            return AgentRole.ENGINEER, "controller_plan_ready_fallback"
-        return None
-
-    return tools, subgoals, post_tool_route
 
 
 def run_one_trial(
@@ -234,20 +275,47 @@ def run_one_trial(
     setup: str = RECOVERY_TRIANGLE_V1,
     max_turns: int = DEFAULT_MAX_TURNS,
     worker_model: str | None = None,
+    reasoner_model: str | None = None,
+    engineer_model: str | None = None,
+    critic_model: str | None = None,
     worker_thinking: str = "auto",
     worker_max_tokens: int = DEFAULT_WORKER_MAX_TOKENS,
+    reasoner_max_tokens: int | None = None,
+    engineer_max_tokens: int | None = None,
+    critic_max_tokens: int | None = None,
     worker_timeout_seconds: float = DEFAULT_WORKER_TIMEOUT_SECONDS,
+    temperature: float = 0.2,
+    run_id: str | None = None,
 ) -> TrialOutcome:
     prompt = _task_prompt(record, setup=setup)
 
-    worker_model = worker_model or os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
-    enable_thinking = _resolve_worker_thinking(worker_model, worker_thinking)
-    llm_config = build_llm_config(
-        model=worker_model,
-        enable_thinking=enable_thinking,
-        max_tokens=worker_max_tokens,
-        timeout_seconds=worker_timeout_seconds,
+    role_models = _resolve_role_models(
+        worker_model=worker_model,
+        reasoner_model=reasoner_model,
+        engineer_model=engineer_model,
+        critic_model=critic_model,
     )
+    role_max_tokens = _resolve_role_max_tokens(
+        worker_max_tokens=worker_max_tokens,
+        reasoner_max_tokens=reasoner_max_tokens,
+        engineer_max_tokens=engineer_max_tokens,
+        critic_max_tokens=critic_max_tokens,
+    )
+    role_thinking = {
+        role: _resolve_worker_thinking(model, worker_thinking)
+        for role, model in role_models.items()
+    }
+    role_llm_configs = {
+        role: build_llm_config(
+            model=role_models[role],
+            temperature=temperature,
+            enable_thinking=role_thinking[role],
+            max_tokens=role_max_tokens[role],
+            timeout_seconds=worker_timeout_seconds,
+        )
+        for role in LEAN_AGENT_ROLES
+    }
+    llm_config = role_llm_configs[AgentRole.REASONER]
     ledger = RoutingLedger()
     step_context = StepContext()
     tools, subgoal_ledger, post_tool_route = _build_trial_tools(
@@ -260,15 +328,21 @@ def run_one_trial(
         max_turns=max_turns,
         ledger=ledger,
         step_context=step_context,
+        role_llm_configs=role_llm_configs,
         post_tool_route=post_tool_route,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    log_path = output_dir / f"{record.id}_t{trial}.jsonl"
+    trial_id = _trial_id(record.id, trial, run_id)
+    log_path = output_dir / f"{trial_id}.jsonl"
+    if log_path.exists():
+        raise FileExistsError(
+            f"Refusing to overwrite existing trial trace: {log_path}"
+        )
     meta = make_trial_meta(
-        trial_id=f"{record.id}_t{trial}",
+        trial_id=trial_id,
         task_id=record.id,
-        backbone=worker_model,
+        backbone=_backbone_label(role_models),
         testbed="lean",
         architecture=f"lean_{setup}",
         grounding=True,
@@ -283,14 +357,26 @@ def run_one_trial(
             "provider_route": "openai_compatible",
             "tools": sorted(tools),
             "max_turns": max_turns,
-            "worker_enable_thinking": enable_thinking,
+            "worker_model": worker_model,
+            "worker_models": {
+                role.value: model for role, model in role_models.items()
+            },
+            "worker_enable_thinking": worker_thinking,
+            "role_enable_thinking": {
+                role.value: enabled for role, enabled in role_thinking.items()
+            },
             "worker_max_tokens": worker_max_tokens,
+            "role_max_tokens": {
+                role.value: budget for role, budget in role_max_tokens.items()
+            },
             "worker_timeout_seconds": worker_timeout_seconds,
+            "temperature": temperature,
+            "run_id": run_id,
         },
     )
     writer = TrialLogWriter(log_path, meta)
     observer = TraceObserver(
-        writer, trial_id=f"{record.id}_t{trial}", ledger=ledger, step_context=step_context
+        writer, trial_id=trial_id, ledger=ledger, step_context=step_context
     )
     observer.attach([a for a in groupchat.agents if a.name != "user"])
     observer.record_task(prompt)
@@ -331,6 +417,11 @@ def main() -> int:
     _configure_console()
     ap = argparse.ArgumentParser()
     ap.add_argument("--difficulty", nargs="+", default=["easy"], help="tiers to run")
+    ap.add_argument(
+        "--task-id",
+        nargs="+",
+        help="optional exact task IDs, kept in the order supplied",
+    )
     ap.add_argument("--trials", type=int, default=3, help="trials per problem")
     ap.add_argument(
         "--max-turns",
@@ -345,11 +436,21 @@ def main() -> int:
         help="Qwen thinking mode; auto disables it for Qwen models",
     )
     ap.add_argument(
+        "--worker-model",
+        help="legacy model fallback for roles without an explicit model",
+    )
+    ap.add_argument("--reasoner-model", help="Reasoner model ID")
+    ap.add_argument("--engineer-model", help="Engineer model ID")
+    ap.add_argument("--critic-model", help="Critic model ID")
+    ap.add_argument(
         "--worker-max-tokens",
         type=int,
         default=DEFAULT_WORKER_MAX_TOKENS,
         help="maximum output tokens per worker call",
     )
+    ap.add_argument("--reasoner-max-tokens", type=int)
+    ap.add_argument("--engineer-max-tokens", type=int)
+    ap.add_argument("--critic-max-tokens", type=int)
     ap.add_argument(
         "--worker-timeout-seconds",
         type=float,
@@ -357,12 +458,29 @@ def main() -> int:
         help="provider timeout for each worker call",
     )
     ap.add_argument(
-        "--setup",
-        choices=SUPPORTED_LEAN_SETUPS,
-        default=RECOVERY_TRIANGLE_V1,
-        help="named Lean agent setup recorded in TrialMeta",
+        "--temperature",
+        type=float,
+        default=0.2,
+        help="sampling temperature used for every role",
     )
-    ap.add_argument("--output-dir", type=Path, default=LOG_DIR, help="isolated trace directory")
+    ap.add_argument(
+        "--setup",
+        choices=[RECOVERY_TRIANGLE_V1],
+        default=RECOVERY_TRIANGLE_V1,
+        help="faithful Lean-anchor setup recorded in TrialMeta",
+    )
+    ap.add_argument("--run-id", help="immutable run ID prefixed to every trial ID")
+    ap.add_argument(
+        "--output-dir",
+        type=Path,
+        default=LOG_DIR,
+        help="isolated trace directory",
+    )
+    ap.add_argument(
+        "--analysis-dir",
+        type=Path,
+        help="summary directory; defaults to --output-dir",
+    )
     ap.add_argument("--skip-existing", action="store_true", help="skip existing valid trace files")
     ap.add_argument(
         "--summarize-existing",
@@ -371,21 +489,67 @@ def main() -> int:
     )
     ap.add_argument("--dry-run", action="store_true", help="list problems and exit")
     args = ap.parse_args()
+    if args.trials < 1:
+        ap.error("--trials must be at least 1")
     if args.max_turns < 1:
         ap.error("--max-turns must be at least 1")
     if args.worker_max_tokens < 1:
         ap.error("--worker-max-tokens must be at least 1")
     if args.worker_timeout_seconds <= 0:
         ap.error("--worker-timeout-seconds must be positive")
+    for name in (
+        "reasoner_max_tokens",
+        "engineer_max_tokens",
+        "critic_max_tokens",
+    ):
+        value = getattr(args, name)
+        if value is not None and value < 1:
+            ap.error(f"--{name.replace('_', '-')} must be at least 1")
 
     records: list[ProblemRecord] = []
     for diff in args.difficulty:
         records.extend(load_dataset(DATASET_ROOT, difficulty=diff))
+    if args.task_id:
+        by_id = {record.id: record for record in records}
+        missing = [task_id for task_id in args.task_id if task_id not in by_id]
+        if missing:
+            ap.error(
+                "unknown task IDs for the selected difficulties: "
+                + ", ".join(missing)
+            )
+        records = [by_id[task_id] for task_id in args.task_id]
+
+    role_models = _resolve_role_models(
+        worker_model=args.worker_model,
+        reasoner_model=args.reasoner_model,
+        engineer_model=args.engineer_model,
+        critic_model=args.critic_model,
+    )
+    role_max_tokens = _resolve_role_max_tokens(
+        worker_max_tokens=args.worker_max_tokens,
+        reasoner_max_tokens=args.reasoner_max_tokens,
+        engineer_max_tokens=args.engineer_max_tokens,
+        critic_max_tokens=args.critic_max_tokens,
+    )
+    analysis_dir = args.analysis_dir or args.output_dir
 
     if args.dry_run:
         print(
             f"Would run setup={args.setup}, max_turns={args.max_turns}: "
             f"{len(records)} problems x {args.trials} trials into {args.output_dir}:"
+        )
+        print(
+            "  models: "
+            + ", ".join(
+                f"{role.value}={role_models[role]}" for role in LEAN_AGENT_ROLES
+            )
+        )
+        print(
+            "  max tokens: "
+            + ", ".join(
+                f"{role.value}={role_max_tokens[role]}"
+                for role in LEAN_AGENT_ROLES
+            )
         )
         for r in records:
             print(f"  {r.id:22s} {r.source:8s} {r.difficulty}")
@@ -402,7 +566,8 @@ def main() -> int:
     observed_models: set[str] = set()
     for r in records:
         for t in range(args.trials):
-            log_path = args.output_dir / f"{r.id}_t{t}.jsonl"
+            trial_id = _trial_id(r.id, t, args.run_id)
+            log_path = args.output_dir / f"{trial_id}.jsonl"
             if args.summarize_existing:
                 if not _trace_is_valid(log_path):
                     errors.append(
@@ -445,9 +610,18 @@ def main() -> int:
                         output_dir=args.output_dir,
                         setup=args.setup,
                         max_turns=args.max_turns,
+                        worker_model=args.worker_model,
+                        reasoner_model=args.reasoner_model,
+                        engineer_model=args.engineer_model,
+                        critic_model=args.critic_model,
                         worker_thinking=args.worker_thinking,
                         worker_max_tokens=args.worker_max_tokens,
+                        reasoner_max_tokens=args.reasoner_max_tokens,
+                        engineer_max_tokens=args.engineer_max_tokens,
+                        critic_max_tokens=args.critic_max_tokens,
                         worker_timeout_seconds=args.worker_timeout_seconds,
+                        temperature=args.temperature,
+                        run_id=args.run_id,
                     )
                 )
             except Exception as e:  # noqa: BLE001 -- one bad trial must not kill the batch
@@ -464,17 +638,20 @@ def main() -> int:
     summary_model = (
         ", ".join(sorted(observed_models))
         if observed_models
-        else os.environ.get("TRAJ_EVAL_MODEL", "gpt-4o-mini")
+        else _backbone_label(role_models)
     )
     summary = _build_run_summary(
         outcomes,
         expected_trials=len(records) * args.trials,
         setup=args.setup,
         model=summary_model,
+        worker_models={
+            role.value: model for role, model in role_models.items()
+        },
         errors=errors,
     )
     _report(outcomes, summary)
-    _write_summary(args.output_dir, summary)
+    _write_summary(analysis_dir, summary)
     return 0
 
 
@@ -484,6 +661,7 @@ def _build_run_summary(
     expected_trials: int,
     setup: str,
     model: str,
+    worker_models: dict[str, str] | None = None,
     errors: list[dict[str, str | int]] | None = None,
 ) -> dict:
     errors = errors or []
@@ -558,6 +736,7 @@ def _build_run_summary(
         "schema_version": "lean_recovery_triangle_summary_v1",
         "setup": setup,
         "model": model,
+        "worker_models": worker_models or {},
         "expected_trials": expected_trials,
         "completed_trials": len(outcomes),
         "provider_status": "complete" if not errors else "partial_or_failed",
@@ -592,7 +771,7 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
     )
     communication = summary["communication"]
     lines = [
-        "# Qwen Recovery Triangle Pilot",
+        "# Lean Recovery Triangle Run",
         "",
         f"- Setup: `{summary['setup']}`",
         f"- Model: `{summary['model']}`",
@@ -624,7 +803,7 @@ def _write_summary(output_dir: Path, summary: dict) -> None:
             "",
             "## Proposal Interpretation",
             "",
-            "This 10-task pilot tests O1/O2 observability of agent-chosen recovery routes.",
+            "This run tests O1/O2 observability of agent-chosen recovery routes.",
             "It does not support an O3 architecture-improvement claim.",
         ]
     )

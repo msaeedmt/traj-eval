@@ -6,7 +6,10 @@ and import-error detection are.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from types import SimpleNamespace
+
+import pytest
 
 import scripts.run_batch as run_batch
 from traj_eval.agents import make_trial_meta
@@ -19,8 +22,11 @@ from scripts.run_batch import (
     _build_agent_tools,
     _build_trial_tools,
     _build_run_summary,
+    _backbone_label,
     _configure_console,
     _report,
+    _resolve_role_max_tokens,
+    _resolve_role_models,
     _resolve_worker_thinking,
     _task_prompt,
     _trace_is_valid,
@@ -29,9 +35,9 @@ from scripts.run_batch import (
 )
 from traj_eval.dataset.loader import ProblemRecord
 from traj_eval.agents.lean_team import (
+    RECOVERY_TRIANGLE_V1,
     TOOL_ROUTED_SUBGOALS_V1,
     TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
-    lean_routing_config,
 )
 from traj_eval.trace_core.schema import AgentRole
 from traj_eval.metrics.communication import CommunicationSummary
@@ -78,8 +84,11 @@ def test_batch_runner_registers_the_fixed_lean_tool_surface():
     assert tuple(tools) == LEAN_TOOL_NAMES
 
 
-def test_subgoal_ablation_differs_only_by_two_engineer_goal_tools():
+def test_recovery_triangle_uses_fixed_tools_and_rejects_subgoal_setups():
     class _Compiler:
+        def as_tool(self):
+            return lambda code: {"compiled": True, "code": code}
+
         def check(self, code):
             return type(
                 "Result",
@@ -99,28 +108,23 @@ def test_subgoal_ablation_differs_only_by_two_engineer_goal_tools():
         statement="theorem task : True := by trivial",
         context="",
     )
-    dag_tools, dag_state, _ = _build_trial_tools(
-        _Compiler(), record, TOOL_ROUTED_SUBGOALS_V1
-    )
-    combined_tools, combined_state, _ = _build_trial_tools(
-        _Compiler(), record, TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1
+    tools, state, post_tool_route = _build_trial_tools(
+        _Compiler(), record, RECOVERY_TRIANGLE_V1
     )
 
-    assert set(combined_tools) - set(dag_tools) == {"try_tactic", "show_goals"}
-    assert dag_state.snapshot() == combined_state.snapshot()
-    dag_engineer = lean_routing_config(
-        setup=TOOL_ROUTED_SUBGOALS_V1
-    ).roles[AgentRole.ENGINEER]
-    combined_engineer = lean_routing_config(
-        setup=TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1
-    ).roles[AgentRole.ENGINEER]
-    assert combined_engineer.tools - dag_engineer.tools == {
-        "try_tactic",
-        "show_goals",
-    }
+    assert tuple(tools) == LEAN_TOOL_NAMES
+    assert "show_goals" in tools
+    assert state is None
+    assert post_tool_route is None
+    for setup in (
+        TOOL_ROUTED_SUBGOALS_V1,
+        TOOL_ROUTED_SUBGOALS_WITH_GOAL_TOOLS_V1,
+    ):
+        with pytest.raises(RuntimeError, match="excluded subgoal-agent"):
+            _build_trial_tools(_Compiler(), record, setup)
 
 
-def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_path):
+def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch):
     captured: dict[str, object] = {}
 
     class _User:
@@ -150,6 +154,8 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
 
     def fake_team(*args, **kwargs):
         captured["team_max_turns"] = kwargs["max_turns"]
+        captured["team_default_config"] = args[0]
+        captured["team_role_configs"] = kwargs["role_llm_configs"]
         return (
             object(),
             _User(),
@@ -168,10 +174,17 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
 
     def fake_meta(**kwargs):
         captured["meta_config"] = kwargs["config"]
+        captured["meta_kwargs"] = kwargs
         return object()
 
     sentinel = object()
-    monkeypatch.setattr(run_batch, "build_llm_config", lambda **kwargs: object())
+    llm_calls: list[dict[str, object]] = []
+
+    def fake_llm_config(**kwargs):
+        llm_calls.append(kwargs)
+        return kwargs
+
+    monkeypatch.setattr(run_batch, "build_llm_config", fake_llm_config)
     monkeypatch.setattr(run_batch, "_build_agent_tools", lambda compiler: {})
     monkeypatch.setattr(run_batch, "build_lean_free_team", fake_team)
     monkeypatch.setattr(run_batch, "make_trial_meta", fake_meta)
@@ -192,19 +205,73 @@ def test_run_one_trial_forwards_and_records_explicit_max_turns(monkeypatch, tmp_
         record,
         0,
         object(),
-        output_dir=tmp_path,
+        output_dir=Path("."),
         max_turns=200,
+        reasoner_model="openai/gpt-5.4-2026-03-05",
+        engineer_model="openai/gpt-5.4-2026-03-05",
+        critic_model="mistral/codestral-2508",
+        reasoner_max_tokens=2048,
+        engineer_max_tokens=4096,
+        critic_max_tokens=2048,
+        temperature=0.2,
+        run_id="lae-mm-v1_smoke_B1_20260725T120000Z",
     )
 
     assert DEFAULT_MAX_TURNS == 30
     assert DEFAULT_WORKER_MAX_TOKENS == 1500
     assert DEFAULT_WORKER_TIMEOUT_SECONDS == 180.0
     assert captured["team_max_turns"] == 200
+    assert captured["meta_kwargs"]["backbone"] == "mixed"
     assert captured["meta_config"]["max_turns"] == 200
     assert captured["meta_config"]["worker_max_tokens"] == 1500
+    assert captured["meta_config"]["worker_models"] == {
+        "reasoner": "openai/gpt-5.4-2026-03-05",
+        "engineer": "openai/gpt-5.4-2026-03-05",
+        "critic": "mistral/codestral-2508",
+    }
+    assert captured["meta_config"]["role_max_tokens"] == {
+        "reasoner": 2048,
+        "engineer": 4096,
+        "critic": 2048,
+    }
     assert captured["meta_config"]["worker_timeout_seconds"] == 180.0
+    assert captured["meta_config"]["temperature"] == 0.2
+    assert len(llm_calls) == 3
+    assert captured["team_default_config"]["model"] == "openai/gpt-5.4-2026-03-05"
+    assert {
+        role: config["model"]
+        for role, config in captured["team_role_configs"].items()
+    } == {
+        AgentRole.REASONER: "openai/gpt-5.4-2026-03-05",
+        AgentRole.ENGINEER: "openai/gpt-5.4-2026-03-05",
+        AgentRole.CRITIC: "mistral/codestral-2508",
+    }
+    assert captured["log_path"].name.endswith("__task__t01.jsonl")
     assert captured["termination"]["turns"] == 200
     assert result is sentinel
+
+
+def test_role_model_and_budget_fallbacks():
+    models = _resolve_role_models(
+        worker_model="mistral/devstral-2512",
+        reasoner_model=None,
+        engineer_model=None,
+        critic_model=None,
+    )
+    budgets = _resolve_role_max_tokens(
+        worker_max_tokens=1500,
+        reasoner_max_tokens=None,
+        engineer_max_tokens=4096,
+        critic_max_tokens=None,
+    )
+
+    assert set(models.values()) == {"mistral/devstral-2512"}
+    assert _backbone_label(models) == "mistral/devstral-2512"
+    assert budgets == {
+        AgentRole.REASONER: 1500,
+        AgentRole.ENGINEER: 4096,
+        AgentRole.CRITIC: 1500,
+    }
 
 
 def test_worker_thinking_auto_disables_qwen_only():
