@@ -33,6 +33,8 @@ build/
 # Secrets — never commit API keys
 .env
 *.key
+/configs/OpenAi.env
+/configs/Qwen.env
 
 # OS / editor
 .DS_Store
