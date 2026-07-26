@@ -1,0 +1,3 @@
+{"event": "arm_prepared", "manifest_sha256": "e1980b98950fb45c0b0a5746003c8ea4687d0c25faa3fbaf57b98b91df122ff7", "probe_ok": true, "recorded_at_utc": "2026-07-26T15:00:23.998Z", "run_id": "lae-mm-v1_paired_confirmation_A1_20260726T150022Z"}
+{"arm_id": "A1", "event": "trial_started", "ordinal": 1, "recorded_at_utc": "2026-07-26T15:00:26.754Z", "repeat_index": 0, "run_id": "lae-mm-v1_paired_confirmation_A1_20260726T150022Z", "task_id": "easy_fatem_011", "trial_number": 1}
+{"arm_id": "A1", "event": "trial_finished", "ordinal": 1, "recorded_at_utc": "2026-07-26T15:01:36.802Z", "repeat_index": 0, "run_id": "lae-mm-v1_paired_confirmation_A1_20260726T150022Z", "task_id": "easy_fatem_011", "terminal": "solved", "trial_number": 1}

@@ -1,0 +1,18 @@
+{
+  "completed_trials": 53,
+  "error_count": 7,
+  "expected_trials": 60,
+  "finished_at_utc": "2026-07-26T13:58:29.136Z",
+  "json_sha256": {
+    "failure_labels.jsonl": "31d9588d42cb371bf483fe3d32d825c50c913d34386fd4412d749d95fbb51876",
+    "metrics.json": "b4dd9575726422a4b042e6008b096642bfbc796c2d8384c1f02b656c7d5d0633",
+    "provider_probe.json": "efcc760988345c8b4ed632e4988c096be3601188b48ba068dc0ecd177fa46706",
+    "run_manifest.json": "a713174ab5e4f2deac727407fa0bbc1583b2cf1e2f700a1b2e2c743a802def8b",
+    "summary.json": "7594adabcd723b7a00415a185779901b310cbb7110a68d9e5e3d74864e50075a"
+  },
+  "run_id": "lae-mm-v1_all_task_pilot_A4_20260726T043403Z",
+  "schema_version": "lae-mm-run-completion/1.0.0",
+  "status": "failed",
+  "trace_file_count": 60,
+  "valid_trace_count": 60
+}

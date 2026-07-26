@@ -1,0 +1,29 @@
+{
+  "arm_id": "A4",
+  "by_difficulty": {
+    "easy": {
+      "silent_failure": 1,
+      "solved": 6,
+      "unsolved": 18
+    },
+    "medium": {
+      "unsolved": 28
+    }
+  },
+  "completed_trials": 53,
+  "error_count": 7,
+  "expected_trials": 60,
+  "generated_at_utc": "2026-07-26T13:58:29.135Z",
+  "independent_lean_validation_enabled": true,
+  "kernel_verified_solved_count": 6,
+  "kernel_verified_solved_rate": 0.1,
+  "outcomes": {
+    "silent_failure": 1,
+    "solved": 6,
+    "unsolved": 46
+  },
+  "run_id": "lae-mm-v1_all_task_pilot_A4_20260726T043403Z",
+  "schema_version": "lae-mm-metrics/1.0.0",
+  "trace_file_count": 60,
+  "valid_trace_count": 60
+}

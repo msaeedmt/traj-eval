@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.1.0",
+  "template_id": "lae-mm-v1-run-manifest-template-v002",
+  "experiment_id": "lean-anchor-engineer-model-matrix-v1",
+  "config": {
+    "config_id": "lae-mm-v1-config-v002",
+    "config_file": "config/experiment_config.v002.json",
+    "config_sha256": null,
+    "superseded_config_id": "lae-mm-v1-config-v001",
+    "superseded_config_sha256": "6f38ac6a4d2e7765cc97fffaa2d6a8c845803c1acd7addb5b82414e769bf57d6"
+  },
+  "run": {
+    "run_id": null,
+    "phase": null,
+    "arm_id": null,
+    "status": "planned",
+    "started_at_utc": null,
+    "started_at_europe_berlin": null,
+    "finished_at_utc": null,
+    "trial_count": null
+  },
+  "git": {
+    "required_branch": "han-lean-anchors-merge",
+    "runtime_commit": "8169d12eadc5af1160d2dd62fee9fc9dee01dc74",
+    "tracked_worktree_clean_at_start": null,
+    "allowed_untracked_draft_prefix": "docs/experiments/lean_anchor_engineer_model_matrix_v1_20260725/",
+    "other_untracked_paths_present": null
+  },
+  "engineer_implementation": {
+    "setup": "recovery_triangle_v1",
+    "source_path": "src/traj_eval/agents/roles.py",
+    "factory": "make_engineer_free",
+    "prompt_constant": "ENGINEER_FREE_SYSTEM_MESSAGE",
+    "roles_py_git_blob": "3c86b475e6b1d80c1e15fa207ef27188c96f45fb",
+    "tools": [
+      "check_lean",
+      "search_lemmas",
+      "try_tactic",
+      "show_goals"
+    ],
+    "identity_gate_passed": null,
+    "forbidden_runtime_imports_detected": null
+  },
+  "models": {
+    "backbone": null,
+    "reasoner": null,
+    "engineer": null,
+    "critic": null,
+    "qwen_model_present": false
+  },
+  "execution": {
+    "temperature": 0.2,
+    "max_turns": 30,
+    "role_max_tokens": {
+      "reasoner": 2048,
+      "engineer": 4096,
+      "critic": 2048
+    },
+    "worker_timeout_seconds": 180,
+    "lean_timeout_seconds": 360,
+    "provider_internal_retries": 0,
+    "schedule_seed": 20260725,
+    "exact_command_argv": []
+  },
+  "dataset": {
+    "root": "dataset/Lean",
+    "family": "MiniFATELeanCat",
+    "dataset_git_tree": "4f565bd48f7f700b92667b2168f5bf378a8fbf1c",
+    "metadata_git_blob": "4ae6f1bfeb3cc3fcf62315f7c2d85ba5233c0125",
+    "metadata_sha256": "89e01461a209abae3025d0bee485af240ca15c2977e5d43eac0ca6f14291be18",
+    "difficulty": [
+      "easy",
+      "medium"
+    ],
+    "task_ids": []
+  },
+  "provider": {
+    "route_alias": "openai-compatible-gateway",
+    "probe_file": "provider_probe.json",
+    "probe_sha256": null,
+    "probe_ok": null,
+    "api_key_recorded": false,
+    "base_url_recorded": false
+  },
+  "paths": {
+    "raw_root": null,
+    "trace_directory": null,
+    "log_directory": null,
+    "analysis_root": null,
+    "report_root": null
+  },
+  "protected_qwen_evidence": [
+    {
+      "branch": "han-lean-anchors-merge",
+      "path": "data/batch/version_1_trial_traces",
+      "git_tree": "0fe3a0b0ca4ec83c08d7211c10f495420d3ccf77",
+      "policy": "read_only_never_overwrite"
+    },
+    {
+      "branch": "Han",
+      "path": "data/batch/qwen_medium_subgoals_v1",
+      "git_tree": "a41a0ad91511c819809cb2702c1ea51ba48af922",
+      "policy": "reference_only_do_not_modify"
+    }
+  ],
+  "integrity": {
+    "manifest_frozen_before_trial_1": false,
+    "output_collision_check_passed": null,
+    "protected_qwen_evidence_unchanged": null,
+    "no_new_qwen_provider_calls": null,
+    "incremental_utf8_trace_writes": null,
+    "independent_lean_validation_enabled": null
+  },
+  "claim_status": "not_run"
+}

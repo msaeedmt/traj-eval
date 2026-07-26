@@ -1,0 +1,324 @@
+{
+  "schema_version": "1.2.0",
+  "experiment_id": "lean-anchor-engineer-model-matrix-v1",
+  "config_id": "lae-mm-v1-config-v003",
+  "status": "ready_for_user_authorized_provider_probe",
+  "created_at_utc": "2026-07-25T20:52:56.134Z",
+  "supersedes_config_id": "lae-mm-v1-config-v002",
+  "superseded_config": {
+    "file": "config/experiment_config.v002.json",
+    "sha256": "ff1369a1cb177c763ac9b21f13801ab21f1ce53cd53eead35ad24dbaaeb035fb",
+    "reason": "The user explicitly authorized the already-tested notebook API route; the zero-retry runtime fix was committed and dataset provenance was corrected."
+  },
+  "execution_branch": {
+    "required_branch": "han-lean-anchors-merge",
+    "baseline_commit": "3f3897c72c441f8286f0d437475e5cbcd3d10040",
+    "runtime_commit": "7ebd9bda28dd3463421a2268e279961940444e78",
+    "require_clean_tracked_worktree": true,
+    "allowed_untracked_draft_prefix": "docs/experiments/lean_anchor_engineer_model_matrix_v1_20260725/",
+    "cleanliness_note": "The merge-branch experiment documents remain untracked drafts under CODEX.md; no other pre-existing untracked path is allowed."
+  },
+  "engineer_implementation": {
+    "setup": "recovery_triangle_v1",
+    "source_path": "src/traj_eval/agents/roles.py",
+    "factory": "make_engineer_free",
+    "prompt_constant": "ENGINEER_FREE_SYSTEM_MESSAGE",
+    "required_roles_py_git_blob": "3c86b475e6b1d80c1e15fa207ef27188c96f45fb",
+    "required_tools": [
+      "check_lean",
+      "search_lemmas",
+      "try_tactic",
+      "show_goals"
+    ],
+    "forbidden_paths": [
+      "src/traj_eval/agents/engineer/",
+      "scripts/run_agent_runtime.py"
+    ],
+    "forbidden_factories": [
+      "make_engineer_subgoals"
+    ],
+    "forbidden_runtime_module": "traj_eval.agents.subgoal_state",
+    "fail_closed_on_identity_mismatch": true
+  },
+  "models": {
+    "O1": "openai/gpt-5.4-2026-03-05",
+    "O2": "openai/gpt-5.4-mini-2026-03-17",
+    "M1": "mistral/codestral-2508",
+    "M2": "mistral/devstral-2512"
+  },
+  "qwen_run_policy": {
+    "new_qwen_runs_allowed": false,
+    "qwen_provider_calls_allowed": false,
+    "qwen_models_allowed_in_arms": false,
+    "historical_qwen_evidence_is_read_only": true,
+    "fail_closed_if_selected_model_contains_casefolded_qwen": true
+  },
+  "arms": {
+    "A1": {
+      "reasoner_model": "openai/gpt-5.4-2026-03-05",
+      "engineer_model": "openai/gpt-5.4-2026-03-05",
+      "critic_model": "openai/gpt-5.4-2026-03-05"
+    },
+    "A2": {
+      "reasoner_model": "openai/gpt-5.4-mini-2026-03-17",
+      "engineer_model": "openai/gpt-5.4-mini-2026-03-17",
+      "critic_model": "openai/gpt-5.4-mini-2026-03-17"
+    },
+    "A3": {
+      "reasoner_model": "mistral/codestral-2508",
+      "engineer_model": "mistral/codestral-2508",
+      "critic_model": "mistral/codestral-2508"
+    },
+    "A4": {
+      "reasoner_model": "mistral/devstral-2512",
+      "engineer_model": "mistral/devstral-2512",
+      "critic_model": "mistral/devstral-2512"
+    },
+    "B1": {
+      "reasoner_model": "openai/gpt-5.4-2026-03-05",
+      "engineer_model": "openai/gpt-5.4-2026-03-05",
+      "critic_model": "mistral/codestral-2508"
+    }
+  },
+  "sampling_and_budgets": {
+    "temperature": 0.2,
+    "max_turns": 30,
+    "role_max_tokens": {
+      "reasoner": 2048,
+      "engineer": 4096,
+      "critic": 2048
+    },
+    "worker_timeout_seconds": 180,
+    "lean_timeout_seconds": 360,
+    "provider_internal_retries": 0,
+    "schedule_seed": 20260725,
+    "schedule_policy": "block_by_task_and_repeat_then_shuffle_arm_order"
+  },
+  "cohort": {
+    "dataset_root": "dataset/Lean",
+    "dataset_family": "MiniFATELeanCat",
+    "dataset_git_tree": "97833bd7a6c8d4835a0b7ff44d78d90257913501",
+    "metadata_git_blob": "4ae6f1bfeb3cc3fcf62315f7c2d85ba5233c0125",
+    "metadata_sha256": "89e01461a209abae3025d0bee485af240ca15c2977e5d43eac0ca6f14291be18",
+    "difficulty_counts": {
+      "easy": 10,
+      "medium": 10,
+      "total": 20
+    },
+    "easy_task_ids": [
+      "easy_fatem_011",
+      "easy_fatem_012",
+      "easy_fatem_019",
+      "easy_fatem_020",
+      "easy_fatem_041",
+      "easy_fatem_109",
+      "easy_fatem_111",
+      "easy_fatem_115",
+      "easy_leancat_001",
+      "easy_leancat_002"
+    ],
+    "medium_task_ids": [
+      "medium_fateh_001",
+      "medium_fateh_002",
+      "medium_fateh_009",
+      "medium_fateh_010",
+      "medium_fateh_011",
+      "medium_fateh_012",
+      "medium_fateh_013",
+      "medium_fateh_097",
+      "medium_leancat_008",
+      "medium_leancat_021"
+    ]
+  },
+  "phases": {
+    "smoke": {
+      "arms": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "B1"
+      ],
+      "task_ids": [
+        "easy_leancat_001",
+        "medium_leancat_008"
+      ],
+      "trials_per_task_and_arm": 1,
+      "scheduled_trials": 10,
+      "claim_level": "technical_smoke_only"
+    },
+    "all_task_pilot": {
+      "arms": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "B1"
+      ],
+      "task_scope": "all_easy_and_medium_task_ids",
+      "task_count": 20,
+      "trials_per_task_and_arm": 3,
+      "scheduled_trials": 300,
+      "claim_level": "exploratory_model_matrix"
+    },
+    "paired_confirmation": {
+      "arms": [
+        "A1",
+        "B1"
+      ],
+      "task_scope": "all_easy_and_medium_task_ids",
+      "task_count": 20,
+      "trials_per_task_and_arm": 10,
+      "scheduled_trials": 400,
+      "claim_level": "matched_critic_ablation"
+    }
+  },
+  "scheduled_trial_count": 710,
+  "correctness_gate": {
+    "kernel_verified": true,
+    "proof_closed": true,
+    "statement_preserved": true,
+    "sorry_free": true,
+    "admit_free": true,
+    "axiom_clean": true
+  },
+  "outcome_classes": [
+    "solved",
+    "unsolved",
+    "silent_failure",
+    "provider_invalid",
+    "trace_invalid",
+    "artifact_invalid",
+    "validation_unknown"
+  ],
+  "analysis": {
+    "difficulty_strata": [
+      "easy",
+      "medium"
+    ],
+    "primary_comparison": "A1_vs_B1",
+    "pass_at_k": [
+      1,
+      5
+    ],
+    "paired_bootstrap_resamples": 10000,
+    "paired_binary_test": "mcnemar_exact",
+    "multiple_testing_correction": "bonferroni_by_metric_family",
+    "trajectory_metrics": [
+      "tool_use_efficiency",
+      "retry_rate",
+      "retry_success_rate",
+      "anchor_violation_rate",
+      "first_violated_anchor",
+      "error_localisation_depth",
+      "longest_path",
+      "dead_end_fraction",
+      "critic_check_coverage",
+      "critic_accept_without_check"
+    ]
+  },
+  "protected_qwen_evidence": [
+    {
+      "branch": "han-lean-anchors-merge",
+      "commit": "8169d12eadc5af1160d2dd62fee9fc9dee01dc74",
+      "path": "data/batch/version_1_trial_traces",
+      "git_tree": "0fe3a0b0ca4ec83c08d7211c10f495420d3ccf77",
+      "tracked_file_count": 101,
+      "trial_file_count": 100,
+      "description": "Historical Qwen Easy cohort: 10 tasks x 10 trials plus README.",
+      "policy": "read_only_never_overwrite_never_reuse_as_output"
+    },
+    {
+      "branch": "Han",
+      "commit": "93988c80fb8984db2e609416249231a896e04bf5",
+      "paths": [
+        "data/batch/qwen_medium_subgoals_v1",
+        "data/analysis/qwen_medium_subgoals_v1",
+        "docs/experiments/qwen_medium_subgoals_v1"
+      ],
+      "git_trees": {
+        "data/batch/qwen_medium_subgoals_v1": "a41a0ad91511c819809cb2702c1ea51ba48af922",
+        "data/analysis/qwen_medium_subgoals_v1": "aaaad4aedac63ae4b853306fbe76944a7b1de67a",
+        "docs/experiments/qwen_medium_subgoals_v1": "72976ad8083ce81173326600b0f09eced57c6c2f"
+      },
+      "tracked_file_count": 22,
+      "description": "Historical Qwen Medium subgoal evidence retained on Han.",
+      "policy": "reference_only_do_not_copy_modify_or_overwrite"
+    }
+  ],
+  "output_roots": {
+    "raw": "data/batch/lean_anchor_engineer_model_matrix_v1/{run_id}",
+    "analysis": "data/analysis/lean_anchor_engineer_model_matrix_v1/{run_id}",
+    "report": "docs/experiments/lean_anchor_engineer_model_matrix_v1_20260725/{run_id}"
+  },
+  "provider": {
+    "route_alias": "openai-compatible-gateway",
+    "route_is_shared_for_openai_and_mistral_ids": true,
+    "record_base_url": false,
+    "record_api_key": false,
+    "fresh_probe_required_per_run": true,
+    "transport_scheme": "http",
+    "transport_security_exception": {
+      "authorized_by_user": true,
+      "authorization_date": "2026-07-25",
+      "authorized_route_scope": "existing notebooks/OpenAI_config_test.ipynb configuration",
+      "host_path_url_recorded": false,
+      "credential_recorded": false,
+      "authorization_note": "Use the notebook-tested API route for this OpenAI/Mistral experiment only."
+    },
+    "probe_protocol": {
+      "models": [
+        "openai/gpt-5.4-2026-03-05",
+        "openai/gpt-5.4-mini-2026-03-17",
+        "mistral/codestral-2508",
+        "mistral/devstral-2512"
+      ],
+      "max_output_tokens": 8,
+      "temperature": 0,
+      "timeout_seconds": 30,
+      "max_retries": 0,
+      "record_response_text": false,
+      "record_provider_error_body": false
+    }
+  },
+  "runner_preflight": {
+    "status": "passed_locally_before_provider_probe",
+    "runtime_commit": "7ebd9bda28dd3463421a2268e279961940444e78",
+    "checks": {
+      "role_specific_model_cli": "passed",
+      "role_specific_token_budgets": "passed",
+      "worker_model_fallback": "passed",
+      "mixed_backbone_metadata": "passed",
+      "worker_models_metadata": "passed",
+      "stable_run_and_trial_ids": "passed",
+      "task_id_filter": "passed",
+      "existing_trace_collision": "fail_closed",
+      "recovery_triangle_import_without_subgoal_state": "passed",
+      "subgoal_setups": "fail_closed",
+      "all_easy_medium_dry_run_task_count": 20,
+      "focused_tests": {
+        "passed": 49,
+        "deselected_environment_blocked_file_tests": 3
+      },
+      "lean_kernel_preflight": {
+        "compiled": true,
+        "sorry_free": true,
+        "statement": "example : True := by trivial"
+      },
+      "provider_internal_retries_zero": "passed"
+    }
+  },
+  "warehouse_evidence_used": {
+    "scope": "operational_preflight_only_not_a_Lean_model_ranking",
+    "dominant_warnings": [
+      "format_fragility",
+      "premature_convergence",
+      "perseveration",
+      "reasoning_loop",
+      "environment_tool_failure",
+      "critic_masking",
+      "provider_timeout_or_unreachable"
+    ],
+    "claim_boundary": "No architecture or model superiority claim is permitted without matched Lean tasks, budgets, verification, and valid traces."
+  }
+}

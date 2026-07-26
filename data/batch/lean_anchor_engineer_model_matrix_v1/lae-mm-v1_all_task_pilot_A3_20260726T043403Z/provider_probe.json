@@ -1,0 +1,30 @@
+{
+  "all_ok": true,
+  "arm_id": "A3",
+  "phase": "all_task_pilot",
+  "recorded_at_utc": "2026-07-26T04:34:13.327Z",
+  "results": [
+    {
+      "error_class": null,
+      "latency_seconds": 5.375,
+      "model": "mistral/codestral-2508",
+      "model_match": true,
+      "status": "ok",
+      "status_code": null
+    }
+  ],
+  "route_alias": "openai-compatible-gateway",
+  "run_id": "lae-mm-v1_all_task_pilot_A3_20260726T043403Z",
+  "schema_version": "lae-mm-provider-probe/1.0.0",
+  "settings": {
+    "api_key_recorded": false,
+    "base_url_recorded": false,
+    "max_output_tokens": 8,
+    "max_retries": 0,
+    "provider_error_body_recorded": false,
+    "response_text_recorded": false,
+    "temperature": 0,
+    "timeout_seconds": 30
+  },
+  "transport_scheme": "http"
+}
