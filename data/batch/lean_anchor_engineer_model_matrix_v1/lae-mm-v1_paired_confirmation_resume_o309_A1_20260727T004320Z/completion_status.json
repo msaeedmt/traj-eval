@@ -1,0 +1,7 @@
+{
+  "finished_at_utc": "2026-07-27T00:43:22.561Z",
+  "reason": "provider_probe_failed:A1,B1",
+  "run_id": "lae-mm-v1_paired_confirmation_resume_o309_A1_20260727T004320Z",
+  "schema_version": "lae-mm-run-completion/1.0.0",
+  "status": "failed"
+}
