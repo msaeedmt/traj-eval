@@ -1,4 +1,0 @@
-{"event": "arm_prepared", "manifest_sha256": "41115187c3ebf70a7c4c0fb3be2aa3c220d69a1ee4480200dfd6f159ce771a0a", "probe_ok": true, "recorded_at_utc": "2026-07-26T15:00:25.178Z", "run_id": "lae-mm-v1_paired_confirmation_B1_20260726T150022Z"}
-{"arm_id": "B1", "event": "trial_started", "ordinal": 2, "recorded_at_utc": "2026-07-26T15:01:36.804Z", "repeat_index": 0, "run_id": "lae-mm-v1_paired_confirmation_B1_20260726T150022Z", "task_id": "easy_fatem_011", "trial_number": 1}
-{"arm_id": "B1", "event": "trial_finished", "ordinal": 2, "recorded_at_utc": "2026-07-26T15:02:31.590Z", "repeat_index": 0, "run_id": "lae-mm-v1_paired_confirmation_B1_20260726T150022Z", "task_id": "easy_fatem_011", "terminal": "solved", "trial_number": 1}
-{"arm_id": "B1", "event": "trial_started", "ordinal": 3, "recorded_at_utc": "2026-07-26T15:02:31.591Z", "repeat_index": 1, "run_id": "lae-mm-v1_paired_confirmation_B1_20260726T150022Z", "task_id": "easy_fatem_011", "trial_number": 2}
