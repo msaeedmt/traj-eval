@@ -49,6 +49,7 @@ packages = ["src/traj_eval"]
 line-length = 100
 target-version = "py311"
 src = ["src", "tests"]
+extend-exclude = ["src/traj_eval/vendor"]
 
 [tool.ruff.lint]
 # sensible, not overbearing: pyflakes, pycodestyle, isort, bugbear, comprehensions, pyupgrade
