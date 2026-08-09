@@ -15,6 +15,7 @@ from traj_eval.agents.free_routing import (  # noqa: E402
     RoutingConfig,
     build_free_routing_team,
     finalize_run,
+    make_key_progress_verdict,
 )
 from traj_eval.trace_core.schema import AgentRole  # noqa: E402
 
@@ -255,13 +256,13 @@ def _exec_result(compiled):
 def test_no_progress_bound_terminates_stuck():
     gc, state = _build()
     sel = gc.speaker_selection_method
-    # 6 consecutive failed compiles (default max_failed_compiles=6) -> stuck.
+    # 6 consecutive verifier rejections (default max_no_progress=6) -> stuck.
     result = None
     for _ in range(6):
         gc.messages = gc.messages + [_exec_result(False)]
         result = sel(_Speaker(AgentRole.EXECUTOR.value), gc)
     assert state.terminated and state.reason == "stuck"
-    assert state.max_failed_compiles_seen >= 6
+    assert state.max_no_progress_seen >= 6
     assert result is None
 
 
@@ -274,17 +275,18 @@ def test_success_resets_no_progress_counter():
         sel(_Speaker(AgentRole.EXECUTOR.value), gc)
     gc.messages = gc.messages + [_exec_result(True)]
     sel(_Speaker(AgentRole.EXECUTOR.value), gc)
-    assert state.consecutive_failed_compiles == 0
+    assert state.consecutive_no_progress == 0
     for _ in range(5):
         gc.messages = gc.messages + [_exec_result(False)]
         sel(_Speaker(AgentRole.EXECUTOR.value), gc)
     assert state.reason != "stuck"
 
 
-def test_search_result_does_not_count_as_failed_compile():
+def test_search_result_does_not_count_as_no_progress():
     gc, state = _build()
     sel = gc.speaker_selection_method
-    # a search_lemmas result has no 'compiled' key -> must not increment
+    # a search_lemmas result has no 'compiled' key, so the verdict is None ->
+    # must not increment. Exploration is not thrashing.
     search_msg = {
         "name": AgentRole.EXECUTOR.value,
         "content": None,
@@ -294,5 +296,86 @@ def test_search_result_does_not_count_as_failed_compile():
     for _ in range(8):
         gc.messages = gc.messages + [search_msg]
         sel(_Speaker(AgentRole.EXECUTOR.value), gc)
-    assert state.consecutive_failed_compiles == 0
+    assert state.consecutive_no_progress == 0
     assert state.reason != "stuck"
+
+
+# --- the progress-verdict seam (domain-adaptable no-progress bound) ----------
+#
+# The no-progress bound is framework-agnostic; only WHICH tool result counts as
+# "the verifier accepted" is the domain's business. Lean reads check_lean's
+# ``compiled``; astro's tools return a uniform ``ok``. Keeping the machinery
+# identical and varying one key is what makes cross-regime comparison of
+# structural signatures (RQ iii) a measurement rather than two hand-tuned
+# heuristics. These tests pin that seam directly on RoutingConfig -- no group
+# chat needed, since read_progress is pure.
+
+
+def _verifier_result(payload: dict) -> dict:
+    """An executor result carrying one tool response. ag2 repr()s the dict."""
+    return {"tool_responses": [{"id": "t", "content": repr(payload)}]}
+
+
+def test_default_verdict_reads_the_lean_key() -> None:
+    """A config that sets no verdict keeps Lean's behaviour unchanged."""
+    config = RoutingConfig(entry=AgentRole.REASONER)
+    assert config.progress_verdict is None
+    assert config.read_progress(_verifier_result({"compiled": True})) is True
+    assert config.read_progress(_verifier_result({"compiled": False})) is False
+
+
+def test_custom_verdict_reads_its_own_key_and_not_leans() -> None:
+    """An astro-style config keys on 'ok' and ignores Lean's key entirely."""
+    config = RoutingConfig(
+        entry=AgentRole.PLANNER, progress_verdict=make_key_progress_verdict("ok")
+    )
+    assert config.read_progress(_verifier_result({"ok": True, "rms_ms": 1.2})) is True
+    assert config.read_progress(_verifier_result({"ok": False, "error": "no convergence"})) is False
+    # Lean's key must be invisible to an astro config, or the two domains would
+    # silently share a bound while measuring different things.
+    assert config.read_progress(_verifier_result({"compiled": False})) is None
+
+
+def test_non_verifier_results_return_none() -> None:
+    """None is load-bearing: exploration must not count toward the bound.
+
+    A tool that is not the domain's verifier (Lean's search_lemmas, astro's
+    periodogram) yields None, so raw retries are not scored as thrashing -- the
+    proposal treats retry counts as a hypothesis to test, not a failure signal.
+    """
+    lean = RoutingConfig(entry=AgentRole.REASONER)
+    astro = RoutingConfig(entry=AgentRole.PLANNER, progress_verdict=make_key_progress_verdict("ok"))
+    assert lean.read_progress(_verifier_result({"results": ["Nat.add_comm"]})) is None
+    assert astro.read_progress(_verifier_result({"peaks_days": [5.28, 2.64]})) is None
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        {},  # no tool_responses at all
+        {"tool_responses": []},  # empty list
+        {"tool_responses": [{"id": "t", "content": ""}]},  # empty content
+        {"tool_responses": [{"id": "t", "content": "not a dict("}]},  # unparseable
+        {"tool_responses": [{"id": "t", "content": "[1, 2, 3]"}]},  # parses, not a dict
+    ],
+)
+def test_malformed_results_are_ignored_not_counted(message: dict) -> None:
+    """A malformed tool result must never be read as a rejection.
+
+    Counting it would let a transport hiccup masquerade as agent thrashing and
+    terminate a healthy run as 'stuck'.
+    """
+    config = RoutingConfig(entry=AgentRole.REASONER)
+    assert config.read_progress(message) is None
+
+
+def test_first_matching_response_wins_across_multiple_tools() -> None:
+    """One turn can carry several tool responses; the verdict reads the verifier."""
+    config = RoutingConfig(entry=AgentRole.REASONER)
+    message = {
+        "tool_responses": [
+            {"id": "a", "content": repr({"results": ["Nat.add_comm"]})},
+            {"id": "b", "content": repr({"compiled": False, "errors": ["unknown id"]})},
+        ]
+    }
+    assert config.read_progress(message) is False

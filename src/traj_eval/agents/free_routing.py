@@ -35,6 +35,12 @@ from traj_eval.agents.observer import StepContext
 from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import AgentRole
 
+# How a domain reads "did that tool call make progress?" off an executor result
+# message. True = the verifier accepted; False = the verifier ran and rejected;
+# None = not a verifier result, so it must not count toward the no-progress
+# bound. ``None`` in place of the callable itself means "use the Lean default".
+ProgressVerdictFn = Callable[[dict[str, Any]], bool | None]
+
 
 @dataclass(frozen=True)
 class RoleSpec:
@@ -64,10 +70,21 @@ class RoutingConfig:
     max_turns: int = 40
     max_consecutive_invalid: int = 3  # consecutive bad hand-offs -> 'stuck'
     max_identical_calls: int = 4  # identical tool submissions in a row -> 'stuck'
-    max_failed_compiles: int = 6  # consecutive failed compiles w/ no success -> 'stuck'
+    max_no_progress: int = 6  # consecutive unsuccessful verifier calls -> 'stuck'
+    # How this domain reads "did that tool call make progress?" off an executor
+    # result. Returns True (progress), False (verifier ran and rejected), or None
+    # (not a verifier result at all -- must NOT count toward the bound). Lean
+    # reads check_lean's ``compiled``; astro reads its tools' ``ok``. Defaults to
+    # the Lean key so existing configs keep their behaviour unchanged.
+    progress_verdict: ProgressVerdictFn | None = None
 
     def spec(self, role: AgentRole) -> RoleSpec | None:
         return self.roles.get(role)
+
+    def read_progress(self, message: dict[str, Any]) -> bool | None:
+        """Apply this domain's progress verdict, falling back to Lean's key."""
+        verdict = self.progress_verdict or _LEAN_PROGRESS_VERDICT
+        return verdict(message)
 
 
 @dataclass
@@ -86,12 +103,14 @@ class _RunState:
     last_call_code: str | None = None
     consecutive_identical_calls: int = 0
     max_identical_calls_seen: int = 0
-    # No-progress bound: consecutive failed compiles with no success between
-    # them. Unlike the identical-calls bound, this catches "reworded thrashing"
-    # -- the agent varying its code cosmetically while never compiling. A
-    # successful compile resets it to 0.
-    consecutive_failed_compiles: int = 0
-    max_failed_compiles_seen: int = 0
+    # No-progress bound: consecutive unsuccessful verifier calls with no success
+    # between them. Unlike the identical-calls bound, this catches "reworded
+    # thrashing" -- the agent varying its artefact cosmetically while never
+    # getting the verifier to accept it. Any success resets it to 0. Domain-
+    # neutral: 'verifier' is check_lean for Lean, the fitting/submit tools for
+    # astro; which key is read is RoutingConfig.progress_verdict's business.
+    consecutive_no_progress: int = 0
+    max_no_progress_seen: int = 0
 
 
 def _role_of(name: str) -> AgentRole | None:
@@ -122,28 +141,46 @@ def _is_native_tool_call(message: dict[str, Any]) -> bool:
     return bool(message.get("tool_calls"))
 
 
-def _compile_verdict(message: dict[str, Any]) -> bool | None:
-    """Read a check_lean compile verdict from an executor result message.
+def make_key_progress_verdict(key: str) -> ProgressVerdictFn:
+    """Build a progress verdict that reads one boolean key off a tool result.
 
-    Returns True/False if this is a check_lean result, or None if it is not a
-    compile result at all (e.g. a search_lemmas result, which must NOT count
-    toward the no-progress bound). ag2 stringifies the tool's dict with repr(),
-    so we parse leniently with ast.literal_eval.
+    Returns a callable giving True/False when some tool response carries ``key``,
+    or None when none does -- and None is load-bearing: a tool that is not the
+    domain's verifier (Lean's ``search_lemmas``, astro's ``periodogram``) must
+    NOT count toward the no-progress bound, or exploration would be scored as
+    thrashing.
+
+    ag2 stringifies a tool's returned dict with ``repr()``, so content is parsed
+    leniently with ``ast.literal_eval`` rather than ``json.loads``.
+
+    Domains differ only in the key: Lean's ``check_lean`` returns ``compiled``;
+    the astro tools are designed to return a uniform ``ok``. Keeping the shape
+    identical is what lets both testbeds share one no-progress bound -- which is
+    what makes "structural failure signatures transfer across verification
+    regimes" (RQ iii) a measurable claim rather than two incomparable heuristics.
     """
     import ast
 
-    responses = message.get("tool_responses") or []
-    for r in responses:
-        content = r.get("content")
-        if not content:
-            continue
-        try:
-            d = ast.literal_eval(content)
-        except (ValueError, SyntaxError):
-            continue
-        if isinstance(d, dict) and "compiled" in d:
-            return bool(d["compiled"])
-    return None
+    def _verdict(message: dict[str, Any]) -> bool | None:
+        responses = message.get("tool_responses") or []
+        for r in responses:
+            content = r.get("content")
+            if not content:
+                continue
+            try:
+                d = ast.literal_eval(content)
+            except (ValueError, SyntaxError):
+                continue
+            if isinstance(d, dict) and key in d:
+                return bool(d[key])
+        return None
+
+    return _verdict
+
+
+# Lean's verifier key, kept as the default so existing RoutingConfigs are
+# unaffected by the introduction of the seam.
+_LEAN_PROGRESS_VERDICT: ProgressVerdictFn = make_key_progress_verdict("compiled")
 
 
 def _normalise_call_code(message: dict[str, Any]) -> str | None:
@@ -248,19 +285,21 @@ def build_free_routing_team(
         # The caller is the last non-executor agent; recover it from the ledger
         # if present, else from the message before the tool result.
         if name == AgentRole.EXECUTOR.value:
-            # Track compile progress: a check_lean result updates the
-            # consecutive-failure counter (a success resets it). search_lemmas
-            # results return None here and are ignored. Past the threshold the
-            # agent is thrashing without ever compiling -- stop as 'stuck'.
-            verdict = _compile_verdict(_last_message(groupchat))
+            # Track verifier progress: a verifier result updates the
+            # consecutive-failure counter (a success resets it). Non-verifier
+            # results return None here and are ignored, so exploration is not
+            # penalised. Past the threshold the agent is thrashing without ever
+            # satisfying the verifier -- stop as 'stuck'. Which tool counts as
+            # the verifier is the domain's choice, via config.progress_verdict.
+            verdict = config.read_progress(_last_message(groupchat))
             if verdict is True:
-                state.consecutive_failed_compiles = 0
+                state.consecutive_no_progress = 0
             elif verdict is False:
-                state.consecutive_failed_compiles += 1
-                state.max_failed_compiles_seen = max(
-                    state.max_failed_compiles_seen, state.consecutive_failed_compiles
+                state.consecutive_no_progress += 1
+                state.max_no_progress_seen = max(
+                    state.max_no_progress_seen, state.consecutive_no_progress
                 )
-                if state.consecutive_failed_compiles >= config.max_failed_compiles:
+                if state.consecutive_no_progress >= config.max_no_progress:
                     state.terminated, state.reason = True, "stuck"
                     return None
             caller = _last_caller_before_executor(groupchat)
