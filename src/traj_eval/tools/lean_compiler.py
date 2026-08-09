@@ -161,10 +161,31 @@ class LeanCompiler:
         self._server = AutoLeanServer(config)
 
     def check(self, code: str) -> LeanResult:
-        """Type-check ``code`` in a fresh env; return the structured result."""
+        """Type-check ``code`` in a fresh env; return the structured result.
+
+        Some inputs crash the REPL outright -- e.g. a probe that makes the
+        kernel try to evaluate an astronomically large ``Nat.pow`` panics with
+        "exponent is too big" and kills the server process. We catch that here
+        and return a failed result (compiled=False) rather than letting the
+        exception abort a whole batch. AutoLeanServer re-spawns on the next
+        call, so subsequent trials still run.
+        """
         from lean_interact import Command
 
-        response = self._server.run(Command(cmd=code), timeout=self._timeout)
+        try:
+            response = self._server.run(Command(cmd=code), timeout=self._timeout)
+        except Exception as e:  # noqa: BLE001 -- REPL crash/timeout must not abort the batch
+            msg = f"lean server error: {type(e).__name__}: {str(e)[:120]}"
+            return LeanResult(
+                compiled=False,
+                sorry_free=True,
+                n_errors=1,
+                n_sorries=0,
+                errors=[LeanMessage(severity="error", data=msg, line=None, column=None)],
+                warnings=[],
+                sorries=[],
+                summary=f"compiled: false; {msg}",
+            )
         return _build_result(response)
 
     def as_tool(self):

@@ -109,3 +109,25 @@ def test_to_dict_has_summary_and_detail():
     assert "summary" in d
     assert d["n_sorries"] == 1
     assert d["sorries"][0]["goal"] == "g"
+
+
+def test_check_survives_server_crash():
+    # A REPL panic (e.g. Nat.pow exponent too big) must become a failed result,
+    # not a raised exception that aborts a whole batch.
+    import pytest
+
+    pytest.importorskip("lean_interact")
+    from traj_eval.tools.lean_compiler import LeanCompiler
+
+    comp = LeanCompiler.__new__(LeanCompiler)  # bypass __init__ (no real server)
+    comp._timeout = 5
+
+    class _BoomServer:
+        def run(self, *a, **k):
+            raise ConnectionAbortedError("The Lean server closed unexpectedly.")
+
+    comp._server = _BoomServer()
+    res = comp.check("import Mathlib\nexample : True := by native_decide")
+    assert res.compiled is False
+    assert res.n_errors == 1
+    assert "lean server error" in res.summary

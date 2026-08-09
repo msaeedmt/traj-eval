@@ -96,7 +96,12 @@ def main() -> int:
         ok = _offline_success(events)
 
         if args.validate and compiler is not None and task in tasks:
-            m = validate(events, tasks[task], compiler=compiler)
+            try:
+                m = validate(events, tasks[task], compiler=compiler)
+            except Exception as e:  # noqa: BLE001 -- one bad trial must not abort the batch
+                print(f"  validate error on {p.name}: {type(e).__name__}: {str(e)[:100]}")
+                fail[task] += 1
+                continue
             ok = bool(
                 m.final_proof_compiles
                 and m.final_proof_sorry_free

@@ -91,7 +91,11 @@ def main() -> int:
         trial = f"{task}_t{m.group('trial')}"
         _, events = read_trial(p)
         off = _offline_success(events)
-        ker, metrics, reasons = _kernel_verdict(events, tasks[task], compiler)
+        try:
+            ker, metrics, reasons = _kernel_verdict(events, tasks[task], compiler)
+        except Exception as e:  # noqa: BLE001 -- don't let one trial abort the run
+            print(f"  verdict error on {p.name}: {type(e).__name__}: {str(e)[:100]}")
+            continue
 
         if off and ker:
             agree_pass.append(trial)
