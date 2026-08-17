@@ -1,4 +1,8 @@
-"""Synthetic RV tasks with known truth, for testing the astro tools.
+"""Synthetic RV tasks with known truth, shared by every astro test module.
+
+Lives at the tests root so pytest hands these fixtures to any test that asks for
+them by name -- no cross-directory imports, which is what broke when
+``tests/agents`` turned out not to be a package.
 
 Built locally rather than loaded from ``dataset/Astro/`` so these tests run in a
 bare checkout with no prepared task bank -- the same reason the criteria tests
@@ -89,6 +93,12 @@ TWO_PLANETS = [
 # re-fitting the same injected system in a dozen tests would dominate the suite.
 # Anything with mutable state (RvSubmit's attempt budget) is deliberately NOT
 # cached here; those tests construct their own.
+
+
+@pytest.fixture(scope="session")
+def make_astro_task():
+    """The task factory itself, for tests needing a non-default configuration."""
+    return make_task
 
 
 @pytest.fixture(scope="session")

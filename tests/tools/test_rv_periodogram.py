@@ -20,8 +20,6 @@ from traj_eval.tools.rv_periodogram import (
     gls_power,
 )
 
-from .conftest import ONE_PLANET, make_task
-
 
 def test_recovers_the_injected_period(one_planet_task) -> None:
     task, _ = one_planet_task
@@ -136,9 +134,9 @@ def test_fit_quality_on_truth_recovers_noise_and_offset(one_planet_task) -> None
     assert quality["k_params"] == 6
 
 
-def test_fit_quality_counts_one_offset_per_instrument() -> None:
-    task, truth = make_task(
-        ONE_PLANET,
+def test_fit_quality_counts_one_offset_per_instrument(make_astro_task) -> None:
+    task, truth = make_astro_task(
+        [{"P_days": 12.345, "m_sin_i_mjup": 0.6, "e": 0.12, "omega_rad": 1.0, "l_rad": 2.0}],
         n_obs=100,
         instruments=["instA"] * 50 + ["instB"] * 50,
     )
