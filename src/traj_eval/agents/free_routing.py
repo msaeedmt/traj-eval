@@ -184,26 +184,42 @@ _LEAN_PROGRESS_VERDICT: ProgressVerdictFn = make_key_progress_verdict("compiled"
 
 
 def _normalise_call_code(message: dict[str, Any]) -> str | None:
-    """Whitespace-normalised concatenation of the tool call(s) arguments.
+    """Whitespace-normalised signature of the tool call(s): NAME plus arguments.
 
     Used by the perseveration bound to tell whether this submission repeats the
-    previous one. Parses each tool_call's ``arguments`` (clean JSON) and joins
-    the values; falls back to the raw arguments string if parsing fails. Mirrors
-    the detector's normalisation so the live bound and the offline detector
-    agree on what 'identical' means.
+    previous one. Parses each tool_call's ``arguments`` (clean JSON) and joins the
+    values behind the tool's name; falls back to the raw arguments string if
+    parsing fails.
+
+    The tool NAME is part of the signature. Without it, two different actions
+    that happen to take the same payload are indistinguishable -- and in the
+    astro testbed that is the normal workflow, not a pathology: the engineer
+    inspects residuals for a fitted system, the critic independently re-inspects
+    the same system, and then submits it. Three legitimate distinct calls,
+    identical argument values. Conflating them would trip the bound and record a
+    healthy run as 'stuck', which is worse than missing a real repeat because it
+    fabricates a failure mode.
+
+    This also brings the live bound into agreement with the offline detector,
+    which already filters to a single tool (``check_lean_calls``) before looking
+    for repeats -- so name-blind normalisation here meant the two disagreed about
+    what 'identical' means despite being intended to match.
     """
     import json as _json
 
     parts: list[str] = []
     for tc in message.get("tool_calls") or []:
-        args = tc.get("function", {}).get("arguments")
+        function = tc.get("function", {}) or {}
+        args = function.get("arguments")
         if not args:
             continue
+        name = str(function.get("name") or "?")
         try:
             parsed = _json.loads(args)
-            parts.append(" ".join(str(v) for v in parsed.values()))
+            payload = " ".join(str(v) for v in parsed.values())
         except (ValueError, TypeError, AttributeError):
-            parts.append(str(args))
+            payload = str(args)
+        parts.append(f"{name}({payload})")
     if not parts:
         return None
     return " ".join(" ".join(parts).split())

@@ -379,3 +379,52 @@ def test_first_matching_response_wins_across_multiple_tools() -> None:
         ]
     }
     assert config.read_progress(message) is False
+
+
+# --- identical-call normalisation includes the tool name ---------------------
+#
+# Without the name, two different actions taking the same payload are
+# indistinguishable. In astro that is the normal workflow (inspect residuals for
+# a system, re-inspect it, submit it), so conflating them would record a healthy
+# run as 'stuck' -- fabricating a failure mode rather than missing one.
+
+
+def _call(tool: str, args: dict) -> dict:
+    import json as _json
+
+    return {"tool_calls": [{"function": {"name": tool, "arguments": _json.dumps(args)}}]}
+
+
+def test_same_payload_to_different_tools_is_not_identical() -> None:
+    from traj_eval.agents.free_routing import _normalise_call_code
+
+    planets = [{"P_days": 11.2, "m_sin_i_mjup": 0.5}]
+    residual = _normalise_call_code(_call("rv_residual", {"planets": planets}))
+    submit = _normalise_call_code(_call("rv_submit", {"planets": planets}))
+    assert residual is not None and submit is not None
+    assert residual != submit
+
+
+def test_same_payload_to_the_same_tool_is_identical() -> None:
+    from traj_eval.agents.free_routing import _normalise_call_code
+
+    args = {"code": "import Mathlib\ntheorem t : True := trivial"}
+    assert _normalise_call_code(_call("check_lean", args)) == _normalise_call_code(
+        _call("check_lean", args)
+    )
+
+
+def test_whitespace_differences_are_still_normalised_away() -> None:
+    from traj_eval.agents.free_routing import _normalise_call_code
+
+    a = _normalise_call_code(_call("check_lean", {"code": "theorem  t  :=  trivial"}))
+    b = _normalise_call_code(_call("check_lean", {"code": "theorem t := trivial"}))
+    assert a == b
+
+
+def test_no_tool_calls_yields_none() -> None:
+    from traj_eval.agents.free_routing import _normalise_call_code
+
+    assert _normalise_call_code({}) is None
+    assert _normalise_call_code({"tool_calls": []}) is None
+    assert _normalise_call_code({"tool_calls": [{"function": {"name": "x"}}]}) is None
