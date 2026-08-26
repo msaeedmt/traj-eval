@@ -75,13 +75,30 @@ def test_only_the_critic_may_terminate() -> None:
     assert not roles[AgentRole.ENGINEER].can_terminate
 
 
-def test_planner_holds_only_the_periodogram() -> None:
+def test_planner_holds_periodogram_and_residual() -> None:
     """Grounded model selection, but no fitting: the planner hypothesises.
 
-    Giving it the periodogram makes its period choice recomputable against the
-    alias family, which is what makes planner-introduced errors attributable.
+    The periodogram makes its period choice recomputable against the alias
+    family. The residual view was added after the first two-planet trial, where
+    an escalated planner had no way to see the surviving signal for itself: it
+    re-ran the raw periodogram, got byte-identical results, and had to take the
+    engineer's word for the 15.93 d peak. With rv_residual its add-a-planet
+    decision is a logged tool call an anchor can check.
     """
-    assert astro_routing_config().roles[AgentRole.PLANNER].tools == frozenset({TOOL_PERIODOGRAM})
+    tools = astro_routing_config().roles[AgentRole.PLANNER].tools
+    assert tools == frozenset({TOOL_PERIODOGRAM, TOOL_RESIDUAL})
+
+
+def test_planner_cannot_fit_or_submit() -> None:
+    """Residual access must not become model-building access.
+
+    If the planner could fit, the planner/engineer split would collapse and
+    Expected Result 2 (planner errors propagate more silently than engineer
+    errors) would have no separable roles to compare.
+    """
+    tools = astro_routing_config().roles[AgentRole.PLANNER].tools
+    assert TOOL_FIT not in tools
+    assert TOOL_SUBMIT not in tools
 
 
 def test_engineer_can_escalate_back_to_the_planner() -> None:

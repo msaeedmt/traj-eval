@@ -21,6 +21,21 @@ taxonomy needs attributable:
     structure, and convention checks that no single tool call reveals.
   * EXECUTOR is the mechanical tool runner (constructed by the controller).
 
+Why the planner holds rv_residual
+---------------------------------
+It did not, initially. The first multi-planet trial showed why that was wrong:
+when the engineer escalated ("residuals show a strong 15.93 d peak, the model is
+incomplete"), the planner's only tool was a periodogram of the RAW data, so it
+re-ran it and received byte-identical results to its first call -- a wasted step
+that taught it nothing, on what is the common path for every multi-planet task.
+
+Worse for the measurement: the planner's decision to add a planet then rested
+entirely on the engineer's prose, so it was not grounded in anything
+recomputable. Giving the planner its own residual view makes that decision a
+logged tool call an anchor can check, which is what O1 localisation requires.
+The cross-agent trust channel survives regardless, since the planner must still
+accept the engineer's fitted parameters as the thing to subtract.
+
 On the l_rad epoch convention
 -----------------------------
 The tools state the convention in their returned ``notes``; the prompts
@@ -55,11 +70,16 @@ data to recover the planetary system that produced it.
 You decide the MODEL: how many planets to hypothesise, and which candidate
 orbital periods to pursue. You do not fit, and you do not submit.
 
-You have one tool (call it directly, the normal way):
+You have these tools (call them directly, the normal way):
 - rv_periodogram(min_period_days, max_period_days, top_k)
       candidate periods with their power, an approximate false-alarm
       probability, the spectral window (periods produced by the observing
       cadence itself), and each peak's arithmetic alias relatives.
+- rv_residual(planets, sigma_jitter_ms, top_k)
+      what is left after removing a fitted model: the residual scatter against
+      the threshold, and a periodogram of the residuals. When the engineer
+      reports that a model is incomplete, use this on their fitted planets to
+      see the surviving signal for yourself rather than taking it on trust.
 
 A periodogram peak is not a planet. Every real period also generates spurious
 peaks -- at half and double the period, at beat periods against the observing

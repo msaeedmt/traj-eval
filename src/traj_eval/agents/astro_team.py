@@ -6,7 +6,7 @@ the agnostic controller in ``free_routing.py`` is untouched.
 
 The coordination triangle:
 
-    planner  --TOOL: rv_periodogram--> (executor) --> planner
+    planner  --TOOL: rv_periodogram | rv_residual--> (executor) --> planner
     planner  --HANDOFF--> engineer
     engineer --TOOL: rv_fit | rv_residual | rv_periodogram--> (executor) --> engineer
     engineer --HANDOFF--> {critic, planner}
@@ -24,7 +24,18 @@ can actually block a resubmission.
 **The engineer can hand back to the planner.** The planner owns the planet count,
 so an engineer that finds residual signal must escalate rather than silently
 adding a planet. That back-edge is what makes count decisions attributable to the
-planner -- Expected Result 2 depends on it.
+planner -- Expected Result 2 depends on it. Trial evidence: on the first
+two-planet task the engineer did exactly this, reporting a surviving 15.93 d peak
+and escalating rather than adding the planet itself.
+
+The planner holds rv_residual because that back-edge exists. Without it, an
+escalated planner could only re-run the raw periodogram -- observed returning
+byte-identical results to its first call, a wasted step on the common path -- and
+its decision to add a planet rested on the engineer's prose rather than on
+anything recomputable. With it, the decision is a logged tool call an anchor can
+check, which is what O1 localisation requires. The cross-agent trust channel
+survives, since the planner must still accept the engineer's fitted parameters as
+the thing to subtract.
 
 The gap between what each role is ALLOWED to reach and what it actually names is
 the coordination signal the run records; the allowed sets are permissive enough
@@ -82,7 +93,7 @@ def astro_routing_config(*, max_turns: int = 40) -> RoutingConfig:
             AgentRole.PLANNER: RoleSpec(
                 role=AgentRole.PLANNER,
                 handoff_targets=frozenset({AgentRole.ENGINEER}),
-                tools=frozenset({TOOL_PERIODOGRAM}),
+                tools=frozenset({TOOL_PERIODOGRAM, TOOL_RESIDUAL}),
             ),
             AgentRole.ENGINEER: RoleSpec(
                 role=AgentRole.ENGINEER,
