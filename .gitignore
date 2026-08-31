@@ -25,6 +25,7 @@ build/
 
 # Secrets — never commit API keys
 .env
+/configs/OpenAi.env
 *.key
 
 # OS / editor
@@ -35,3 +36,16 @@ build/
 
 # Windows download metadata
 *:Zone.Identifier
+
+# Local Codex launch/monitor helpers (never track these)
+/src/traj_eval/experiments/smoke_gpt54_astro_agent.py
+/src/traj_eval/experiments/run_gpt54_astro_overnight.py
+
+# This approved experiment's teammate-generated scientific results are trackable.
+# These exceptions intentionally come after /data/** and *.jsonl.
+!/data/batch/
+!/data/batch/astro_gpt54_all3_20260831T171502578Z_8c6ef41a_synthetic/
+!/data/batch/astro_gpt54_all3_20260831T171502578Z_8c6ef41a_synthetic/**
+!/data/batch/astro_gpt54_all3_20260831T171502578Z_8c6ef41a_real/
+!/data/batch/astro_gpt54_all3_20260831T171502578Z_8c6ef41a_real/**
+!/data/batch/astro_gpt54_all3_20260831T171502578Z_8c6ef41a_validation.json

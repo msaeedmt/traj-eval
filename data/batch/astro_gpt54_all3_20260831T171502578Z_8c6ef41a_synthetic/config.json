@@ -1,0 +1,21 @@
+{
+  "phase": "overnight_full",
+  "arm_id": "gpt54",
+  "testbed": "astro",
+  "models": {
+    "backbone": "openai/gpt-5.4"
+  },
+  "trials_per_task": 3,
+  "tiers": [
+    "easy",
+    "medium",
+    "hard"
+  ],
+  "kind": "synthetic",
+  "min_planets": 1,
+  "max_turns": null,
+  "max_submissions": null,
+  "epoch_hint": false,
+  "n_tasks": 100,
+  "created_at": "2026-08-31T18:11:57.740610+00:00"
+}
