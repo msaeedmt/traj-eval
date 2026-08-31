@@ -32,3 +32,6 @@ build/
 .idea/
 .vscode/
 *.swp
+
+# Windows download metadata
+*:Zone.Identifier
