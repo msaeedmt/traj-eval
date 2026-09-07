@@ -15,13 +15,29 @@ we can independently recompute whether real signal remained at the moment the
 agent chose to stop escalating, which is what turns "the agent under-counted
 planets" from a post-hoc observation into an attributable event.
 
-Like ``rv_periodogram``, this tool deliberately omits an ``ok`` key: inspecting
-residuals is exploration, not a verification attempt, so it must not count
-toward the controller's no-progress bound.
+Like ``rv_periodogram``, this tool deliberately omits an ``ok`` key -- including
+on the error path. Inspecting residuals is exploration, not a verification
+attempt, so it must not count toward the controller's no-progress bound, and a
+malformed call is still not an attempt at anything.
 
 The scatter is reported in units of the reported uncertainties as well as m/s,
 because the evaluator's RMS criterion is ``rms <= 1.5 * median sigma`` -- a
 residual scatter of 3 m/s means nothing until you know whether sigma is 0.5 or 5.
+
+Input validation
+----------------
+Earlier this tool did no validation: it called ``float(p["P_days"])`` directly,
+so a planet dict with the wrong field name raised a bare ``KeyError`` that ag2
+surfaced to the agent as the single word ``Error: 'P_days'``. On seed13_diff10 a
+planner passed ``period_days`` -- a plausible guess, since the tool's docstring
+named no fields -- received that message four times, learned nothing from it, and
+was killed by the repeat bound.
+
+That is a tool defect being recorded as agent perseveration, which corrupts the
+failure taxonomy: the agent was not being stubborn, it was given nothing to act
+on. So the tool now validates its input and returns an error that names the
+offending field, lists the expected ones, and recognises common wrong names --
+and the docstring lists the fields so the schema the model sees is explicit.
 """
 
 from __future__ import annotations
@@ -35,6 +51,101 @@ from traj_eval.tools.rv_periodogram import DEFAULT_MIN_PERIOD_DAYS, RvPeriodogra
 
 # The evaluator's own RMS gate: rms <= RMS_FACTOR * median sigma.
 RMS_FACTOR = 1.5
+
+# The submission schema. Only P_days is strictly required -- the rest default,
+# exactly as in the evaluator -- but all are named here so the error message and
+# the tool docstring can state them.
+REQUIRED_PLANET_FIELDS = ("P_days",)
+OPTIONAL_PLANET_FIELDS = ("m_sin_i_mjup", "e", "inc_rad", "Omega_rad", "omega_rad", "l_rad")
+ALL_PLANET_FIELDS = REQUIRED_PLANET_FIELDS + OPTIONAL_PLANET_FIELDS
+
+# Plausible wrong names, mapped to the right one. An agent that guesses a
+# reasonable synonym should be told the actual name rather than left to guess
+# again; every entry here was either observed in a trace or is an obvious
+# near-miss for one that was.
+FIELD_ALIASES = {
+    "period_days": "P_days",
+    "period": "P_days",
+    "p_days": "P_days",
+    "P": "P_days",
+    "mass": "m_sin_i_mjup",
+    "m_sin_i": "m_sin_i_mjup",
+    "msini": "m_sin_i_mjup",
+    "mass_mjup": "m_sin_i_mjup",
+    "ecc": "e",
+    "eccentricity": "e",
+    "omega": "omega_rad",
+    "arg_periastron": "omega_rad",
+    "l": "l_rad",
+    "lambda": "l_rad",
+    "mean_longitude": "l_rad",
+    "inc": "inc_rad",
+    "inclination": "inc_rad",
+}
+
+
+class PlanetShapeError(ValueError):
+    """A planets argument the tool cannot use, with an actionable message."""
+
+
+def validate_planets(planets: Any) -> list[dict[str, Any]]:
+    """Check the planets argument, raising a message the agent can act on.
+
+    Returns the list unchanged when it is usable. The messages name the offending
+    index and field and, where the agent used a recognisable synonym, the correct
+    name -- because an error an agent cannot act on produces a repeat, not a fix.
+    """
+    if planets is None:
+        return []
+    if not isinstance(planets, list):
+        raise PlanetShapeError(
+            f"'planets' must be a list of planet dicts, got {type(planets).__name__}. "
+            f"Pass the 'planets' list from rv_fit unchanged, or [] for the raw data."
+        )
+    for i, planet in enumerate(planets):
+        if not isinstance(planet, dict):
+            raise PlanetShapeError(
+                f"planets[{i}] must be a dict with fields {list(ALL_PLANET_FIELDS)}, "
+                f"got {type(planet).__name__}."
+            )
+        for required in REQUIRED_PLANET_FIELDS:
+            if required in planet:
+                continue
+            alias = next((k for k in planet if FIELD_ALIASES.get(k) == required), None)
+            hint = (
+                f" You passed {alias!r}; the field is {required!r}."
+                if alias
+                else f" Got keys {sorted(planet)}."
+            )
+            raise PlanetShapeError(
+                f"planets[{i}] is missing {required!r}.{hint} "
+                f"Expected fields: {list(ALL_PLANET_FIELDS)} "
+                f"(only {list(REQUIRED_PLANET_FIELDS)} required)."
+            )
+        for key, value in planet.items():
+            if key in ALL_PLANET_FIELDS and not isinstance(value, int | float):
+                raise PlanetShapeError(
+                    f"planets[{i}][{key!r}] must be a number, got " f"{type(value).__name__}."
+                )
+    return planets
+
+
+def _shape_error_payload(exc: PlanetShapeError, task_id: str) -> dict[str, Any]:
+    """The error dict handed back to the agent.
+
+    Deliberately carries NO ``ok`` key: a malformed exploratory call is still not
+    a verification attempt, so it must not count toward the no-progress bound.
+    """
+    return {
+        "task_id": task_id,
+        "error": str(exc),
+        "expected_fields": list(ALL_PLANET_FIELDS),
+        "required_fields": list(REQUIRED_PLANET_FIELDS),
+        "hint": (
+            "Pass the 'planets' list returned by rv_fit unchanged. To analyse the "
+            "raw data with no planets removed, pass [] or omit the argument."
+        ),
+    }
 
 
 class RvResidual:
@@ -60,8 +171,13 @@ class RvResidual:
         max_period_days: float | None = None,
         top_k: int = 3,
     ) -> dict[str, Any]:
-        """Residuals after removing ``planets`` (empty list = the raw data)."""
-        planet_list = to_planet_params(planets or [])
+        """Residuals after removing ``planets`` (empty list = the raw data).
+
+        Raises ``PlanetShapeError`` on a malformed argument; the tool closure
+        converts that into a structured error rather than letting it escape as a
+        bare exception.
+        """
+        planet_list = to_planet_params(validate_planets(planets) or [])
         model, offsets = full_model(
             planet_list,
             self.times,
@@ -148,12 +264,26 @@ class RvResidual:
             complete or another planet remains.
 
             Args:
-                planets: the planets to remove, as returned by rv_fit. Pass an
-                    empty list or omit to analyse the raw data.
+                planets: the planets to remove, as returned by rv_fit. Each is a
+                    dict with the field P_days (required) and optionally
+                    m_sin_i_mjup, e, inc_rad, Omega_rad, omega_rad, l_rad. Use
+                    these exact names. Pass [] or omit to analyse the raw data.
                 sigma_jitter_ms: extra white noise in m/s to add in quadrature
                     to the reported uncertainties.
                 top_k: how many residual periodogram peaks to return.
             """
-            return self.analyse(planets, sigma_jitter_ms=sigma_jitter_ms, top_k=top_k)
+            try:
+                return self.analyse(planets, sigma_jitter_ms=sigma_jitter_ms, top_k=top_k)
+            except PlanetShapeError as exc:
+                return _shape_error_payload(exc, self.task_id)
+            except (KeyError, TypeError, ValueError) as exc:
+                # Anything the validator did not anticipate still reaches the
+                # agent as a readable message rather than a bare exception.
+                return _shape_error_payload(
+                    PlanetShapeError(
+                        f"could not use the supplied planets: " f"{type(exc).__name__}: {exc}"
+                    ),
+                    self.task_id,
+                )
 
         return rv_residual

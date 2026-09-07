@@ -1,0 +1,2260 @@
+{
+  "seed0_diff6": {
+    "ceiling_match": 0.505808715285863,
+    "ceiling_periods_days": [
+      2.452925819309959,
+      4.898086361998736
+    ],
+    "ceiling_rms_ms": 1.873704133515334,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed0_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.4557950686943686,
+      4.947110271497176
+    ],
+    "truth_rms_ms": 2.0636482107413014
+  },
+  "seed101_diff9": {
+    "ceiling_match": 0.31607134576485385,
+    "ceiling_periods_days": [
+      102.24886081733378,
+      193.98657814402603,
+      280.14002310739363
+    ],
+    "ceiling_rms_ms": 1.326055815599724,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed101_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      102.0559177978518,
+      168.68398099480538,
+      287.9630384430318
+    ],
+    "truth_rms_ms": 1.7303684807562092
+  },
+  "seed104_diff8": {
+    "ceiling_match": 0.46176578929183937,
+    "ceiling_periods_days": [
+      5.905965576277117,
+      9.98148871436243,
+      37.63444979789682
+    ],
+    "ceiling_rms_ms": 1.1698533747592372,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed104_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.905531711813518,
+      8.868471753927938,
+      44.2758232916433
+    ],
+    "truth_rms_ms": 1.5037467228360133
+  },
+  "seed10_diff10": {
+    "ceiling_match": 0.27283039979760554,
+    "ceiling_periods_days": [
+      129.48831486136257,
+      203.54542383015195,
+      292.223444808242,
+      322.6084270360005
+    ],
+    "ceiling_rms_ms": 2.05068399681086,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 4,
+    "task_id": "seed10_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      126.99939998629051,
+      212.20110903216553,
+      296.043877788982,
+      300.0
+    ],
+    "truth_rms_ms": 2.7956707913291448
+  },
+  "seed1108_diff2": {
+    "ceiling_match": 0.949994223219572,
+    "ceiling_periods_days": [
+      5.286234458764443
+    ],
+    "ceiling_rms_ms": 0.9143533280109525,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed1108_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.282604899978743
+    ],
+    "truth_rms_ms": 0.9601227617851976
+  },
+  "seed111_diff3": {
+    "ceiling_match": 0.9393669200181959,
+    "ceiling_periods_days": [
+      25.184325894865
+    ],
+    "ceiling_rms_ms": 1.291541379701139,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed111_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      25.23797569852963
+    ],
+    "truth_rms_ms": 1.3110781072584998
+  },
+  "seed11_diff6": {
+    "ceiling_match": 0.0937560770315739,
+    "ceiling_periods_days": [
+      46.84283316814285
+    ],
+    "ceiling_rms_ms": 0.7407962037183514,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed11_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      40.73289840708076
+    ],
+    "truth_rms_ms": 0.7952831709420731
+  },
+  "seed1206_diff2": {
+    "ceiling_match": 0.9601156292822581,
+    "ceiling_periods_days": [
+      47.69375948522005
+    ],
+    "ceiling_rms_ms": 1.7744085288147764,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed1206_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      47.59328201435763
+    ],
+    "truth_rms_ms": 1.8222850751789352
+  },
+  "seed121_diff3": {
+    "ceiling_match": 0.8148876991311275,
+    "ceiling_periods_days": [
+      124.51387104264613,
+      233.64791136278794
+    ],
+    "ceiling_rms_ms": 1.5297928088838848,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed121_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      124.36424714448097,
+      233.34567927410814
+    ],
+    "truth_rms_ms": 1.6767132934361801
+  },
+  "seed122_diff10": {
+    "ceiling_match": 0.92299842507801,
+    "ceiling_periods_days": [
+      13.281706788796951,
+      22.503860745479624,
+      34.42787392922716
+    ],
+    "ceiling_rms_ms": 2.5378237148544045,
+    "ceiling_solved": true,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed122_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      13.264418742884791,
+      26.47513028879955,
+      40.503381093208404
+    ],
+    "truth_rms_ms": 3.0358711856616916
+  },
+  "seed125_diff10": {
+    "ceiling_match": 0.3283785480210737,
+    "ceiling_periods_days": [
+      13.94975778089364,
+      17.94328540112133,
+      253.2316635230487
+    ],
+    "ceiling_rms_ms": 1.8733215814359736,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed125_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      14.127249854744633,
+      20.95661436020595,
+      220.20144654178165
+    ],
+    "truth_rms_ms": 2.5839647012455313
+  },
+  "seed129_diff3": {
+    "ceiling_match": 0.923827280891935,
+    "ceiling_periods_days": [
+      180.53679594724647
+    ],
+    "ceiling_rms_ms": 2.1924962423851886,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed129_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      180.06864934769786
+    ],
+    "truth_rms_ms": 2.2466312521465484
+  },
+  "seed12_diff5": {
+    "ceiling_match": 0.38277955853245244,
+    "ceiling_periods_days": [
+      5.17316618738416
+    ],
+    "ceiling_rms_ms": 0.7641824407337661,
+    "ceiling_solved": false,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed12_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.164263929707943
+    ],
+    "truth_rms_ms": 0.9137296104549382
+  },
+  "seed13_diff10": {
+    "ceiling_match": 0.9228865201135174,
+    "ceiling_periods_days": [
+      116.31655513624173,
+      242.7783276470875,
+      322.9197147814567
+    ],
+    "ceiling_rms_ms": 0.8569618685850142,
+    "ceiling_solved": true,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed13_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      116.38336897256184,
+      234.56197119669065,
+      300.0
+    ],
+    "truth_rms_ms": 1.4977746164900532
+  },
+  "seed1457_diff2": {
+    "ceiling_match": 0.9800289231301217,
+    "ceiling_periods_days": [
+      5.076538509005731
+    ],
+    "ceiling_rms_ms": 3.7773712991292907,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed1457_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.074878475651281
+    ],
+    "truth_rms_ms": 3.80366642401803
+  },
+  "seed146_diff9": {
+    "ceiling_match": 0.21271580872855042,
+    "ceiling_periods_days": [
+      17.868411552332777,
+      198.66142949170606,
+      298.221057185945
+    ],
+    "ceiling_rms_ms": 2.6501137168632343,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed146_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      16.816556464062074,
+      233.57524420979334,
+      300.0
+    ],
+    "truth_rms_ms": 3.397166444572256
+  },
+  "seed14_diff10": {
+    "ceiling_match": 0.3369316179766107,
+    "ceiling_periods_days": [
+      68.37174964998398,
+      168.80170209449284,
+      244.4510922665089
+    ],
+    "ceiling_rms_ms": 1.339437200396108,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed14_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      67.64798358929471,
+      193.1839642762613,
+      287.58764726362904
+    ],
+    "truth_rms_ms": 1.575452984965212
+  },
+  "seed1508_diff2": {
+    "ceiling_match": 0.9405970879663035,
+    "ceiling_periods_days": [
+      2.5703582110195544
+    ],
+    "ceiling_rms_ms": 1.0209106041733267,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed1508_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.571700697479127
+    ],
+    "truth_rms_ms": 1.0485364057317013
+  },
+  "seed1560_diff2": {
+    "ceiling_match": 0.9583849006397903,
+    "ceiling_periods_days": [
+      5.20850839212681
+    ],
+    "ceiling_rms_ms": 0.9674963633751525,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed1560_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.2037668249649
+    ],
+    "truth_rms_ms": 0.9796635167508987
+  },
+  "seed15_diff5": {
+    "ceiling_match": 0.7686881413189576,
+    "ceiling_periods_days": [
+      11.340337353325717,
+      16.865419106181463
+    ],
+    "ceiling_rms_ms": 3.545286729545184,
+    "ceiling_solved": false,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed15_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      11.23286477821446,
+      16.672687340622883
+    ],
+    "truth_rms_ms": 3.8924615546135386
+  },
+  "seed1665_diff2": {
+    "ceiling_match": 0.9685501665181356,
+    "ceiling_periods_days": [
+      8.24791775072018
+    ],
+    "ceiling_rms_ms": 0.7545613366316719,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed1665_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      8.227823113521822
+    ],
+    "truth_rms_ms": 0.767613390884595
+  },
+  "seed16_diff4": {
+    "ceiling_match": 0.4533436209981066,
+    "ceiling_periods_days": [
+      3.253718649925688,
+      50.52635198691396
+    ],
+    "ceiling_rms_ms": 0.6767925257726147,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed16_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.204374189653025,
+      59.44276704342817
+    ],
+    "truth_rms_ms": 0.702863007760493
+  },
+  "seed1743_diff2": {
+    "ceiling_match": 0.8813360053113187,
+    "ceiling_periods_days": [
+      11.080792444288706
+    ],
+    "ceiling_rms_ms": 1.0038073939784493,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed1743_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      11.08836531392206
+    ],
+    "truth_rms_ms": 1.01596845548335
+  },
+  "seed176_diff9": {
+    "ceiling_match": 0.0,
+    "ceiling_periods_days": [
+      191.75764751330198,
+      295.44108601525846,
+      295.5151157638724
+    ],
+    "ceiling_rms_ms": 2.2351167387403805,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed176_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      212.97270538160788,
+      295.74186064593744,
+      300.0
+    ],
+    "truth_rms_ms": 2.972624349782659
+  },
+  "seed17_diff8": {
+    "ceiling_match": 0.19706306017260178,
+    "ceiling_periods_days": [
+      31.84392128537636,
+      55.012542216764075,
+      125.12352747360674
+    ],
+    "ceiling_rms_ms": 2.37399018554993,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed17_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      32.71395334476227,
+      64.72063790207534,
+      145.00761034771105
+    ],
+    "truth_rms_ms": 3.020198672381201
+  },
+  "seed18_diff7": {
+    "ceiling_match": 0.0,
+    "ceiling_periods_days": [
+      8.97085527639027
+    ],
+    "ceiling_rms_ms": 4.546858404602559,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed18_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      8.16821546292273
+    ],
+    "truth_rms_ms": 4.770704575131799
+  },
+  "seed196_diff10": {
+    "ceiling_match": 0.32397698113130724,
+    "ceiling_periods_days": [
+      69.83377992302718,
+      118.33064879252171,
+      171.86927071531107
+    ],
+    "ceiling_rms_ms": 0.5913178575334423,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed196_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      76.4584172601787,
+      112.44468086704279,
+      166.91632453627227
+    ],
+    "truth_rms_ms": 0.8799007450128521
+  },
+  "seed197_diff10": {
+    "ceiling_match": 0.43420858174509924,
+    "ceiling_periods_days": [
+      114.79665398170229,
+      178.7746852896069,
+      313.3947096718435
+    ],
+    "ceiling_rms_ms": 3.14081508811657,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed197_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      109.8886532715084,
+      181.3311772267369,
+      298.7596697353347
+    ],
+    "truth_rms_ms": 4.133342058305739
+  },
+  "seed19_diff6": {
+    "ceiling_match": 0.029374877801034777,
+    "ceiling_periods_days": [
+      7.111639416137008
+    ],
+    "ceiling_rms_ms": 2.262877037595657,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed19_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      7.8885300173885184
+    ],
+    "truth_rms_ms": 2.39031843033565
+  },
+  "seed1_diff8": {
+    "ceiling_match": 0.22462624151468058,
+    "ceiling_periods_days": [
+      4.169499965585297,
+      21.607042000548955
+    ],
+    "ceiling_rms_ms": 3.614170930565714,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed1_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      4.118456363228755,
+      18.788732174390557
+    ],
+    "truth_rms_ms": 3.982053522102428
+  },
+  "seed20_diff3": {
+    "ceiling_match": 0.9677330506819999,
+    "ceiling_periods_days": [
+      3.686971041698591
+    ],
+    "ceiling_rms_ms": 0.9626531438500149,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed20_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.6804689207135155
+    ],
+    "truth_rms_ms": 0.9684660728416747
+  },
+  "seed210_diff2": {
+    "ceiling_match": 0.8858590218818205,
+    "ceiling_periods_days": [
+      15.912961085940081,
+      21.673588583176976
+    ],
+    "ceiling_rms_ms": 0.7744725226701592,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed210_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      15.997192445697292,
+      21.677879347852112
+    ],
+    "truth_rms_ms": 0.8465236797324556
+  },
+  "seed21_diff5": {
+    "ceiling_match": 0.5639736865941978,
+    "ceiling_periods_days": [
+      69.7157656240269,
+      137.8706355996768
+    ],
+    "ceiling_rms_ms": 0.747050892698138,
+    "ceiling_solved": false,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed21_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      70.08452944366505,
+      137.92641398129243
+    ],
+    "truth_rms_ms": 0.8080353094628029
+  },
+  "seed22_diff4": {
+    "ceiling_match": 0.7741417190241138,
+    "ceiling_periods_days": [
+      3.101065892717443
+    ],
+    "ceiling_rms_ms": 4.034018165447724,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed22_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.1170308286086112
+    ],
+    "truth_rms_ms": 4.4088276501363275
+  },
+  "seed23_diff6": {
+    "ceiling_match": 0.14915038313353005,
+    "ceiling_periods_days": [
+      4.099817707280093,
+      7.199330303388544
+    ],
+    "ceiling_rms_ms": 3.455974164647634,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed23_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.8104087669898963,
+      7.296737728709992
+    ],
+    "truth_rms_ms": 4.079579348962192
+  },
+  "seed24_diff6": {
+    "ceiling_match": 0.13145767392123112,
+    "ceiling_periods_days": [
+      35.146973417918076
+    ],
+    "ceiling_rms_ms": 4.407452955817284,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed24_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      35.62147844131646
+    ],
+    "truth_rms_ms": 4.982559874220987
+  },
+  "seed25_diff4": {
+    "ceiling_match": 0.6352862022890138,
+    "ceiling_periods_days": [
+      6.053793450825374
+    ],
+    "ceiling_rms_ms": 2.727536636280032,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed25_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.920631356367038
+    ],
+    "truth_rms_ms": 2.8514177437273633
+  },
+  "seed26_diff5": {
+    "ceiling_match": 0.8976943961453638,
+    "ceiling_periods_days": [
+      2.8163853749782155
+    ],
+    "ceiling_rms_ms": 2.1699111663849604,
+    "ceiling_solved": true,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed26_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.806406950668355
+    ],
+    "truth_rms_ms": 2.417097843607425
+  },
+  "seed27_diff5": {
+    "ceiling_match": 0.5785015594628127,
+    "ceiling_periods_days": [
+      3.6688840195139854,
+      221.6455936369529
+    ],
+    "ceiling_rms_ms": 0.5255832790346372,
+    "ceiling_solved": false,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed27_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.670844122162921,
+      225.6377969406116
+    ],
+    "truth_rms_ms": 0.5874389671321143
+  },
+  "seed28_diff8": {
+    "ceiling_match": 0.0762631160734334,
+    "ceiling_periods_days": [
+      91.13608173217885,
+      175.46027026074594,
+      296.74284166665984
+    ],
+    "ceiling_rms_ms": 0.978893080833572,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed28_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      92.74310403715475,
+      188.93024047476015,
+      297.06661130836227
+    ],
+    "truth_rms_ms": 1.446002124142729
+  },
+  "seed29_diff3": {
+    "ceiling_match": 0.6427425407086292,
+    "ceiling_periods_days": [
+      26.34863628403278
+    ],
+    "ceiling_rms_ms": 0.947287673130196,
+    "ceiling_solved": false,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed29_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      26.97308549504165
+    ],
+    "truth_rms_ms": 0.9750139038400435
+  },
+  "seed2_diff6": {
+    "ceiling_match": 0.0,
+    "ceiling_periods_days": [
+      126.0568622327423
+    ],
+    "ceiling_rms_ms": 2.156959045692454,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed2_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      118.26589225622973
+    ],
+    "truth_rms_ms": 2.324947037455102
+  },
+  "seed300016_diff1": {
+    "ceiling_match": 0.9902607725943628,
+    "ceiling_periods_days": [
+      3.5199835875614744
+    ],
+    "ceiling_rms_ms": 1.293816779017293,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300016_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.52060017387746
+    ],
+    "truth_rms_ms": 1.3045490974544243
+  },
+  "seed300025_diff1": {
+    "ceiling_match": 0.9729793540155929,
+    "ceiling_periods_days": [
+      278.21920956633926
+    ],
+    "ceiling_rms_ms": 0.500743137646908,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300025_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      278.0081083866683
+    ],
+    "truth_rms_ms": 0.5278602286886643
+  },
+  "seed300042_diff1": {
+    "ceiling_match": 0.9767191968225392,
+    "ceiling_periods_days": [
+      43.054153247980544
+    ],
+    "ceiling_rms_ms": 1.228056741063534,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300042_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      43.04768418119342
+    ],
+    "truth_rms_ms": 1.234339198076426
+  },
+  "seed300060_diff1": {
+    "ceiling_match": 0.93671579748098,
+    "ceiling_periods_days": [
+      49.59674276706619
+    ],
+    "ceiling_rms_ms": 0.831439485391308,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300060_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      49.58199914248355
+    ],
+    "truth_rms_ms": 0.8582766547447466
+  },
+  "seed300069_diff1": {
+    "ceiling_match": 0.991051365007495,
+    "ceiling_periods_days": [
+      3.085555544386358
+    ],
+    "ceiling_rms_ms": 1.0235061796965421,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300069_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.0856885443784896
+    ],
+    "truth_rms_ms": 1.0416565058699225
+  },
+  "seed300078_diff1": {
+    "ceiling_match": 0.9138403341081902,
+    "ceiling_periods_days": [
+      9.962151260473862
+    ],
+    "ceiling_rms_ms": 1.866106465784973,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300078_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      9.93898008726128
+    ],
+    "truth_rms_ms": 1.9313244763768747
+  },
+  "seed300087_diff1": {
+    "ceiling_match": 0.893087938319156,
+    "ceiling_periods_days": [
+      142.63866350075762
+    ],
+    "ceiling_rms_ms": 0.5720564937624649,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300087_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      142.76577307349913
+    ],
+    "truth_rms_ms": 0.589315962854843
+  },
+  "seed300092_diff1": {
+    "ceiling_match": 0.7746295397504177,
+    "ceiling_periods_days": [
+      25.02909556450571
+    ],
+    "ceiling_rms_ms": 3.40294913393228,
+    "ceiling_solved": false,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300092_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      25.01150668939837
+    ],
+    "truth_rms_ms": 3.5747545879088434
+  },
+  "seed300116_diff1": {
+    "ceiling_match": 0.936495017796388,
+    "ceiling_periods_days": [
+      12.71789377018839
+    ],
+    "ceiling_rms_ms": 1.1743586128277388,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300116_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      12.710080966899728
+    ],
+    "truth_rms_ms": 1.2354017697598672
+  },
+  "seed300119_diff1": {
+    "ceiling_match": 0.9739447181623324,
+    "ceiling_periods_days": [
+      7.7073067427237545
+    ],
+    "ceiling_rms_ms": 2.2069320709138105,
+    "ceiling_solved": true,
+    "difficulty": 1,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed300119_diff1",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      7.703042978401428
+    ],
+    "truth_rms_ms": 2.2530494963952234
+  },
+  "seed30_diff3": {
+    "ceiling_match": 0.9044576251412934,
+    "ceiling_periods_days": [
+      3.180444300177126
+    ],
+    "ceiling_rms_ms": 1.1484516282558879,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed30_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.1755905466522902
+    ],
+    "truth_rms_ms": 1.2594432282714174
+  },
+  "seed31_diff8": {
+    "ceiling_match": 0.4787169598688935,
+    "ceiling_periods_days": [
+      58.25264638267,
+      175.35860106229325,
+      317.8786298182235
+    ],
+    "ceiling_rms_ms": 1.434923439063847,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed31_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      58.204108272305135,
+      192.37592651483928,
+      300.0
+    ],
+    "truth_rms_ms": 2.1060729907079425
+  },
+  "seed32_diff5": {
+    "ceiling_match": 0.4229577633321625,
+    "ceiling_periods_days": [
+      13.395832019486516
+    ],
+    "ceiling_rms_ms": 2.2579321235768277,
+    "ceiling_solved": false,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed32_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      13.23461701400677
+    ],
+    "truth_rms_ms": 2.432125722328665
+  },
+  "seed33_diff7": {
+    "ceiling_match": 0.33558698521957525,
+    "ceiling_periods_days": [
+      184.815529581412
+    ],
+    "ceiling_rms_ms": 0.969578616089776,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed33_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      189.2982864386749
+    ],
+    "truth_rms_ms": 0.9942599218433359
+  },
+  "seed34_diff4": {
+    "ceiling_match": 0.942384752049714,
+    "ceiling_periods_days": [
+      6.746988334746281
+    ],
+    "ceiling_rms_ms": 0.7355655311610033,
+    "ceiling_solved": true,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed34_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      6.749313225000946
+    ],
+    "truth_rms_ms": 0.7727130472537999
+  },
+  "seed35_diff3": {
+    "ceiling_match": 0.9662031203535701,
+    "ceiling_periods_days": [
+      216.9811307595792
+    ],
+    "ceiling_rms_ms": 0.5994297443360601,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed35_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      216.6158498696455
+    ],
+    "truth_rms_ms": 0.6337530667709265
+  },
+  "seed36_diff8": {
+    "ceiling_match": 0.013528687781453571,
+    "ceiling_periods_days": [
+      161.57192927943873
+    ],
+    "ceiling_rms_ms": 4.478245433276058,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed36_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      176.2344778528466
+    ],
+    "truth_rms_ms": 4.811015649691724
+  },
+  "seed37_diff7": {
+    "ceiling_match": 0.5164090993113407,
+    "ceiling_periods_days": [
+      2.7552529295947696,
+      12.717083933892575
+    ],
+    "ceiling_rms_ms": 4.531443746129574,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed37_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.8259571604698808,
+      14.9612752163442
+    ],
+    "truth_rms_ms": 5.41043116963292
+  },
+  "seed38_diff4": {
+    "ceiling_match": 0.6501997319591137,
+    "ceiling_periods_days": [
+      73.8142343600839
+    ],
+    "ceiling_rms_ms": 2.2605048283222318,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed38_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      73.90012195191133
+    ],
+    "truth_rms_ms": 2.4466113504431624
+  },
+  "seed39_diff7": {
+    "ceiling_match": 0.4480171328572965,
+    "ceiling_periods_days": [
+      3.939086908795194,
+      46.0448619332699
+    ],
+    "ceiling_rms_ms": 2.2496492495496274,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed39_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.9509784315697147,
+      54.17042580384691
+    ],
+    "truth_rms_ms": 2.640681749823358
+  },
+  "seed3_diff4": {
+    "ceiling_match": 0.6541694915174501,
+    "ceiling_periods_days": [
+      110.09459587217665
+    ],
+    "ceiling_rms_ms": 1.9206488699592736,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed3_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      110.83485450394298
+    ],
+    "truth_rms_ms": 2.0312938370049833
+  },
+  "seed40_diff7": {
+    "ceiling_match": 0.25669919640469946,
+    "ceiling_periods_days": [
+      224.15439176557743,
+      285.9707567643353
+    ],
+    "ceiling_rms_ms": 1.4384341211187335,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed40_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      224.25187761446946,
+      300.0
+    ],
+    "truth_rms_ms": 1.7387859787690312
+  },
+  "seed41_diff9": {
+    "ceiling_match": 0.24896345841559356,
+    "ceiling_periods_days": [
+      3.771017125336769,
+      136.98917148527073,
+      213.9732067273417,
+      305.85505393447573
+    ],
+    "ceiling_rms_ms": 2.4580525759623564,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 4,
+    "task_id": "seed41_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.7597055773535977,
+      161.16045684369004,
+      251.73318438226818,
+      300.0
+    ],
+    "truth_rms_ms": 3.467002254961587
+  },
+  "seed42_diff6": {
+    "ceiling_match": 0.43589612527554156,
+    "ceiling_periods_days": [
+      147.28613187870556,
+      174.4884428117896
+    ],
+    "ceiling_rms_ms": 2.016267856164152,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed42_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      147.71255975568812,
+      200.26664601627257
+    ],
+    "truth_rms_ms": 2.2650385381060207
+  },
+  "seed43_diff7": {
+    "ceiling_match": 0.1240503809275576,
+    "ceiling_periods_days": [
+      2.1158697102809607,
+      44.28193845548414
+    ],
+    "ceiling_rms_ms": 6.984693831208074,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed43_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.2111398139161116,
+      44.02952740031176
+    ],
+    "truth_rms_ms": 7.5637702814854935
+  },
+  "seed44_diff2": {
+    "ceiling_match": 0.9542368606696799,
+    "ceiling_periods_days": [
+      15.312137213440714
+    ],
+    "ceiling_rms_ms": 2.430681999045117,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed44_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      15.276509330622872
+    ],
+    "truth_rms_ms": 2.5459544496019157
+  },
+  "seed45_diff4": {
+    "ceiling_match": 0.750911805648216,
+    "ceiling_periods_days": [
+      91.85768874544522,
+      189.3594887945683
+    ],
+    "ceiling_rms_ms": 2.527488881622854,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed45_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      91.79152971379932,
+      190.99807411758377
+    ],
+    "truth_rms_ms": 2.935404802578765
+  },
+  "seed46_diff7": {
+    "ceiling_match": 0.32770487626317774,
+    "ceiling_periods_days": [
+      7.8599255478767125,
+      204.0825262642693,
+      255.0054245258193
+    ],
+    "ceiling_rms_ms": 0.8434421250246867,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed46_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      7.83730338866853,
+      239.998343824076,
+      300.0
+    ],
+    "truth_rms_ms": 0.9530932703647693
+  },
+  "seed47_diff7": {
+    "ceiling_match": 0.09253008361294404,
+    "ceiling_periods_days": [
+      22.807944080490245,
+      43.20580090249135
+    ],
+    "ceiling_rms_ms": 2.4390337215732485,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed47_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      20.573363467372616,
+      40.48789482495834
+    ],
+    "truth_rms_ms": 2.6032320538681994
+  },
+  "seed48_diff4": {
+    "ceiling_match": 0.7972995238016481,
+    "ceiling_periods_days": [
+      26.275599623840574
+    ],
+    "ceiling_rms_ms": 1.5184989866421759,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed48_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      26.248643873296803
+    ],
+    "truth_rms_ms": 1.7081272974389636
+  },
+  "seed49_diff5": {
+    "ceiling_match": 0.8691615465376674,
+    "ceiling_periods_days": [
+      14.320368966395844
+    ],
+    "ceiling_rms_ms": 2.0738437372951717,
+    "ceiling_solved": true,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed49_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      14.254415896116146
+    ],
+    "truth_rms_ms": 2.127779303472716
+  },
+  "seed500003_diff9": {
+    "ceiling_match": 0.6566606712069402,
+    "ceiling_periods_days": [
+      5.782645619666033,
+      109.95493171769405
+    ],
+    "ceiling_rms_ms": 1.3957784179212767,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed500003_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.677818849913498,
+      129.35874319728697
+    ],
+    "truth_rms_ms": 1.8917008808177702
+  },
+  "seed500004_diff7": {
+    "ceiling_match": 0.0,
+    "ceiling_periods_days": [
+      69.18557252013002
+    ],
+    "ceiling_rms_ms": 3.197781007436386,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed500004_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      62.910866222542914
+    ],
+    "truth_rms_ms": 3.467878963749158
+  },
+  "seed500008_diff9": {
+    "ceiling_match": 0.5845225435002398,
+    "ceiling_periods_days": [
+      59.66474967974016,
+      259.05427210998715
+    ],
+    "ceiling_rms_ms": 1.1694804608896747,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed500008_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      57.93818085125994,
+      225.26631137276954
+    ],
+    "truth_rms_ms": 1.5457130197015807
+  },
+  "seed500060_diff9": {
+    "ceiling_match": 0.5583066037242879,
+    "ceiling_periods_days": [
+      3.2396932544703603,
+      6.518755660679111,
+      60.563146675067,
+      91.93957389541167
+    ],
+    "ceiling_rms_ms": 0.4935760089295872,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 4,
+    "task_id": "seed500060_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      3.2393451707397083,
+      6.513553287561652,
+      71.2507592028536,
+      108.16416923226808
+    ],
+    "truth_rms_ms": 0.5739896149506988
+  },
+  "seed500065_diff9": {
+    "ceiling_match": 0.05301706615875987,
+    "ceiling_periods_days": [
+      16.98773833992749,
+      34.2186038419375
+    ],
+    "ceiling_rms_ms": 1.619112268254385,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed500065_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      17.580971904104455,
+      29.755307688641317
+    ],
+    "truth_rms_ms": 2.0046839412873974
+  },
+  "seed503_diff2": {
+    "ceiling_match": 0.8824770046359405,
+    "ceiling_periods_days": [
+      68.78487826648666
+    ],
+    "ceiling_rms_ms": 0.640057056045448,
+    "ceiling_solved": true,
+    "difficulty": 2,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed503_diff2",
+    "threshold": 0.8,
+    "tier": "easy",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      68.54561629263888
+    ],
+    "truth_rms_ms": 0.6623049461865654
+  },
+  "seed51_diff9": {
+    "ceiling_match": 0.5164440733919968,
+    "ceiling_periods_days": [
+      7.117443155723587,
+      11.490336965897084,
+      114.88385866475414
+    ],
+    "ceiling_rms_ms": 1.7567246172705628,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed51_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      7.1734833510396605,
+      11.692384813469458,
+      135.15748078206357
+    ],
+    "truth_rms_ms": 1.9072257432839028
+  },
+  "seed53_diff5": {
+    "ceiling_match": 0.9568231798530862,
+    "ceiling_periods_days": [
+      10.518966293405052
+    ],
+    "ceiling_rms_ms": 2.6737746439896326,
+    "ceiling_solved": true,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed53_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      10.50976443662059
+    ],
+    "truth_rms_ms": 2.7320526694839087
+  },
+  "seed54_diff6": {
+    "ceiling_match": 0.9403919192495414,
+    "ceiling_periods_days": [
+      2.989193269241416
+    ],
+    "ceiling_rms_ms": 0.9124508984124444,
+    "ceiling_solved": true,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed54_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.981016005072639
+    ],
+    "truth_rms_ms": 0.9467429695684785
+  },
+  "seed55_diff8": {
+    "ceiling_match": 0.2404292549251289,
+    "ceiling_periods_days": [
+      5.585553420431931,
+      8.918632960532184,
+      214.73816612438245
+    ],
+    "ceiling_rms_ms": 1.935394593989553,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed55_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.973177424845114,
+      8.969301227498805,
+      252.6331361438648
+    ],
+    "truth_rms_ms": 2.4085325053659017
+  },
+  "seed58_diff5": {
+    "ceiling_match": 0.5233745917960329,
+    "ceiling_periods_days": [
+      6.826312746073503
+    ],
+    "ceiling_rms_ms": 1.2791052702397452,
+    "ceiling_solved": false,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed58_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      6.761128340706888
+    ],
+    "truth_rms_ms": 1.3286440133579707
+  },
+  "seed5_diff10": {
+    "ceiling_match": 0.12948386670134968,
+    "ceiling_periods_days": [
+      27.349486194141043,
+      47.63543178599962,
+      62.094203744824945
+    ],
+    "ceiling_rms_ms": 0.9547047841434259,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed5_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      26.449985885314327,
+      44.18003423264356,
+      61.89774247286282
+    ],
+    "truth_rms_ms": 1.6290241022132166
+  },
+  "seed60_diff3": {
+    "ceiling_match": 0.9844992313886407,
+    "ceiling_periods_days": [
+      2.629438611002496
+    ],
+    "ceiling_rms_ms": 2.9828100667610986,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed60_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.6309199884129737
+    ],
+    "truth_rms_ms": 3.029689604835081
+  },
+  "seed63_diff6": {
+    "ceiling_match": 0.5056688894957999,
+    "ceiling_periods_days": [
+      5.437953940346833,
+      14.922413836154256
+    ],
+    "ceiling_rms_ms": 0.7972118448821339,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed63_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.358456088331502,
+      14.805742418532633
+    ],
+    "truth_rms_ms": 0.895825701147643
+  },
+  "seed64_diff6": {
+    "ceiling_match": 0.2806552281263093,
+    "ceiling_periods_days": [
+      2.7795024800291355,
+      136.4021742596087,
+      204.58685599140446
+    ],
+    "ceiling_rms_ms": 1.3120440915749543,
+    "ceiling_solved": false,
+    "difficulty": 6,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed64_diff6",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      2.7798604340135746,
+      160.47314618777474,
+      240.69041691963224
+    ],
+    "truth_rms_ms": 1.4713946164525096
+  },
+  "seed6_diff4": {
+    "ceiling_match": 0.5790115637190654,
+    "ceiling_periods_days": [
+      12.660013863255084,
+      245.88561548124167
+    ],
+    "ceiling_rms_ms": 3.3282279317300683,
+    "ceiling_solved": false,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed6_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      12.710246995473929,
+      289.277194668619
+    ],
+    "truth_rms_ms": 3.6512023004758536
+  },
+  "seed75_diff3": {
+    "ceiling_match": 0.9563731757068282,
+    "ceiling_periods_days": [
+      55.75869677399634
+    ],
+    "ceiling_rms_ms": 0.9264310255242445,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed75_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      55.782708736844576
+    ],
+    "truth_rms_ms": 0.9413374377593714
+  },
+  "seed7_diff7": {
+    "ceiling_match": 0.285179322823433,
+    "ceiling_periods_days": [
+      86.16097630568619,
+      186.20220435815924
+    ],
+    "ceiling_rms_ms": 1.0705614043789782,
+    "ceiling_solved": false,
+    "difficulty": 7,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed7_diff7",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      97.49735771015655,
+      191.1273986645317
+    ],
+    "truth_rms_ms": 1.3047173518329407
+  },
+  "seed82_diff10": {
+    "ceiling_match": 0.05481606454635166,
+    "ceiling_periods_days": [
+      5.217285977113714,
+      38.765048422758596,
+      58.33738906863984,
+      271.34941264738234
+    ],
+    "ceiling_rms_ms": 2.0110484438975873,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 4,
+    "task_id": "seed82_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      5.95299429670776,
+      34.4904526650749,
+      68.63151414298885,
+      283.09508088950685
+    ],
+    "truth_rms_ms": 2.898352983171576
+  },
+  "seed84_diff8": {
+    "ceiling_match": 0.3588842254599798,
+    "ceiling_periods_days": [
+      83.66277047688973,
+      145.5935804436158
+    ],
+    "ceiling_rms_ms": 1.2527362544693996,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed84_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      85.41834250077302,
+      139.21005159801578
+    ],
+    "truth_rms_ms": 1.4560726816120084
+  },
+  "seed89_diff10": {
+    "ceiling_match": 0.7647544381727183,
+    "ceiling_periods_days": [
+      77.48712402048398,
+      111.52426356956205
+    ],
+    "ceiling_rms_ms": 1.6936876149760707,
+    "ceiling_solved": false,
+    "difficulty": 10,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed89_diff10",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      77.98518796138735,
+      130.85074276565857
+    ],
+    "truth_rms_ms": 2.0525220464395706
+  },
+  "seed8_diff4": {
+    "ceiling_match": 0.9729851463686338,
+    "ceiling_periods_days": [
+      9.877572018438622
+    ],
+    "ceiling_rms_ms": 0.9337821424587361,
+    "ceiling_solved": true,
+    "difficulty": 4,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed8_diff4",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      9.875835911658266
+    ],
+    "truth_rms_ms": 0.960148384307001
+  },
+  "seed91_diff8": {
+    "ceiling_match": 0.09610324738551525,
+    "ceiling_periods_days": [
+      122.20309313313486
+    ],
+    "ceiling_rms_ms": 1.9531238119786807,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 1,
+    "task_id": "seed91_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      121.32045453213657
+    ],
+    "truth_rms_ms": 2.0895553232234114
+  },
+  "seed93_diff9": {
+    "ceiling_match": 0.0,
+    "ceiling_periods_days": [
+      19.983870822208523,
+      130.39324609628198,
+      295.9996494403159,
+      307.7352603739638
+    ],
+    "ceiling_rms_ms": 0.7794033362217657,
+    "ceiling_solved": false,
+    "difficulty": 9,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 4,
+    "task_id": "seed93_diff9",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      19.981697284876326,
+      131.58726060765648,
+      267.5958785860559,
+      300.0
+    ],
+    "truth_rms_ms": 1.0093524624164418
+  },
+  "seed95_diff8": {
+    "ceiling_match": 0.33898662678152186,
+    "ceiling_periods_days": [
+      6.080550182001749,
+      40.93243495751253
+    ],
+    "ceiling_rms_ms": 4.310112777638479,
+    "ceiling_solved": false,
+    "difficulty": 8,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed95_diff8",
+    "threshold": 0.8,
+    "tier": "hard",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      6.211206745694422,
+      35.59342170218482
+    ],
+    "truth_rms_ms": 4.697549329650108
+  },
+  "seed96_diff3": {
+    "ceiling_match": 0.9318657174758395,
+    "ceiling_periods_days": [
+      31.13655276967911,
+      116.57500922092325
+    ],
+    "ceiling_rms_ms": 1.1258645945583567,
+    "ceiling_solved": true,
+    "difficulty": 3,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 2,
+    "task_id": "seed96_diff3",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      31.201270523169736,
+      117.57928310292614
+    ],
+    "truth_rms_ms": 1.1897191213658491
+  },
+  "seed9_diff5": {
+    "ceiling_match": 0.5643623474013574,
+    "ceiling_periods_days": [
+      41.07056866379738,
+      203.70274210987282,
+      247.1134782465551
+    ],
+    "ceiling_rms_ms": 0.5083751307860584,
+    "ceiling_solved": false,
+    "difficulty": 5,
+    "error": null,
+    "kind": "synthetic",
+    "n_starts": 48,
+    "n_truth_planets": 3,
+    "task_id": "seed9_diff5",
+    "threshold": 0.8,
+    "tier": "medium",
+    "truth_match": 1.0,
+    "truth_periods_days": [
+      41.07101283190181,
+      183.77174247727294,
+      290.6125081037262
+    ],
+    "truth_rms_ms": 0.5516424903416762
+  }
+}

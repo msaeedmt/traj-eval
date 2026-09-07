@@ -101,6 +101,12 @@ class RvSubmit:
     stargazer_task: Any = None  # parsed Task, if the caller already holds it
     max_attempts: int | None = None  # defaults to the task's tier budget
     max_invalid: int = DEFAULT_MAX_INVALID
+    # Experiment-level match threshold. None keeps Stargazer's 0.80 (or the
+    # task's own hints.target_match_score). The runners record the value used in
+    # the trial meta so offline analysis scores counterfactuals against the same
+    # gate the team faced -- a relaxed run analysed at 0.80 would report
+    # reachable answers the team was never offered.
+    min_match_score: float | None = None
 
     attempts: list[SubmissionAttempt] = field(default_factory=list)
     n_invalid: int = 0
@@ -169,6 +175,7 @@ class RvSubmit:
             task=self.task,
             truth=self.truth,
             stargazer_task=self.stargazer_task,
+            min_match_score=self.min_match_score,
         )
         planets = list(submission.get("planets") or [])
         self.attempts.append(

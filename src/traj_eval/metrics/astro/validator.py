@@ -335,8 +335,15 @@ def validate_astro_trial(
     task: Any = None,
     truth: Any = None,
     stargazer_task: Any = None,
+    min_match_score: float | None = None,
 ) -> AstroTrialMetrics:
-    """Validate one astro trial. Group A always; Group B iff task+truth given."""
+    """Validate one astro trial. Group A always; Group B iff task+truth given.
+
+    ``min_match_score`` must match the threshold the TRIAL was run under, or the
+    counterfactual oracle will score reachable submissions against a different
+    gate than the team faced and ``had_it_and_lost_it`` becomes meaningless. The
+    runners record it in the trial meta for exactly this reason.
+    """
     artifacts = extract_astro_artifacts(events, trial_id=trial_id, task_id=task_id)
     sequence = build_sequence(artifacts)
     self_signal = analyse_self_signal(artifacts)
@@ -344,7 +351,13 @@ def validate_astro_trial(
     oracle: OracleReport | None = None
     anchor: PeriodAnchorReport | None = None
     if task is not None and truth is not None:
-        oracle = run_oracle(artifacts, task=task, truth=truth, stargazer_task=stargazer_task)
+        oracle = run_oracle(
+            artifacts,
+            task=task,
+            truth=truth,
+            stargazer_task=stargazer_task,
+            min_match_score=min_match_score,
+        )
         anchor = run_period_anchor(artifacts, task=task, truth=truth)
 
     best = _best_submission(artifacts)

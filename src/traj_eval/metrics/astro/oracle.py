@@ -150,10 +150,15 @@ def _score(
     task: Any,
     truth: Any,
     stargazer_task: Any,
+    min_match_score: float | None = None,
 ) -> AstroCriteria | None:
     try:
         criteria, _ = score_submission(
-            {"planets": planets}, task=task, truth=truth, stargazer_task=stargazer_task
+            {"planets": planets},
+            task=task,
+            truth=truth,
+            stargazer_task=stargazer_task,
+            min_match_score=min_match_score,
         )
     except (SubmissionShapeError, ValueError, KeyError, TypeError):
         return None
@@ -167,6 +172,7 @@ def run_oracle(
     truth: Any,
     stargazer_task: Any = None,
     include_submitted: bool = True,
+    min_match_score: float | None = None,
 ) -> OracleReport:
     """Score every system reachable from the team's own fits.
 
@@ -194,7 +200,13 @@ def run_oracle(
             if key in seen:
                 continue
             seen.add(key)
-            criteria = _score(subset, task=task, truth=truth, stargazer_task=stargazer_task)
+            criteria = _score(
+                subset,
+                task=task,
+                truth=truth,
+                stargazer_task=stargazer_task,
+                min_match_score=min_match_score,
+            )
             if criteria is None:
                 errors.append(f"could not score a subset from the fit at seq {fit.seq}")
                 continue
@@ -207,7 +219,13 @@ def run_oracle(
         for sub in artifacts.submissions:
             if not sub.accepted or not sub.planets:
                 continue
-            criteria = _score(sub.planets, task=task, truth=truth, stargazer_task=stargazer_task)
+            criteria = _score(
+                sub.planets,
+                task=task,
+                truth=truth,
+                stargazer_task=stargazer_task,
+                min_match_score=min_match_score,
+            )
             if criteria is None:
                 errors.append(f"could not score the submission at seq {sub.seq}")
                 continue

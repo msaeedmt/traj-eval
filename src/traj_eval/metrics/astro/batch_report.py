@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from traj_eval.metrics.astro.ceiling import MatchCeiling
 from traj_eval.metrics.astro.validator import AstroTrialMetrics, validate_astro_trial
 from traj_eval.trace_core.storage import read_trial
 
@@ -57,6 +58,10 @@ class AstroBatchReport:
     # them skipped would misreport the sample.
     degraded: list[tuple[str, str]] = field(default_factory=list)
     scored_counterfactuals: bool = False
+    # task_id -> the best match a maximum-likelihood fitter could achieve. Empty
+    # when the cache has not been computed; every ceiling-conditioned number then
+    # returns None rather than silently reporting the unconditioned one.
+    ceilings: dict[str, MatchCeiling] = field(default_factory=dict)
 
     # ---- Layer 1: Stargazer-comparable ----
 
@@ -153,6 +158,59 @@ class AstroBatchReport:
             "n_failed": len(failed),
         }
 
+    # ---- ceiling-conditioned: the honest denominators --------------------
+
+    def _with_ceiling(self) -> list[tuple[AstroTrialMetrics, MatchCeiling]]:
+        return [(m, self.ceilings[m.task_id]) for m in self.metrics if m.task_id in self.ceilings]
+
+    @property
+    def has_ceilings(self) -> bool:
+        return bool(self.ceilings)
+
+    def solvability(self) -> dict[str, Any]:
+        """How much of the failure is the benchmark rather than the agents.
+
+        ``pass_rate_solvable`` is the number that actually measures the agents:
+        an unsolvable task cannot be passed by any fitting procedure, so counting
+        it as a failure measures the benchmark's threshold, not the team.
+        """
+        pairs = self._with_ceiling()
+        if not pairs:
+            return {}
+        solvable = [m for m, c in pairs if c.ceiling_solved]
+        unsolvable = [m for m, c in pairs if not c.ceiling_solved]
+        deficits = [
+            c.deficit_for(m.best_match_score)
+            for m, c in pairs
+            if c.deficit_for(m.best_match_score) is not None
+        ]
+        # A trial cannot legitimately beat the ceiling: the ceiling is the best a
+        # fitter can do. When one does, the ceiling search settled in a poor
+        # basin and the task's "unsolvable" label is wrong -- which would convert
+        # agent successes into impossible tasks. Surfaced, never absorbed.
+        beat = [
+            (m.trial_id, c.task_id, m.best_match_score, c.ceiling_match)
+            for m, c in pairs
+            if c.deficit_for(m.best_match_score) is not None
+            and c.deficit_for(m.best_match_score) < -1e-3
+        ]
+        # A trial that hit the ceiling did everything a fitter could: any
+        # remaining shortfall is the threshold, not the reasoning.
+        at_ceiling = [d for d in deficits if d <= 1e-6]
+        return {
+            "n_with_ceiling": len(pairs),
+            "n_on_solvable_tasks": len(solvable),
+            "n_on_unsolvable_tasks": len(unsolvable),
+            "unsolvable_trial_share": _frac(len(unsolvable), len(pairs)),
+            "pass_rate_all": _frac(sum(1 for m, _ in pairs if m.solved), len(pairs)),
+            "pass_rate_solvable": _frac(sum(1 for m in solvable if m.solved), len(solvable)),
+            "pass_rate_unsolvable": _frac(sum(1 for m in unsolvable if m.solved), len(unsolvable)),
+            "mean_match_deficit": _mean(deficits),
+            "at_ceiling_rate": _frac(len(at_ceiling), len(deficits)),
+            "n_trials_beating_ceiling": len(beat),
+            "tasks_with_bad_ceiling": sorted({task_id for _, task_id, _, _ in beat}),
+        }
+
     def period_anchor_summary(self) -> dict[str, Any]:
         """Aggregate period-selection results across the batch.
 
@@ -232,6 +290,7 @@ def analyse_astro_batch(
     folder: Path | str,
     *,
     load_task: Any = None,
+    ceilings: dict[str, MatchCeiling] | None = None,
 ) -> AstroBatchReport:
     """Validate every trial in ``folder``.
 
@@ -271,6 +330,10 @@ def analyse_astro_batch(
                     task_id=meta.task_id,
                     task=task,
                     truth=truth,
+                    # Score counterfactuals against the gate the trial actually
+                    # faced, not the default: a relaxed run analysed at 0.80
+                    # would report reachable answers the team was never offered.
+                    min_match_score=(meta.config or {}).get("min_match_score"),
                 )
             )
         except Exception as exc:  # noqa: BLE001
@@ -282,4 +345,5 @@ def analyse_astro_batch(
         skipped=skipped,
         degraded=degraded,
         scored_counterfactuals=scored,
+        ceilings=dict(ceilings or {}),
     )

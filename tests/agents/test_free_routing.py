@@ -15,7 +15,6 @@ from traj_eval.agents.free_routing import (  # noqa: E402
     RoutingConfig,
     build_free_routing_team,
     finalize_run,
-    make_key_progress_verdict,
 )
 from traj_eval.trace_core.schema import AgentRole  # noqa: E402
 
@@ -29,10 +28,10 @@ def _fake_check_lean(code: str) -> str:
 
 # Reasoner -> engineer; engineer -> {critic, reasoner} + check_lean; critic ->
 # {engineer} + terminate. The triangle from the design discussion.
-def _config():
-    return RoutingConfig(
-        entry=AgentRole.REASONER,
-        roles={
+def _config(**overrides):
+    kwargs = {
+        "entry": AgentRole.REASONER,
+        "roles": {
             AgentRole.REASONER: RoleSpec(
                 AgentRole.REASONER, handoff_targets=frozenset({AgentRole.ENGINEER})
             ),
@@ -48,9 +47,11 @@ def _config():
                 can_terminate=True,
             ),
         },
-        max_turns=20,
-        max_consecutive_invalid=3,
-    )
+        "max_turns": 20,
+        "max_consecutive_invalid": 3,
+    }
+    kwargs.update(overrides)
+    return RoutingConfig(**kwargs)
 
 
 class _Speaker:
@@ -58,8 +59,8 @@ class _Speaker:
         self.name = name
 
 
-def _build():
-    cfg = _config()
+def _build(**overrides):
+    cfg = _config(**overrides)
     from traj_eval.agents.roles import make_critic, make_engineer, make_reasoner
 
     agents = {
@@ -172,7 +173,9 @@ def test_stuck_after_consecutive_invalid():
 
 
 def test_cap_terminates():
-    gc, state = _build()
+    # 25 hand-offs with no tool call is precisely what the idle bound catches,
+    # so disable it here: this test is about the TURN CAP.
+    gc, state = _build(max_idle_messages=None)
     sel = gc.speaker_selection_method
     # drive turns up to the cap with valid hand-offs
     for _ in range(25):
@@ -256,7 +259,7 @@ def _exec_result(compiled):
 def test_no_progress_bound_terminates_stuck():
     gc, state = _build()
     sel = gc.speaker_selection_method
-    # 6 consecutive verifier rejections (default max_no_progress=6) -> stuck.
+    # 6 consecutive failed compiles (default max_failed_compiles=6) -> stuck.
     result = None
     for _ in range(6):
         gc.messages = gc.messages + [_exec_result(False)]
@@ -282,11 +285,10 @@ def test_success_resets_no_progress_counter():
     assert state.reason != "stuck"
 
 
-def test_search_result_does_not_count_as_no_progress():
+def test_search_result_does_not_count_as_failed_compile():
     gc, state = _build()
     sel = gc.speaker_selection_method
-    # a search_lemmas result has no 'compiled' key, so the verdict is None ->
-    # must not increment. Exploration is not thrashing.
+    # a search_lemmas result has no 'compiled' key -> must not increment
     search_msg = {
         "name": AgentRole.EXECUTOR.value,
         "content": None,
@@ -300,131 +302,381 @@ def test_search_result_does_not_count_as_no_progress():
     assert state.reason != "stuck"
 
 
-# --- the progress-verdict seam (domain-adaptable no-progress bound) ----------
+# --- idle bound: stop when work circulates but nothing is done ---------------
 #
-# The no-progress bound is framework-agnostic; only WHICH tool result counts as
-# "the verifier accepted" is the domain's business. Lean reads check_lean's
-# ``compiled``; astro's tools return a uniform ``ok``. Keeping the machinery
-# identical and varying one key is what makes cross-regime comparison of
-# structural signatures (RQ iii) a measurement rather than two hand-tuned
-# heuristics. These tests pin that seam directly on RoutingConfig -- no group
-# chat needed, since read_progress is pure.
+# The other two bounds key on TOOL CALLS, so a team that stops calling tools is
+# invisible to them. On seed22_diff4_t0 the run ended with 21 consecutive agent
+# messages and no tool call, stopped only by the turn cap, with 4 of 5
+# submissions unused. Across 145 trials no SUCCESSFUL run exceeded 4 consecutive
+# idle messages (median 1); failures reached 27 (median 6). Hence a default of 6.
 
 
-def _verifier_result(payload: dict) -> dict:
-    """An executor result carrying one tool response. ag2 repr()s the dict."""
-    return {"tool_responses": [{"id": "t", "content": repr(payload)}]}
+def _idle_gc(**overrides):
+    gc, state = _build(**overrides)
+    return gc, state, gc.speaker_selection_method
 
 
-def test_default_verdict_reads_the_lean_key() -> None:
-    """A config that sets no verdict keeps Lean's behaviour unchanged."""
-    config = RoutingConfig(entry=AgentRole.REASONER)
-    assert config.progress_verdict is None
-    assert config.read_progress(_verifier_result({"compiled": True})) is True
-    assert config.read_progress(_verifier_result({"compiled": False})) is False
+def _say(gc, role, text):
+    gc.messages = gc.messages + [{"name": role.value, "content": text, "text": text}]
+    return gc.speaker_selection_method(_Speaker(role.value), gc)
 
 
-def test_custom_verdict_reads_its_own_key_and_not_leans() -> None:
-    """An astro-style config keys on 'ok' and ignores Lean's key entirely."""
-    config = RoutingConfig(
-        entry=AgentRole.PLANNER, progress_verdict=make_key_progress_verdict("ok")
-    )
-    assert config.read_progress(_verifier_result({"ok": True, "rms_ms": 1.2})) is True
-    assert config.read_progress(_verifier_result({"ok": False, "error": "no convergence"})) is False
-    # Lean's key must be invisible to an astro config, or the two domains would
-    # silently share a bound while measuring different things.
-    assert config.read_progress(_verifier_result({"compiled": False})) is None
+def test_idle_bound_stops_a_handoff_loop() -> None:
+    """The seed22 shape: perfect hand-offs, no tool calls, forever."""
+    gc, state, _ = _idle_gc()
+    roles = [AgentRole.ENGINEER, AgentRole.CRITIC]
+    for i in range(6):
+        _say(gc, roles[i % 2], f"Thinking.\nHANDOFF: {roles[(i + 1) % 2].value}")
+    assert state.terminated
+    assert state.reason == "stuck_idle"
+    assert state.max_idle_messages_seen >= 6
 
 
-def test_non_verifier_results_return_none() -> None:
-    """None is load-bearing: exploration must not count toward the bound.
+def test_a_tool_call_resets_the_idle_counter() -> None:
+    """Healthy interleaving must never trip the bound.
 
-    A tool that is not the domain's verifier (Lean's search_lemmas, astro's
-    periodogram) yields None, so raw retries are not scored as thrashing -- the
-    proposal treats retry counts as a hypothesis to test, not a failure signal.
+    This is the safety property the threshold was chosen for: across 145 trials
+    no successful run exceeded 4 consecutive idle messages, so cutting a healthy
+    run would convert successes into recorded failures.
     """
-    lean = RoutingConfig(entry=AgentRole.REASONER)
-    astro = RoutingConfig(entry=AgentRole.PLANNER, progress_verdict=make_key_progress_verdict("ok"))
-    assert lean.read_progress(_verifier_result({"results": ["Nat.add_comm"]})) is None
-    assert astro.read_progress(_verifier_result({"peaks_days": [5.28, 2.64]})) is None
+    # Each iteration costs two turns, so raise the cap: this test is about the
+    # idle bound, not the turn cap.
+    gc, state, _ = _idle_gc(max_turns=60)
+    for i in range(10):
+        _say(gc, AgentRole.ENGINEER, "Thinking.\nHANDOFF: critic")
+        gc.messages = gc.messages + [_tool_msg(AgentRole.ENGINEER.value, f"theorem t{i} := by rfl")]
+        gc.speaker_selection_method(_Speaker(AgentRole.ENGINEER.value), gc)
+    assert not state.terminated
+    assert state.max_idle_messages_seen <= 1
 
 
-@pytest.mark.parametrize(
-    "message",
-    [
-        {},  # no tool_responses at all
-        {"tool_responses": []},  # empty list
-        {"tool_responses": [{"id": "t", "content": ""}]},  # empty content
-        {"tool_responses": [{"id": "t", "content": "not a dict("}]},  # unparseable
-        {"tool_responses": [{"id": "t", "content": "[1, 2, 3]"}]},  # parses, not a dict
-    ],
-)
-def test_malformed_results_are_ignored_not_counted(message: dict) -> None:
-    """A malformed tool result must never be read as a rejection.
+def test_the_idle_counter_resets_rather_than_accumulating() -> None:
+    """Five idle messages, a tool call, five more: never six in a row."""
+    gc, state, _ = _idle_gc()
+    for _ in range(5):
+        _say(gc, AgentRole.ENGINEER, "Thinking.\nHANDOFF: critic")
+    assert not state.terminated
+    gc.messages = gc.messages + [_tool_msg(AgentRole.ENGINEER.value, "theorem t := by rfl")]
+    gc.speaker_selection_method(_Speaker(AgentRole.ENGINEER.value), gc)
+    assert state.consecutive_idle_messages == 0
+    for _ in range(5):
+        _say(gc, AgentRole.ENGINEER, "Thinking.\nHANDOFF: critic")
+    assert not state.terminated
 
-    Counting it would let a transport hiccup masquerade as agent thrashing and
-    terminate a healthy run as 'stuck'.
+
+def test_a_terminal_verdict_is_not_idle() -> None:
+    """Messages leading to a deliberate stop were going somewhere."""
+    gc, state, _ = _idle_gc()
+    for _ in range(4):
+        _say(gc, AgentRole.ENGINEER, "Thinking.\nHANDOFF: critic")
+    _say(gc, AgentRole.CRITIC, "Verified.\nVERDICT: APPROVE")
+    assert state.terminated
+    assert state.reason == "clean"
+
+
+def test_the_idle_reason_is_distinct_from_the_turn_cap() -> None:
+    """A detected stall and an exhausted budget are different findings.
+
+    Folding them into one reason would make it impossible to tell, in analysis,
+    whether a run was stopped because the team stopped working or because it ran
+    out of room.
     """
-    config = RoutingConfig(entry=AgentRole.REASONER)
-    assert config.read_progress(message) is None
+    gc, state, _ = _idle_gc()
+    for _ in range(6):
+        _say(gc, AgentRole.ENGINEER, "Thinking.\nHANDOFF: critic")
+    assert state.reason == "stuck_idle"
+    assert state.reason not in ("cap", "stuck")
 
 
-def test_first_matching_response_wins_across_multiple_tools() -> None:
-    """One turn can carry several tool responses; the verdict reads the verifier."""
-    config = RoutingConfig(entry=AgentRole.REASONER)
-    message = {
-        "tool_responses": [
-            {"id": "a", "content": repr({"results": ["Nat.add_comm"]})},
-            {"id": "b", "content": repr({"compiled": False, "errors": ["unknown id"]})},
-        ]
+def test_the_bound_can_be_disabled() -> None:
+    """Needed to observe full coordination collapse on a subset."""
+    from traj_eval.agents.free_routing import RoutingConfig
+
+    assert RoutingConfig(entry=AgentRole.REASONER).max_idle_messages == 6
+    off = RoutingConfig(entry=AgentRole.REASONER, max_idle_messages=None)
+    assert off.max_idle_messages is None
+
+
+# --- windowed repeat detection: catch cycles, not just adjacent repeats ------
+#
+# The bound used to compare each call only to the IMMEDIATELY previous one, so a
+# team going round a loop never tripped it. On seed13_diff10_t0 the planner made
+# 11 rv_periodogram calls with 3 distinct argument sets, cycling through the same
+# period windows four times and receiving byte-identical results each time, while
+# never submitting once. No two consecutive calls were identical, the idle bound
+# could not see it (these are tool calls), and the no-progress bound ignores
+# rv_periodogram by design.
+
+
+def _call_msg(role, args: str, name: str = "check_lean") -> dict:
+    return {
+        "name": role.value,
+        "content": None,
+        "tool_calls": [
+            {"id": "c", "type": "function", "function": {"name": name, "arguments": args}}
+        ],
     }
-    assert config.read_progress(message) is False
 
 
-# --- identical-call normalisation includes the tool name ---------------------
+def _emit(gc, role, args, name="check_lean"):
+    gc.messages = gc.messages + [_call_msg(role, args, name)]
+    return gc.speaker_selection_method(_Speaker(role.value), gc)
+
+
+def test_a_cycle_of_distinct_calls_is_caught() -> None:
+    """A B C A B C ... never repeats adjacently, but is still going nowhere."""
+    gc, state = _build(max_turns=200)
+    windows = ['{"code": "A"}', '{"code": "B"}', '{"code": "C"}']
+    for i in range(12):
+        _emit(gc, AgentRole.ENGINEER, windows[i % 3])
+        if state.terminated:
+            break
+    assert state.terminated
+    assert state.reason == "stuck_cycle"
+    assert state.cycle_period == 3
+
+
+def test_an_adjacent_repeat_still_reports_plain_stuck() -> None:
+    """Period-1 perseveration keeps its original reason, so existing analysis
+    of single-call repetition is unchanged."""
+    gc, state = _build(max_turns=200)
+    for _ in range(4):
+        _emit(gc, AgentRole.ENGINEER, '{"code": "same"}')
+    assert state.terminated
+    assert state.reason == "stuck"
+    assert not state.saw_cycle
+
+
+def test_genuinely_distinct_calls_never_trip_the_bound() -> None:
+    """The safety property: exploration must not look like a loop."""
+    gc, state = _build(max_turns=200)
+    for i in range(20):
+        _emit(gc, AgentRole.ENGINEER, f'{{"code": "attempt {i}"}}')
+    assert not state.terminated
+    assert state.max_identical_calls_seen == 1
+
+
+def test_a_repeat_beyond_the_window_is_forgotten() -> None:
+    """The window bounds memory: an old call recurring after enough novel work
+    is revisiting, not looping."""
+    gc, state = _build(max_turns=200, call_history_window=3)
+    _emit(gc, AgentRole.ENGINEER, '{"code": "first"}')
+    for i in range(5):
+        _emit(gc, AgentRole.ENGINEER, f'{{"code": "novel {i}"}}')
+    _emit(gc, AgentRole.ENGINEER, '{"code": "first"}')
+    assert not state.terminated
+    assert state.consecutive_identical_calls == 1
+
+
+def test_a_novel_call_resets_the_repeat_run() -> None:
+    """Repeats must be consecutive to accumulate, or ordinary revisiting would
+    slowly add up to a termination."""
+    gc, state = _build(max_turns=200)
+    for _ in range(3):
+        _emit(gc, AgentRole.ENGINEER, '{"code": "same"}')
+    assert state.consecutive_identical_calls == 3
+    _emit(gc, AgentRole.ENGINEER, '{"code": "brand new"}')
+    assert state.consecutive_identical_calls == 1
+    assert not state.terminated
+
+
+def test_the_tightest_loop_is_reported() -> None:
+    """A B C B C A: the team is stuck in the B-C pair, so period 2, not 5."""
+    gc, state = _build(max_turns=200)
+    for code in ("A", "B", "C", "B", "C", "A"):
+        _emit(gc, AgentRole.ENGINEER, f'{{"code": "{code}"}}')
+        if state.terminated:
+            break
+    assert state.saw_cycle
+    assert state.cycle_period == 2
+
+
+def test_window_of_one_reduces_to_the_old_behaviour() -> None:
+    """The generalisation must contain the special case it replaced."""
+    gc, state = _build(max_turns=200, call_history_window=1)
+    for code in ("A", "B", "A", "B", "A", "B"):
+        _emit(gc, AgentRole.ENGINEER, f'{{"code": "{code}"}}')
+    assert not state.terminated  # alternating never repeats adjacently
+
+
+# --- tool errors are not perseveration --------------------------------------
 #
-# Without the name, two different actions taking the same payload are
-# indistinguishable. In astro that is the normal workflow (inspect residuals for
-# a system, re-inspect it, submit it), so conflating them would record a healthy
-# run as 'stuck' -- fabricating a failure mode rather than missing one.
+# On seed13_diff10 a planner called rv_residual with the field name
+# ``period_days`` instead of ``P_days``. The tool raised a bare KeyError, ag2
+# surfaced it as the single word "Error: 'P_days'", and the planner repeated the
+# identical call until the repeat bound stopped the run. Recording that as
+# perseveration would blame the agent for a tool that told it nothing.
 
 
-def _call(tool: str, args: dict) -> dict:
-    import json as _json
-
-    return {"tool_calls": [{"function": {"name": tool, "arguments": _json.dumps(args)}}]}
-
-
-def test_same_payload_to_different_tools_is_not_identical() -> None:
-    from traj_eval.agents.free_routing import _normalise_call_code
-
-    planets = [{"P_days": 11.2, "m_sin_i_mjup": 0.5}]
-    residual = _normalise_call_code(_call("rv_residual", {"planets": planets}))
-    submit = _normalise_call_code(_call("rv_submit", {"planets": planets}))
-    assert residual is not None and submit is not None
-    assert residual != submit
+def _error_result(call_id: str, content: str = "Error: 'P_days'") -> dict:
+    return {
+        "name": AgentRole.EXECUTOR.value,
+        "content": None,
+        "tool_responses": [{"id": call_id, "content": content}],
+    }
 
 
-def test_same_payload_to_the_same_tool_is_identical() -> None:
-    from traj_eval.agents.free_routing import _normalise_call_code
+def _call_then_error(gc, role, args, content="Error: 'P_days'", i=0):
+    gc.messages = gc.messages + [_call_msg(role, args)]
+    gc.speaker_selection_method(_Speaker(role.value), gc)
+    gc.messages = gc.messages + [_error_result(f"c{i}", content)]
+    return gc.speaker_selection_method(_Speaker(AgentRole.EXECUTOR.value), gc)
 
-    args = {"code": "import Mathlib\ntheorem t : True := trivial"}
-    assert _normalise_call_code(_call("check_lean", args)) == _normalise_call_code(
-        _call("check_lean", args)
+
+def test_repeated_tool_errors_are_attributed_to_the_tool() -> None:
+    gc, state = _build(max_turns=200)
+    for i in range(4):
+        _call_then_error(gc, AgentRole.ENGINEER, '{"planets": "bad"}', i=i)
+        if state.terminated:
+            break
+    assert state.terminated
+    assert state.reason == "stuck_tool_error"
+    assert state.max_tool_errors_seen >= 3
+
+
+def test_a_structured_error_dict_also_counts() -> None:
+    """A tool that validates its own input returns {'error': ...} rather than
+    raising, and that is equally uninformative if repeated."""
+    gc, state = _build(max_turns=200)
+    payload = "{'task_id': 't', 'error': \"planets[0] is missing 'P_days'\"}"
+    for i in range(4):
+        _call_then_error(gc, AgentRole.ENGINEER, '{"planets": "bad"}', payload, i=i)
+        if state.terminated:
+            break
+    assert state.reason == "stuck_tool_error"
+
+
+def test_repeating_a_call_that_WORKS_is_still_perseveration() -> None:
+    """The distinction must not swallow real perseveration: a team resubmitting
+    an identical call that returns fine is being stubborn."""
+    gc, state = _build(max_turns=200)
+    for i in range(4):
+        gc.messages = gc.messages + [_call_msg(AgentRole.ENGINEER, '{"code": "same"}')]
+        gc.speaker_selection_method(_Speaker(AgentRole.ENGINEER.value), gc)
+        gc.messages = gc.messages + [
+            {
+                "name": AgentRole.EXECUTOR.value,
+                "content": None,
+                "tool_responses": [{"id": f"c{i}", "content": "{'compiled': False}"}],
+            }
+        ]
+        gc.speaker_selection_method(_Speaker(AgentRole.EXECUTOR.value), gc)
+        if state.terminated:
+            break
+    assert state.terminated
+    assert state.reason in ("stuck", "stuck_cycle")
+    assert state.max_tool_errors_seen == 0
+
+
+def test_a_successful_result_resets_the_error_run() -> None:
+    gc, state = _build(max_turns=200)
+    _call_then_error(gc, AgentRole.ENGINEER, '{"planets": "bad"}', i=0)
+    _call_then_error(gc, AgentRole.ENGINEER, '{"planets": "bad2"}', i=1)
+    assert state.consecutive_tool_errors == 2
+    gc.messages = gc.messages + [_call_msg(AgentRole.ENGINEER, '{"code": "fine"}')]
+    gc.speaker_selection_method(_Speaker(AgentRole.ENGINEER.value), gc)
+    gc.messages = gc.messages + [
+        {
+            "name": AgentRole.EXECUTOR.value,
+            "content": None,
+            "tool_responses": [{"id": "ok", "content": "{'compiled': True}"}],
+        }
+    ]
+    gc.speaker_selection_method(_Speaker(AgentRole.EXECUTOR.value), gc)
+    assert state.consecutive_tool_errors == 0
+
+
+# --- never-submitted bound --------------------------------------------------
+#
+# The one pathology the other bounds structurally cannot see. On seed13_diff10 a
+# team ran the full 60 turns making only novel, well-formed, SUCCESSFUL tool
+# calls -- no idling, no repeats, no cycles, no errors -- and never submitted,
+# because the planner and engineer captured the loop and the critic, the only
+# holder of rv_submit, was never handed control. Every bound passed while the
+# work converged on nothing.
+
+
+def _busy(gc, i: int, tool: str = "check_lean", ok: str = "{'compiled': True}"):
+    """One productive-looking round: a novel successful tool call."""
+    gc.messages = gc.messages + [_call_msg(AgentRole.ENGINEER, f'{{"code": "novel {i}"}}', tool)]
+    gc.speaker_selection_method(_Speaker(AgentRole.ENGINEER.value), gc)
+    gc.messages = gc.messages + [
+        {
+            "name": AgentRole.EXECUTOR.value,
+            "content": None,
+            "tool_responses": [{"id": f"c{i}", "content": ok}],
+        }
+    ]
+    gc.speaker_selection_method(_Speaker(AgentRole.EXECUTOR.value), gc)
+
+
+def test_a_busy_run_that_never_submits_is_stopped() -> None:
+    gc, state = _build(
+        max_turns=40,
+        submission_tools=frozenset({"rv_submit"}),
+        submission_deadline_frac=0.5,
     )
+    for i in range(40):
+        _busy(gc, i)
+        if state.terminated:
+            break
+    assert state.terminated
+    assert state.reason == "stuck_no_submission"
+    assert state.turns >= 20  # 50% of 40
+    assert state.n_submission_calls == 0
 
 
-def test_whitespace_differences_are_still_normalised_away() -> None:
-    from traj_eval.agents.free_routing import _normalise_call_code
+def test_one_submission_disarms_the_bound_permanently() -> None:
+    """The bound is about never reaching the goal, not about submitting slowly."""
+    gc, state = _build(
+        max_turns=40,
+        submission_tools=frozenset({"check_lean"}),
+        submission_deadline_frac=0.5,
+    )
+    _busy(gc, 0)  # check_lean IS the submission tool here
+    assert state.n_submission_calls == 1
+    for i in range(1, 40):
+        _busy(gc, i)
+        if state.terminated:
+            break
+    assert state.reason != "stuck_no_submission"
 
-    a = _normalise_call_code(_call("check_lean", {"code": "theorem  t  :=  trivial"}))
-    b = _normalise_call_code(_call("check_lean", {"code": "theorem t := trivial"}))
-    assert a == b
+
+def test_the_bound_is_inert_without_configured_submission_tools() -> None:
+    """Lean has no submission tool -- its terminal act is the APPROVE marker --
+    so an empty set must leave the bound switched off."""
+    gc, state = _build(max_turns=40, submission_deadline_frac=0.5)
+    for i in range(30):
+        _busy(gc, i)
+        if state.terminated:
+            break
+    assert state.reason != "stuck_no_submission"
 
 
-def test_no_tool_calls_yields_none() -> None:
-    from traj_eval.agents.free_routing import _normalise_call_code
+def test_the_deadline_scales_with_the_turn_budget() -> None:
+    """A fraction, not a fixed count, because max_turns varies by tier."""
+    for cap, expected in ((20, 10), (60, 30)):
+        gc, state = _build(
+            max_turns=cap,
+            submission_tools=frozenset({"rv_submit"}),
+            submission_deadline_frac=0.5,
+        )
+        for i in range(cap):
+            _busy(gc, i)
+            if state.terminated:
+                break
+        assert state.reason == "stuck_no_submission"
+        assert state.turns == expected
 
-    assert _normalise_call_code({}) is None
-    assert _normalise_call_code({"tool_calls": []}) is None
-    assert _normalise_call_code({"tool_calls": [{"function": {"name": "x"}}]}) is None
+
+def test_the_deadline_can_be_disabled() -> None:
+    gc, state = _build(
+        max_turns=30,
+        submission_tools=frozenset({"rv_submit"}),
+        submission_deadline_frac=None,
+    )
+    for i in range(30):
+        _busy(gc, i)
+        if state.terminated:
+            break
+    assert state.reason == "cap"

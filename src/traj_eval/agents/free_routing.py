@@ -24,6 +24,7 @@ collapse), never an infinite loop.
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -35,10 +36,6 @@ from traj_eval.agents.observer import StepContext
 from traj_eval.agents.routing import RoutingLedger
 from traj_eval.trace_core.schema import AgentRole
 
-# How a domain reads "did that tool call make progress?" off an executor result
-# message. True = the verifier accepted; False = the verifier ran and rejected;
-# None = not a verifier result, so it must not count toward the no-progress
-# bound. ``None`` in place of the callable itself means "use the Lean default".
 ProgressVerdictFn = Callable[[dict[str, Any]], bool | None]
 
 
@@ -69,20 +66,63 @@ class RoutingConfig:
     roles: dict[AgentRole, RoleSpec] = field(default_factory=dict)
     max_turns: int = 40
     max_consecutive_invalid: int = 3  # consecutive bad hand-offs -> 'stuck'
-    max_identical_calls: int = 4  # identical tool submissions in a row -> 'stuck'
+    max_identical_calls: int = 4  # repeated tool submissions in a row -> 'stuck'
+    # How far back a repeat is recognised. With 1 this bound sees only calls
+    # identical to the IMMEDIATELY previous one, which misses cycles: on
+    # seed13_diff10_t0 the planner issued 11 rv_periodogram calls with 3 distinct
+    # argument sets, cycling 0.5-10 -> 10-100 -> 100-429.8 four times over and
+    # receiving byte-identical results each time. No two CONSECUTIVE calls were
+    # ever the same, so the bound never fired; the idle bound could not see it
+    # either (these are tool calls) and the no-progress bound ignores
+    # rv_periodogram by design. 8 covers every cycle length the roles can
+    # plausibly produce while staying far below the number of genuinely distinct
+    # calls a healthy trial makes.
+    call_history_window: int = 8
     max_no_progress: int = 6  # consecutive unsuccessful verifier calls -> 'stuck'
-    # How this domain reads "did that tool call make progress?" off an executor
-    # result. Returns True (progress), False (verifier ran and rejected), or None
-    # (not a verifier result at all -- must NOT count toward the bound). Lean
-    # reads check_lean's ``compiled``; astro reads its tools' ``ok``. Defaults to
-    # the Lean key so existing configs keep their behaviour unchanged.
+    # Consecutive agent messages that call no tool and reach no verdict ->
+    # 'stuck_idle'. The other two bounds both key on TOOL CALLS, so a team that
+    # stops calling tools entirely is invisible to them: on seed22_diff4_t0 the
+    # run ended with 21 consecutive messages and no tool call, stopped only by
+    # the turn cap, with 4 of 5 submissions unused.
+    #
+    # 6 is set from data, not guessed. Over 145 completed trials no SUCCESSFUL
+    # run ever exceeded 4 consecutive idle messages (median 1), while failures
+    # reached 27 (median 6). Thresholds of 3 and 4 would have cut 3 and 1
+    # successful trials respectively -- converting successes into recorded
+    # failures and corrupting the failure statistics this project measures. 5 is
+    # the first safe value; 6 leaves a two-message margin against a larger
+    # sample, at a cost of about 2 percentage points of savings.
+    #
+    # Set to None to disable, which is worth doing on a small subset so that
+    # full coordination collapse can still be observed rather than truncated.
+    max_idle_messages: int | None = 6
+    # Tools whose successful call means the team produced a scorable answer.
+    # Domain-specific, so the agnostic controller is told rather than guessing:
+    # astro sets {"rv_submit"}; Lean leaves it empty because its terminal act is
+    # the APPROVE marker, not a tool call, and an empty set disables the bound.
+    submission_tools: frozenset[str] = frozenset()
+    # Fraction of max_turns after which a run that has never submitted is
+    # stopped as 'stuck_no_submission'.
+    #
+    # This is the one pathology the other bounds structurally cannot see. On
+    # seed13_diff10 a team ran the full 60 turns making only novel, well-formed,
+    # successful tool calls -- no idling, no repeats, no cycles, no errors -- and
+    # never submitted once, because the planner and engineer captured the loop
+    # and the critic, the only role holding rv_submit, was never handed control.
+    # Every bound passed; the work looked maximally productive and converged on
+    # nothing.
+    #
+    # A fraction rather than a turn count because max_turns varies by tier
+    # (30 / 50 / 90), so a fixed number would be wrong for all of them. Once a
+    # submission exists the bound can never fire again: this is about never
+    # reaching the goal at all, not about submitting slowly.
+    submission_deadline_frac: float | None = 0.5
     progress_verdict: ProgressVerdictFn | None = None
 
     def spec(self, role: AgentRole) -> RoleSpec | None:
         return self.roles.get(role)
 
     def read_progress(self, message: dict[str, Any]) -> bool | None:
-        """Apply this domain's progress verdict, falling back to Lean's key."""
         verdict = self.progress_verdict or _LEAN_PROGRESS_VERDICT
         return verdict(message)
 
@@ -94,23 +134,54 @@ class _RunState:
     turns: int = 0
     consecutive_invalid: int = 0
     terminated: bool = False
-    reason: str | None = None  # 'clean' | 'cap' | 'stuck'
+    reason: str | None = None
+    # 'clean' | 'cap' | 'stuck' | 'stuck_cycle' | 'stuck_idle'
+    # | 'stuck_tool_error' | 'stuck_no_submission'
     invalid_handoffs: int = 0  # total coordination errors seen
     # Perseveration bound (4d): the last tool-call code and how many times in a
     # row it has been resubmitted identically. Repeated identical submission is
     # perseveration; we stop the run rather than let it burn the whole budget,
     # and record the count so the offline detector confirms what the bound saw.
     last_call_code: str | None = None
+    # The last ``call_history_window`` distinct-position call signatures. A
+    # repeat is a call whose signature is anywhere in here, not merely equal to
+    # the previous one -- which is what lets the bound see cycles.
+    recent_call_codes: deque[str] = field(default_factory=deque)
     consecutive_identical_calls: int = 0
     max_identical_calls_seen: int = 0
-    # No-progress bound: consecutive unsuccessful verifier calls with no success
-    # between them. Unlike the identical-calls bound, this catches "reworded
-    # thrashing" -- the agent varying its artefact cosmetically while never
-    # getting the verifier to accept it. Any success resets it to 0. Domain-
-    # neutral: 'verifier' is check_lean for Lean, the fitting/submit tools for
-    # astro; which key is read is RoutingConfig.progress_verdict's business.
+    # Set when a repeat matched a NON-adjacent earlier call, i.e. the team is
+    # cycling rather than repeating one call. Reported as a distinct termination
+    # reason so the two pathologies stay separable in analysis.
+    saw_cycle: bool = False
+    # The TIGHTEST loop observed: the smallest gap between a call and its most
+    # recent earlier occurrence. Smallest rather than largest because a team
+    # going A B C B C A is really stuck in the B-C pair; reporting 5 (the A-to-A
+    # gap) would describe the outer wrapper rather than the loop it is caught in.
+    cycle_period: int = 0
+    # No-progress bound: consecutive failed compiles with no success between
+    # them. Unlike the identical-calls bound, this catches "reworded thrashing"
+    # -- the agent varying its code cosmetically while never compiling. A
+    # successful compile resets it to 0.
     consecutive_no_progress: int = 0
     max_no_progress_seen: int = 0
+    # Idle bound: consecutive agent messages that call no tool and reach no
+    # verdict. Reset by either. Healthy runs interleave at 1 -- an agent
+    # reasons, hands off, the next one calls a tool -- so a long run means work
+    # is circulating while nothing is being done.
+    consecutive_idle_messages: int = 0
+    max_idle_messages_seen: int = 0
+    # Consecutive executor results that were errors rather than answers. Tracked
+    # so a run killed by repeated tool errors is never recorded as
+    # perseveration: on seed13_diff10 a planner used the wrong field name, got
+    # the single word "Error: 'P_days'" four times, and was stopped by the
+    # repeat bound -- but it was not being stubborn, it had been given nothing
+    # to act on. Attributing that to the agent would corrupt the taxonomy.
+    consecutive_tool_errors: int = 0
+    max_tool_errors_seen: int = 0
+    # Calls to a configured submission tool. Counted at the CALL, not the
+    # result: a submission the evaluator rejects is still an attempt at the
+    # goal, and this bound is about never attempting.
+    n_submission_calls: int = 0
 
 
 def _role_of(name: str) -> AgentRole | None:
@@ -142,28 +213,11 @@ def _is_native_tool_call(message: dict[str, Any]) -> bool:
 
 
 def make_key_progress_verdict(key: str) -> ProgressVerdictFn:
-    """Build a progress verdict that reads one boolean key off a tool result.
-
-    Returns a callable giving True/False when some tool response carries ``key``,
-    or None when none does -- and None is load-bearing: a tool that is not the
-    domain's verifier (Lean's ``search_lemmas``, astro's ``periodogram``) must
-    NOT count toward the no-progress bound, or exploration would be scored as
-    thrashing.
-
-    ag2 stringifies a tool's returned dict with ``repr()``, so content is parsed
-    leniently with ``ast.literal_eval`` rather than ``json.loads``.
-
-    Domains differ only in the key: Lean's ``check_lean`` returns ``compiled``;
-    the astro tools are designed to return a uniform ``ok``. Keeping the shape
-    identical is what lets both testbeds share one no-progress bound -- which is
-    what makes "structural failure signatures transfer across verification
-    regimes" (RQ iii) a measurable claim rather than two incomparable heuristics.
-    """
+    """Build a progress verdict reading one boolean key off a tool result."""
     import ast
 
     def _verdict(message: dict[str, Any]) -> bool | None:
-        responses = message.get("tool_responses") or []
-        for r in responses:
+        for r in message.get("tool_responses") or []:
             content = r.get("content")
             if not content:
                 continue
@@ -178,32 +232,40 @@ def make_key_progress_verdict(key: str) -> ProgressVerdictFn:
     return _verdict
 
 
-# Lean's verifier key, kept as the default so existing RoutingConfigs are
-# unaffected by the introduction of the seam.
 _LEAN_PROGRESS_VERDICT: ProgressVerdictFn = make_key_progress_verdict("compiled")
+
+
+def _looks_like_tool_error(message: dict[str, Any]) -> bool:
+    """Did the executor return an error rather than an answer?
+
+    Two shapes count. ag2 stringifies an uncaught exception as ``Error: ...``,
+    and a tool that validates its own input returns a dict carrying an
+    ``error`` key. Both mean the call produced no information the agent can use.
+    """
+    import ast
+
+    for response in message.get("tool_responses") or []:
+        content = response.get("content")
+        if not content:
+            continue
+        text = str(content).strip()
+        if text.startswith("Error:") or text.startswith("Error "):
+            return True
+        try:
+            parsed = ast.literal_eval(text)
+        except (ValueError, SyntaxError):
+            continue
+        if isinstance(parsed, dict) and parsed.get("error"):
+            return True
+    return False
 
 
 def _normalise_call_code(message: dict[str, Any]) -> str | None:
     """Whitespace-normalised signature of the tool call(s): NAME plus arguments.
 
-    Used by the perseveration bound to tell whether this submission repeats the
-    previous one. Parses each tool_call's ``arguments`` (clean JSON) and joins the
-    values behind the tool's name; falls back to the raw arguments string if
-    parsing fails.
-
-    The tool NAME is part of the signature. Without it, two different actions
-    that happen to take the same payload are indistinguishable -- and in the
-    astro testbed that is the normal workflow, not a pathology: the engineer
-    inspects residuals for a fitted system, the critic independently re-inspects
-    the same system, and then submits it. Three legitimate distinct calls,
-    identical argument values. Conflating them would trip the bound and record a
-    healthy run as 'stuck', which is worse than missing a real repeat because it
-    fabricates a failure mode.
-
-    This also brings the live bound into agreement with the offline detector,
-    which already filters to a single tool (``check_lean_calls``) before looking
-    for repeats -- so name-blind normalisation here meant the two disagreed about
-    what 'identical' means despite being intended to match.
+    The tool NAME is part of the signature: without it, two different actions
+    that happen to take the same payload are indistinguishable, which in the
+    astro testbed is the normal workflow rather than a pathology.
     """
     import json as _json
 
@@ -291,6 +353,17 @@ def build_free_routing_team(
             state.terminated, state.reason = True, "cap"
             return None
 
+        # Never-submitted bound. Only meaningful once a domain has named its
+        # submission tools; without that the set is empty and this is inert.
+        if (
+            config.submission_tools
+            and config.submission_deadline_frac is not None
+            and state.n_submission_calls == 0
+            and state.turns >= config.submission_deadline_frac * config.max_turns
+        ):
+            state.terminated, state.reason = True, "stuck_no_submission"
+            return None
+
         name = last_speaker.name
 
         # Entry: the user posts the task -> the configured entry agent.
@@ -301,12 +374,17 @@ def build_free_routing_team(
         # The caller is the last non-executor agent; recover it from the ledger
         # if present, else from the message before the tool result.
         if name == AgentRole.EXECUTOR.value:
-            # Track verifier progress: a verifier result updates the
-            # consecutive-failure counter (a success resets it). Non-verifier
-            # results return None here and are ignored, so exploration is not
-            # penalised. Past the threshold the agent is thrashing without ever
-            # satisfying the verifier -- stop as 'stuck'. Which tool counts as
-            # the verifier is the domain's choice, via config.progress_verdict.
+            # Track compile progress: a check_lean result updates the
+            # consecutive-failure counter (a success resets it). search_lemmas
+            # results return None here and are ignored. Past the threshold the
+            # agent is thrashing without ever compiling -- stop as 'stuck'.
+            if _looks_like_tool_error(_last_message(groupchat)):
+                state.consecutive_tool_errors += 1
+                state.max_tool_errors_seen = max(
+                    state.max_tool_errors_seen, state.consecutive_tool_errors
+                )
+            else:
+                state.consecutive_tool_errors = 0
             verdict = config.read_progress(_last_message(groupchat))
             if verdict is True:
                 state.consecutive_no_progress = 0
@@ -332,6 +410,7 @@ def build_free_routing_team(
 
         # 1. Terminal marker (e.g. critic APPROVE) from a role allowed to end.
         if spec.can_terminate and VERDICT_APPROVE in text.upper():
+            state.consecutive_idle_messages = 0
             state.terminated, state.reason = True, "clean"
             return None
 
@@ -343,6 +422,10 @@ def build_free_routing_team(
             called = {tc.get("function", {}).get("name") for tc in last_msg.get("tool_calls") or []}
             if called and called <= spec.tools:
                 state.consecutive_invalid = 0
+                # The team is doing work again.
+                state.consecutive_idle_messages = 0
+                if called & config.submission_tools:
+                    state.n_submission_calls += 1
                 # Perseveration bound: if this submission is byte-identical
                 # (after whitespace normalisation) to the previous one, count
                 # it; past the threshold the agent is stuck resubmitting the
@@ -350,19 +433,57 @@ def build_free_routing_team(
                 # turn cap. The count is recorded so the offline detector can
                 # confirm and characterise the episode.
                 code = _normalise_call_code(last_msg)
-                if code is not None and code == state.last_call_code:
+                if code is not None and code in state.recent_call_codes:
                     state.consecutive_identical_calls += 1
+                    # Distance back to the match is the cycle period: 1 means the
+                    # team repeated the immediately previous call, >1 means it is
+                    # going round a loop.
+                    history = list(state.recent_call_codes)
+                    # Distance back to the MOST RECENT match, not the first:
+                    # the nearest occurrence is the loop the team is actually in.
+                    period = len(history) - max(i for i, c in enumerate(history) if c == code)
+                    if period > 1:
+                        state.saw_cycle = True
+                        state.cycle_period = (
+                            period if state.cycle_period == 0 else min(state.cycle_period, period)
+                        )
                 else:
                     state.consecutive_identical_calls = 1
-                    state.last_call_code = code
+                state.last_call_code = code
+                if code is not None:
+                    state.recent_call_codes.append(code)
+                    while len(state.recent_call_codes) > max(config.call_history_window, 1):
+                        state.recent_call_codes.popleft()
                 state.max_identical_calls_seen = max(
                     state.max_identical_calls_seen, state.consecutive_identical_calls
                 )
                 if state.consecutive_identical_calls >= config.max_identical_calls:
-                    state.terminated, state.reason = True, "stuck"
+                    state.terminated = True
+                    # Repeating a call that keeps erroring is a tool-usability
+                    # failure, not perseveration; keep them separable.
+                    if state.consecutive_tool_errors >= config.max_identical_calls - 1:
+                        state.reason = "stuck_tool_error"
+                    else:
+                        state.reason = "stuck_cycle" if state.saw_cycle else "stuck"
                     return None
                 return _route(executor, role)
             return _invalid(state, config, agents)  # called a tool it may not
+
+        # This message called no tool and ended nothing, so it is idle. Count
+        # it BEFORE routing the hand-off: a stalled team hands off perfectly
+        # well, which is exactly why the hand-off itself is not evidence of
+        # progress. Terminating with its own reason keeps a detected stall
+        # distinguishable from budget exhaustion in every downstream analysis.
+        state.consecutive_idle_messages += 1
+        state.max_idle_messages_seen = max(
+            state.max_idle_messages_seen, state.consecutive_idle_messages
+        )
+        if (
+            config.max_idle_messages is not None
+            and state.consecutive_idle_messages >= config.max_idle_messages
+        ):
+            state.terminated, state.reason = True, "stuck_idle"
+            return None
 
         # 3. Expressed HANDOFF marker: hand to the named agent (text marker,
         #    since AG2 has no native next-agent mechanism).

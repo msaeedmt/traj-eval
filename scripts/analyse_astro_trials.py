@@ -30,6 +30,7 @@ from pathlib import Path
 from traj_eval.anchors.astro.period_selection import run_period_anchor
 from traj_eval.metrics.astro.artifacts import extract_astro_artifacts
 from traj_eval.metrics.astro.batch_report import analyse_astro_batch
+from traj_eval.metrics.astro.ceiling import ceilings_path, load_ceilings
 from traj_eval.metrics.astro.sequence import build_sequence
 from traj_eval.metrics.astro.validator import validate_astro_trial
 from traj_eval.trace_core.storage import read_trial
@@ -82,7 +83,7 @@ def _pct(value) -> str:
     return "n/a" if value is None else f"{100.0 * value:5.1f}%"
 
 
-def report_trial(path: Path, load_task) -> int:
+def report_trial(path: Path, load_task, override: float | None = None) -> int:
     """Detailed view of one trial: the trajectory, then the verdict."""
     meta, events = read_trial(path)
     artifacts = extract_astro_artifacts(events, trial_id=meta.trial_id, task_id=meta.task_id)
@@ -96,7 +97,14 @@ def report_trial(path: Path, load_task) -> int:
             print(f"(counterfactual scoring unavailable: {exc})\n")
 
     m = validate_astro_trial(
-        events, trial_id=meta.trial_id, task_id=meta.task_id, task=task, truth=truth
+        events,
+        trial_id=meta.trial_id,
+        task_id=meta.task_id,
+        task=task,
+        truth=truth,
+        min_match_score=override
+        if override is not None
+        else (meta.config or {}).get("min_match_score"),
     )
     if task is not None and truth is not None:
         _ANCHOR_CACHE[str(path)] = run_period_anchor(artifacts, task=task, truth=truth).fits
@@ -208,8 +216,18 @@ def report_trial(path: Path, load_task) -> int:
     return 0
 
 
+def _load_ceilings():
+    """The ceiling cache, or {} when it has not been computed."""
+    try:
+        from traj_eval.dataset.astro_bank import dataset_root
+
+        return load_ceilings(ceilings_path(dataset_root()))
+    except Exception:  # noqa: BLE001 - absent cache must never break analysis
+        return {}
+
+
 def report_batch(folder: Path, load_task, json_path: Path | None) -> int:
-    report = analyse_astro_batch(folder, load_task=load_task)
+    report = analyse_astro_batch(folder, load_task=load_task, ceilings=_load_ceilings())
     if not report.metrics:
         print(f"No readable trials in {folder}")
         for name, err in report.skipped:
@@ -250,6 +268,37 @@ def report_batch(folder: Path, load_task, json_path: Path | None) -> int:
         f"  self-signal agreement    : {_fmt(traj['mean_self_signal_agreement'])} "
         f"(n={traj['n_with_self_signal']})"
     )
+
+    solv = report.solvability()
+    if solv:
+        print("\n-- solvability (ceiling-conditioned) --")
+        print(
+            f"  trials on solvable tasks   : {solv['n_on_solvable_tasks']}"
+            f"/{solv['n_with_ceiling']}"
+        )
+        print(
+            f"  trials on UNSOLVABLE tasks : {solv['n_on_unsolvable_tasks']} "
+            f"({_pct(solv['unsolvable_trial_share'])})"
+        )
+        print(f"  pass rate, all tasks       : {_pct(solv['pass_rate_all'])}")
+        print(
+            f"  pass rate, SOLVABLE only   : {_pct(solv['pass_rate_solvable'])}   "
+            f"<- measures the agents"
+        )
+        print(f"  mean match deficit         : {_fmt(solv['mean_match_deficit'])}")
+        print(f"  hit the ceiling exactly    : {_pct(solv['at_ceiling_rate'])}")
+        if solv.get("n_trials_beating_ceiling"):
+            print(
+                f"  !! {solv['n_trials_beating_ceiling']} trial(s) BEAT the ceiling on "
+                f"{len(solv['tasks_with_bad_ceiling'])} task(s): "
+                f"{', '.join(solv['tasks_with_bad_ceiling'])}"
+            )
+            print(
+                "     the ceiling search missed the optimum there; recompute with "
+                "--force before trusting their labels"
+            )
+    else:
+        print("\n-- solvability: no ceiling cache " "(run scripts/compute_match_ceilings.py) --")
 
     anchor = report.period_anchor_summary()
     if anchor:
@@ -301,6 +350,7 @@ def report_batch(folder: Path, load_task, json_path: Path | None) -> int:
             "revision_ratio_by_outcome": report.revision_ratio_by_outcome(),
             "flag_counts": report.flag_counts(),
             "period_anchor": report.period_anchor_summary(),
+            "solvability": report.solvability(),
             "silent_failure_rate": report.silent_failure_rate,
             "had_it_and_lost_it_rate": report.had_it_and_lost_it_rate,
             "trials": [m.as_dict() for m in report.metrics],
@@ -319,11 +369,18 @@ def main(argv: list[str]) -> int:
         help="skip counterfactual scoring (trace-only; no task bank needed)",
     )
     parser.add_argument("--json", type=Path, default=None, help="also write a JSON summary")
+    parser.add_argument(
+        "--min-match-score",
+        type=float,
+        default=None,
+        help="override the match gate; by default each trial is analysed at the "
+        "threshold recorded in its own meta, which is almost always what you want",
+    )
     args = parser.parse_args(argv)
 
     load_task = _make_loader(not args.no_oracle)
     if args.path.is_file():
-        return report_trial(args.path, load_task)
+        return report_trial(args.path, load_task, args.min_match_score)
     if args.path.is_dir():
         return report_batch(args.path, load_task, args.json)
     print(f"No such file or directory: {args.path}")

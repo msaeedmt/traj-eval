@@ -93,6 +93,9 @@ def astro_routing_config(*, max_turns: int = 40) -> RoutingConfig:
             AgentRole.PLANNER: RoleSpec(
                 role=AgentRole.PLANNER,
                 handoff_targets=frozenset({AgentRole.ENGINEER}),
+                # Residual access so an escalated planner can ground its
+                # add-a-planet decision instead of re-running the raw
+                # periodogram or trusting the engineer's prose.
                 tools=frozenset({TOOL_PERIODOGRAM, TOOL_RESIDUAL}),
             ),
             AgentRole.ENGINEER: RoleSpec(
@@ -109,6 +112,13 @@ def astro_routing_config(*, max_turns: int = 40) -> RoutingConfig:
         },
         max_turns=max_turns,
         progress_verdict=make_key_progress_verdict(ASTRO_PROGRESS_KEY),
+        # rv_submit is the only act that can produce a scored answer, so a run
+        # that never calls it cannot succeed however busy it looks. Observed on
+        # seed13_diff10: 60 turns of novel, well-formed, successful tool calls,
+        # zero submissions, because the planner and engineer captured the loop
+        # and the critic -- the only holder of rv_submit -- never received a
+        # hand-off.
+        submission_tools=frozenset({TOOL_SUBMIT}),
     )
 
 
@@ -118,6 +128,7 @@ def build_astro_tools(
     *,
     stargazer_task: Any = None,
     max_attempts: int | None = None,
+    min_match_score: float | None = None,
 ) -> tuple[dict[str, Callable[..., Any]], RvSubmit]:
     """Instantiate the four tools for one task. Returns (tools, submit_tool).
 
@@ -134,6 +145,7 @@ def build_astro_tools(
         truth=truth,
         stargazer_task=stargazer_task,
         max_attempts=max_attempts,
+        min_match_score=min_match_score,
     )
     tools = {
         TOOL_PERIODOGRAM: RvPeriodogram(task).as_tool(),
