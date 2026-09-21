@@ -15,7 +15,7 @@ from traj_eval.tools.lean_search import (
     make_search_lemmas,
 )
 
-# A real result record, copied from scripts/probe_leansearch.py output.
+# A real result record, copied from a live LeanSearch response.
 _REAL_RECORD = {
     "result": {
         "module_name": ["Mathlib", "Algebra", "Group", "Nat", "Defs"],

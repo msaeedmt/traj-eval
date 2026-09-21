@@ -125,7 +125,7 @@ def validate_planets(planets: Any) -> list[dict[str, Any]]:
         for key, value in planet.items():
             if key in ALL_PLANET_FIELDS and not isinstance(value, int | float):
                 raise PlanetShapeError(
-                    f"planets[{i}][{key!r}] must be a number, got " f"{type(value).__name__}."
+                    f"planets[{i}][{key!r}] must be a number, got {type(value).__name__}."
                 )
     return planets
 
@@ -281,7 +281,7 @@ class RvResidual:
                 # agent as a readable message rather than a bare exception.
                 return _shape_error_payload(
                     PlanetShapeError(
-                        f"could not use the supplied planets: " f"{type(exc).__name__}: {exc}"
+                        f"could not use the supplied planets: {type(exc).__name__}: {exc}"
                     ),
                     self.task_id,
                 )

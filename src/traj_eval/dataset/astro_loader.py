@@ -62,7 +62,7 @@ def tier_for_difficulty(difficulty: int, *, kind: str = "synthetic") -> str:
     if kind == "real":
         return "real"
     raise ValueError(
-        f"difficulty {difficulty} is outside the documented range 1-10 " f"for a {kind} task"
+        f"difficulty {difficulty} is outside the documented range 1-10 for a {kind} task"
     )
 
 

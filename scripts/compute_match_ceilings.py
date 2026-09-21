@@ -67,8 +67,7 @@ def main(argv: list[str]) -> int:
         "--min-match-score",
         type=float,
         default=None,
-        help=f"match threshold to judge reachability against "
-        f"(default {DEFAULT_MIN_MATCH_SCORE})",
+        help=f"match threshold to judge reachability against (default {DEFAULT_MIN_MATCH_SCORE})",
     )
     ap.add_argument(
         "--tolerance",

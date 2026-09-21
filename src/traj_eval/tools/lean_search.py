@@ -8,7 +8,7 @@ field's most-cited augmentation -- "knowing the right lemma exists is often
 harder than applying it" -- and directly attacks the dominant failure we saw
 (a weak engineer perseverating because it could not find Nat.add_comm).
 
-Contract (confirmed by scripts/probe_leansearch.py against the live service):
+Contract (confirmed against the live LeanSearch service during development):
   POST https://leansearch.net/search
   body: {"query": ["...?"], "num_results": <int>}   # query is a LIST; count is int
   -> 200, a list (one per query) of lists of {"result": {...}, "distance": float}

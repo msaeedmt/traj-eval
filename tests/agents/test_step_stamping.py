@@ -3,7 +3,7 @@
 This drives the observer directly with a fake AG2 sender and a hand-advanced
 StepContext -- no LLM, no group chat -- so the stamping contract is pinned
 without paying for a real run. The end-to-end controller path is exercised
-separately by scripts/smoke_stepped.py (which makes real calls).
+separately by the batch runners (which make real calls).
 
 Contract under test:
   * engineer and critic events carry ``step_idx``/``attempt`` from the context;

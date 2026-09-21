@@ -7,7 +7,7 @@ actually CLOSES that goal, returning a concrete tactic. Because it is grounded
 in the real goal state, it does not suffer the reword-loop that plagues text
 search (the engineer re-issuing near-identical search_lemmas queries).
 
-Contract (confirmed by scripts/probe_exact.py against the live REPL): `exact?`
+Contract (confirmed against the live Lean REPL during development): `exact?`
 emits a single info-severity message of the form
 
     Try this:

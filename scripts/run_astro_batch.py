@@ -674,8 +674,7 @@ def _report(outcomes: list[TrialOutcome], errors: list[tuple[str, str]], out_dir
         report = analyse_astro_batch(out_dir, load_task=load)
         sp = report.statistical_vs_physical()
         print(
-            f"  pass rate {_pct(report.pass_rate)}   "
-            f"submission rate {_pct(report.submission_rate)}"
+            f"  pass rate {_pct(report.pass_rate)}   submission rate {_pct(report.submission_rate)}"
         )
         print(f"  statistical {_pct(sp['statistical'])}   physical {_pct(sp['physical'])}")
         traj = report.trajectory_summary()

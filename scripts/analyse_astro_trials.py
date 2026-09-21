@@ -178,9 +178,7 @@ def report_trial(path: Path, load_task, override: float | None = None) -> int:
 
     if m.n_periods_checked is not None:
         print("\n  -- period-selection anchor --")
-        print(
-            f"    periods checked: {m.n_periods_checked}   " f"violations: {m.n_period_violations}"
-        )
+        print(f"    periods checked: {m.n_periods_checked}   violations: {m.n_period_violations}")
         counts = {k: v for k, v in (m.period_label_counts or {}).items() if v}
         print(f"    labels: {counts}")
         for fit in run_period_anchor_fits(path, m):
@@ -199,13 +197,10 @@ def report_trial(path: Path, load_task, override: float | None = None) -> int:
                 if origin and origin != caller
                 else f"by the {caller}"
             )
-            print(
-                f"    FIRST VIOLATION at event #{m.first_period_violation_seq} " f"({attribution})"
-            )
+            print(f"    FIRST VIOLATION at event #{m.first_period_violation_seq} ({attribution})")
         if m.missed_true_periods:
             print(
-                f"    true periods never proposed: "
-                f"{[round(p, 4) for p in m.missed_true_periods]}"
+                f"    true periods never proposed: {[round(p, 4) for p in m.missed_true_periods]}"
             )
 
     fired = m.flags.fired
@@ -273,8 +268,7 @@ def report_batch(folder: Path, load_task, json_path: Path | None) -> int:
     if solv:
         print("\n-- solvability (ceiling-conditioned) --")
         print(
-            f"  trials on solvable tasks   : {solv['n_on_solvable_tasks']}"
-            f"/{solv['n_with_ceiling']}"
+            f"  trials on solvable tasks   : {solv['n_on_solvable_tasks']}/{solv['n_with_ceiling']}"
         )
         print(
             f"  trials on UNSOLVABLE tasks : {solv['n_on_unsolvable_tasks']} "
@@ -298,7 +292,7 @@ def report_batch(folder: Path, load_task, json_path: Path | None) -> int:
                 "--force before trusting their labels"
             )
     else:
-        print("\n-- solvability: no ceiling cache " "(run scripts/compute_match_ceilings.py) --")
+        print("\n-- solvability: no ceiling cache (run scripts/compute_match_ceilings.py) --")
 
     anchor = report.period_anchor_summary()
     if anchor:
@@ -315,7 +309,7 @@ def report_batch(folder: Path, load_task, json_path: Path | None) -> int:
         print(f"  found all true periods   : {_pct(anchor['found_all_true_rate'])}")
         print(f"  failures localised (O1)  : {_pct(anchor['localised_rate'])}")
         if anchor["first_violation_by_origin_role"]:
-            print(f"  first violation by origin: " f"{anchor['first_violation_by_origin_role']}")
+            print(f"  first violation by origin: {anchor['first_violation_by_origin_role']}")
 
     print("\n-- silent-failure modes --")
     counts = report.flag_counts()

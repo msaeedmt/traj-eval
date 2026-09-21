@@ -1,14 +1,16 @@
-"""The four-role agents for the multi-agent configuration (Methodology §4.1).
+"""Role agents for the Lean team.
 
-Roles are added one at a time and exercised in the smallest context where each
-is actually testable. Step 1a: planner. Step 1b: + engineer.
-Step 1c: + critic (terminal judge). Step 1d: + executor/repairer and the
-four-role group chat with the genuine repair loop (critic REJECT -> engineer).
+The free-routing team (``lean_team.py``) uses ``make_reasoner``,
+``make_engineer_free`` and ``make_critic_free``: each prompt tells the role
+which tools it may call and which ``HANDOFF:`` / ``VERDICT:`` marker lines end
+its turn, so coordination is the agent's own, recorded choice.
 
-The role *names* deliberately mirror ``traj_eval.trace_core.schema.AgentRole``
-so that when the observer (Step 2) tags events, an agent's name maps onto its
-schema role with no translation table. We pin the agent's ``name`` to the
-enum's string value for exactly that reason.
+``make_planner`` / ``make_engineer`` / ``make_critic`` / ``make_executor`` are
+the earlier fixed-workflow ("stepped") prompts. They are no longer used by any
+runner and are kept only because the controller tests exercise them.
+
+The agent *names* mirror ``traj_eval.trace_core.schema.AgentRole`` so the
+observer maps an agent to its schema role with no translation table.
 """
 
 from __future__ import annotations

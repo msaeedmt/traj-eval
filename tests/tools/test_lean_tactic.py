@@ -30,7 +30,7 @@ class _Compiler:
         return self._result
 
 
-# The real format from scripts/probe_exact.py:
+# The real format returned by the Lean REPL for `exact?`:
 _REAL = "Try this:\n  [apply] exact Nat.add_comm a b"
 
 

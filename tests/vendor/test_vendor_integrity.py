@@ -14,7 +14,7 @@ in the report while leaving all other tests green.
 If a hash mismatch is intentional (upstream released a fix and you re-vendored
 deliberately), update BOTH the digest below AND
 ``src/traj_eval/vendor/stargazer/PROVENANCE.md``, and re-run
-``scripts/probe_astro_eval.py --all-easy`` before trusting any result.
+the astro evaluation tests (``tests/metrics/astro``) before trusting any result.
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ def test_vendored_file_is_unmodified(name: str) -> None:
         f"editing them silently breaks comparability with the published baseline "
         f"while leaving every other test green.\n"
         f"If the change is intentional, update EXPECTED_SHA256 and PROVENANCE.md, "
-        f"then re-run scripts/probe_astro_eval.py --all-easy."
+        f"then re-run tests/metrics/astro before trusting results."
     )
 
 
