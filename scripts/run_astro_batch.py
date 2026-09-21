@@ -20,12 +20,24 @@ Resumable by design: a trial whose log already exists is skipped, so an
 interrupted batch resumes instead of re-paying for completed work. Use
 ``--force`` to re-run.
 
+Rate limits
+-----------
+``--sleep-between`` paces the loop. Token-per-minute limits are cumulative over
+a rolling window, so back-to-back trials exhaust it even when every individual
+request is small: the observed failures were of the form "Limit 30000, Used
+29288, Requested 1276" -- a tiny request refused because the window was already
+full of the previous trial's traffic.
+
+Note this only helps when a SINGLE trial fits inside the window. A 60-turn hard
+trial can exceed 30k tokens on its own, and no amount of pausing between trials
+helps then; use a backbone with a higher limit or lower ``--max-turns``.
+
 Usage:
     uv run python scripts/run_astro_batch.py --tier medium --dry-run
     TRAJ_EVAL_MODEL=gpt-4o-mini uv run python scripts/run_astro_batch.py \
         --tier medium --trials 3 --min-planets 2
-    TRAJ_EVAL_MODEL=gpt-4o-mini uv run python scripts/run_astro_batch.py \
-        --tier hard --trials 2 --max-turns 90 --max-submissions 10
+    TRAJ_EVAL_MODEL=gpt-4o uv run python scripts/run_astro_batch.py \
+        --tier medium --trials 1 --min-planets 2 --sleep-between 60
 """
 
 from __future__ import annotations
@@ -34,6 +46,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -74,17 +87,16 @@ BATCH_ROOT = Path("data/batch")
 # terminates for a scientific reason rather than a clock one: an observed
 # submission cycle costs roughly 7 events, and the no-progress (6) and
 # identical-call (4) bounds catch genuine thrashing long before these.
-DEFAULT_MAX_TURNS = {"easy": 30, "medium": 50, "hard": 90, "real": 90}
+DEFAULT_MAX_TURNS = {"easy": 30, "medium": 50, "hard": 60, "real": 60}
 
 
 def _pct(value: float | None) -> str:
     """Percentage, or 'n/a'.
 
     Every rate in the batch report is legitimately None on a small or degenerate
-    batch -- a single trial that never submitted leaves critic_verified_rate and
-    the per-criterion rates undefined, since their denominator is zero. Formatting
-    those with ':.1%' raised a TypeError that swallowed the rest of the report,
-    which is exactly the case you hit while debugging.
+    batch -- a single trial that never submitted leaves the per-criterion rates
+    undefined, since their denominator is zero. Formatting those with ':.1%'
+    raised a TypeError that swallowed the rest of the report.
     """
     return "n/a" if value is None else f"{100.0 * value:.1f}%"
 
@@ -244,7 +256,13 @@ def run_one_trial(
             "min_match_score": submit_tool.min_match_score,
         },
     )
-    writer = TrialLogWriter(log_path, meta)
+    # Write to a temporary name and rename only on success. TrialLogWriter opens
+    # the file and writes the meta line in its constructor, so a trial that dies
+    # mid-run -- a rate limit, most often -- would otherwise leave a file that
+    # already exists, and the resume check is exists(): a re-run would skip the
+    # failed trial as though it were complete.
+    partial_path = out_dir / f"{trial_id}.jsonl.partial"
+    writer = TrialLogWriter(partial_path, meta)
     observer = TraceObserver(writer, trial_id=trial_id, ledger=ledger, step_context=step_context)
     observer.attach([a for a in groupchat.agents if a.name != "user"])
 
@@ -252,6 +270,7 @@ def run_one_trial(
     observer.record_task(prompt)
     user.initiate_chat(manager, message=prompt, clear_history=True)
     writer.close()
+    partial_path.replace(log_path)  # atomic: only a finished trial gets the real name
     finalize_run(run_state)
 
     _, events = read_trial(log_path)
@@ -305,6 +324,7 @@ def _write_config(
         "effective_match_threshold": effective_threshold,
         "solvable_only": args.solvable_only,
         "max_difficulty": args.max_difficulty,
+        "sleep_between": args.sleep_between,
         "n_tasks": n_tasks,
         "created_at": datetime.now(UTC).isoformat(),
     }
@@ -326,7 +346,7 @@ def main(argv: list[str]) -> int:
         "--max-turns",
         type=int,
         default=None,
-        help="turn cap; defaults per tier (easy 30, medium 50, hard/real 90)",
+        help="turn cap; defaults per tier (easy 30, medium 50, hard/real 60)",
     )
     ap.add_argument(
         "--max-submissions",
@@ -371,6 +391,15 @@ def main(argv: list[str]) -> int:
         default=None,
         help="widen every parameter tolerance by this factor instead of setting "
         "the threshold directly; 2x -> 0.64, 3x -> 0.51",
+    )
+    ap.add_argument(
+        "--sleep-between",
+        type=float,
+        default=0.0,
+        help="seconds to pause between trials, to stay inside a tokens-per-minute "
+        "limit. With a 30k TPM limit and roughly 25k tokens per trial, 60 is "
+        "about the sustainable rate. Does not help if a SINGLE trial exceeds "
+        "the limit on its own",
     )
     ap.add_argument(
         "--epoch-hint", action="store_true", help="grounding arm: state the l_rad epoch"
@@ -465,6 +494,12 @@ def main(argv: list[str]) -> int:
         f"max_turns  : {args.max_turns or 'per tier ' + str(DEFAULT_MAX_TURNS)}   "
         f"max_submissions: {args.max_submissions or 'per tier'}"
     )
+    if args.sleep_between > 0:
+        eta = todo * args.sleep_between / 60.0
+        print(
+            f"pacing     : {args.sleep_between:g}s between trials "
+            f"(+{eta:.0f} min of waiting across {todo} trials)"
+        )
 
     if args.dry_run:
         print("\nplanned trials:")
@@ -481,12 +516,21 @@ def main(argv: list[str]) -> int:
 
     outcomes: list[TrialOutcome] = []
     errors: list[tuple[str, str]] = []
+    ran = 0
     for i, (task, truth, raw, trial, turns, exists) in enumerate(planned, start=1):
         label = f"{task.task_id} t{trial}"
         if exists and not args.force:
             print(f"  [{i}/{len(planned)}] {label}: already logged, skipping")
             continue
+        # Pace BEFORE each trial after the first actually run, not after: a pause
+        # following the final trial only delays the report.
+        if ran and args.sleep_between > 0:
+            print(
+                f"      pausing {args.sleep_between:g}s to stay inside the rate limit", flush=True
+            )
+            time.sleep(args.sleep_between)
         print(f"  [{i}/{len(planned)}] {label} (turns={turns}) ...", flush=True)
+        ran += 1
         try:
             outcome = run_one_trial(
                 task,
