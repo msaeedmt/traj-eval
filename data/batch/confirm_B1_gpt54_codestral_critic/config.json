@@ -1,0 +1,76 @@
+{
+    "schema_version":  "lean-anchor-flat-config/1.0.0",
+    "experiment_id":  "lean-anchor-engineer-model-matrix-v1",
+    "configuration_id":  "confirm_B1_gpt54_codestral_critic",
+    "phase":  "paired_confirmation",
+    "arm_id":  "B1",
+    "setup":  "recovery_triangle_v1",
+    "models":  {
+                   "reasoner":  "openai/gpt-5.4-2026-03-05",
+                   "engineer":  "openai/gpt-5.4-2026-03-05",
+                   "critic":  "mistral/codestral-2508"
+               },
+    "tasks":  [
+                  "easy_fatem_011",
+                  "easy_fatem_012",
+                  "easy_fatem_019",
+                  "easy_fatem_020",
+                  "easy_fatem_041",
+                  "easy_fatem_109",
+                  "easy_fatem_111",
+                  "easy_fatem_115",
+                  "easy_leancat_001",
+                  "easy_leancat_002",
+                  "medium_fateh_001",
+                  "medium_fateh_002",
+                  "medium_fateh_009",
+                  "medium_fateh_010",
+                  "medium_fateh_011",
+                  "medium_fateh_012",
+                  "medium_fateh_013",
+                  "medium_fateh_097",
+                  "medium_leancat_008",
+                  "medium_leancat_021"
+              ],
+    "trials_per_task":  10,
+    "expected_trace_files":  200,
+    "filename_pattern":  "\u003ctask_id\u003e_t\u003czero_based_trial_index\u003e.jsonl",
+    "sampling_and_budgets":  {
+                                 "temperature":  0.2,
+                                 "max_turns":  30,
+                                 "role_max_tokens":  {
+                                                         "reasoner":  2048,
+                                                         "engineer":  4096,
+                                                         "critic":  2048
+                                                     },
+                                 "worker_timeout_seconds":  180,
+                                 "lean_timeout_seconds":  360,
+                                 "provider_internal_retries":  0,
+                                 "schedule_seed":  20260725,
+                                 "schedule_policy":  "block_by_task_and_repeat_then_shuffle_arm_order"
+                             },
+    "engineer_implementation":  {
+                                    "factory":  "make_engineer_free",
+                                    "prompt_constant":  "ENGINEER_FREE_SYSTEM_MESSAGE",
+                                    "source_path":  "src/traj_eval/agents/roles.py",
+                                    "roles_py_git_blob":  "3c86b475e6b1d80c1e15fa207ef27188c96f45fb",
+                                    "tools":  [
+                                                  "check_lean",
+                                                  "search_lemmas",
+                                                  "try_tactic",
+                                                  "show_goals"
+                                              ]
+                                },
+    "frozen_identity":  {
+                            "runtime_commit":  "7ebd9bda28dd3463421a2268e279961940444e78",
+                            "dataset_git_tree":  "97833bd7a6c8d4835a0b7ff44d78d90257913501",
+                            "metadata_git_blob":  "4ae6f1bfeb3cc3fcf62315f7c2d85ba5233c0125",
+                            "source_config_id":  "lae-mm-v1-config-v003",
+                            "source_config_sha256":  "143818d6ffd29e0decdfe46c4af863df6f7f7203d9ad0fa9b7745bb08a0854dc",
+                            "raw_evidence_commit":  "1dd06c485df34a10db990f051972d7b190e7946e"
+                        },
+    "qwen_policy":  {
+                        "new_qwen_calls":  "forbidden",
+                        "historical_qwen_evidence_preserved":  true
+                    }
+}
