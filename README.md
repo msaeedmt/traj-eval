@@ -26,9 +26,10 @@ fallible decision rather than a hard-coded pipeline.
 
 ## Headline results
 
-Five backbones on the same 20 Lean tasks (10 easy, 10 medium), 708 trials;
-four backbones on the Stargazer synthetic bank, 229 trials. All numbers below
-are computed from the traces in `data/batch` by the scripts in `scripts/`.
+Five backbones on the same 20 Lean tasks (10 easy, 10 medium), 608 trials;
+four backbones on the Stargazer synthetic bank, 229 trials. Trace-derived
+numbers below come from `data/batch` via the scripts in `scripts/`; the kernel
+figures additionally need a built Mathlib project (`docs/SETUP.md`).
 
 **Failure changes character with capability.**
 
@@ -45,23 +46,26 @@ threshold protocol errors vanish and what remains is coordination.
 
 **Knowing is not delivering.** In both domains, teams hold an independently
 verified answer and fail to deliver it: 3% of verified answers at the frontier
-(gpt-5.4, Lean and astro), 25% for the weaker astro teams. Of the lost Lean
-proofs with a submission, 25/26 pass the full kernel gate.
+(gpt-5.4, Lean and astro), 25% for the weaker astro teams. All 24 lost Lean
+proofs pass the full kernel gate, and they span weak, middle and frontier teams.
 
-**The critic is the coordination role.** The gpt-5.4 critic re-checks 97% of
-proofs and rejected 0 of 156. A codestral critic rejected ≥15 of 25 proofs the
-kernel had already accepted. Swapping *only* the critic (154 paired cells):
-answers produced 0.78 → 0.77, answers delivered 97% → 91% of those, lost
-answers ×3. Task-clustered 95% CI on the delivery gap is [−3, +16] pp —
-directional, not significant at 20 tasks; the mechanism is not in doubt.
+**The critic is the coordination role, and it fails in two directions.** The
+gpt-5.4 critic issues 156 verdicts, all approvals, and re-checks 153 of the 159
+runs where it acts without finding a single error. Across the weaker and mixed
+arms, 25 runs carry a non-approval critic message; 23 of those already held an
+accepted check, and all 23 pass the kernel gate — not one rejection removed a
+bad proof. Swapping *only* the critic: accepted checks 161 → 159, delivered
+97% → 91% of those, lost answers 5 → 15. Task-clustered 95% CI on the
+delivery gap is [−3, +16] pp — directional, not significant at 20 tasks;
+the mechanism is not in doubt.
 
-**Where the roles were used.** The engineer→planner hand-back carried 17 of 18
-solved two-planet astro systems (20 of 109 one-planet ones); the review step
-caught nothing in either domain. No astro run ever exhausted its submission
-budget (0/216).
+**Where the roles were used.** An explicit engineer→planner hand-back appears
+in 18 of 27 solved two-planet astro runs and 0 of 114 solved one-planet runs;
+the review step caught nothing in either domain. No astro run ever exhausted
+its submission budget (0/229).
 
 Full tables, per-batch configurations and confounds are in
-`data/batch/README.md` and the final report.
+`data/batch/README.md` and `docs/final-report.pdf`.
 
 ## Layout
 
@@ -84,9 +88,11 @@ schema/              exported JSON Schema for trace events and trial meta
 scripts/             batch runners and offline analysis (see Reproduce)
 dataset/             the two benchmarks (tracked)
 data/batch/          one folder per experiment configuration (traces, config)
-data/analysis/       derived per-batch summaries
+data/analysis/       derived per-batch summaries (generated, not tracked)
 tests/               311 pytest tests; core suite needs no API key and no Lean
 docs/SETUP.md        environment, model access, Lean toolchain
+docs/final-report.pdf        the report these results are drawn from
+docs/final-presentation.pptx the accompanying talk
 ```
 
 ## Reproduce
